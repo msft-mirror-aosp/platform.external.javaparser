@@ -16,6 +16,7 @@
 
 package com.github.javaparser.symbolsolver.resolution.javaparser.contexts;
 
+import com.github.javaparser.ParseException;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
@@ -28,31 +29,31 @@ import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
 import com.github.javaparser.symbolsolver.resolution.AbstractResolutionTest;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.MemoryTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 
 /**
  * @author Malte Langkabel
  */
-class MethodContextResolutionTest extends AbstractResolutionTest {
+public class MethodContextResolutionTest extends AbstractResolutionTest {
 
     private TypeSolver typeSolver;
 
-    @BeforeEach
-    void setup() {
+    @Before
+    public void setup() {
         typeSolver = new ReflectionTypeSolver();
     }
 
     @Test
-    void solveTypeRefToLocalClass() {
+    public void solveTypeRefToLocalClass() {
         CompilationUnit cu = parseSample("MethodWithTypes");
         ClassOrInterfaceDeclaration cd = Navigator.demandClass(cu, "Main");
         MethodDeclaration md = Navigator.demandMethod(cd, "methodWithLocalTypes");
-        Context context = new MethodContext(md, new MemoryTypeSolver());
+        Context context = new MethodContext(md, typeSolver);
 
-        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("LocalClass");
+        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("LocalClass", new MemoryTypeSolver());
         assertEquals(true, ref.isSolved());
     }
 }

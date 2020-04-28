@@ -25,15 +25,17 @@ import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.observer.ObservableProperty;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
+import java.util.Arrays;
+import java.util.List;
 import static com.github.javaparser.utils.Utils.assertNotNull;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.metamodel.ArrayInitializerExprMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
+import javax.annotation.Generated;
 import com.github.javaparser.TokenRange;
 import java.util.function.Consumer;
 import java.util.Optional;
-import com.github.javaparser.ast.Generated;
 
 /**
  * The initialization of an array. In the following sample, the outer { } is an ArrayInitializerExpr.
@@ -43,7 +45,7 @@ import com.github.javaparser.ast.Generated;
  *
  * @author Julio Vilmar Gesser
  */
-public class ArrayInitializerExpr extends Expression {
+public final class ArrayInitializerExpr extends Expression {
 
     private NodeList<Expression> values;
 

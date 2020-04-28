@@ -11,6 +11,8 @@ import com.github.javaparser.ast.validator.Validators;
 import com.github.javaparser.metamodel.NodeMetaModel;
 import com.github.javaparser.metamodel.PropertyMetaModel;
 
+import java.util.Optional;
+
 /**
  * Contains validations that are valid for every Java version.
  */

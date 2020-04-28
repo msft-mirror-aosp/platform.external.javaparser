@@ -104,12 +104,12 @@ class ReflectionClassAdapter {
                 return true;
             }
         }
-        for (ResolvedReferenceType ancestor : typeDeclaration.getAllAncestors()) {
-            if (ancestor.getTypeDeclaration().hasField(name)) {
-                return true;
-            }
+        ReferenceTypeImpl superclass = getSuperClass();
+        if (superclass == null) {
+            return false;
+        } else {
+            return superclass.getTypeDeclaration().hasField(name);
         }
-        return false;
     }
 
     public List<ResolvedFieldDeclaration> getAllFields() {
@@ -176,8 +176,7 @@ class ReflectionClassAdapter {
     }
 
     public List<ResolvedConstructorDeclaration> getConstructors() {
-        return Arrays.stream(clazz.getDeclaredConstructors())
-                .filter(m -> !m.isSynthetic())
+        return Arrays.stream(clazz.getConstructors())
                 .map(m -> new ReflectionConstructorDeclaration(m, typeSolver))
                 .collect(Collectors.toList());
     }

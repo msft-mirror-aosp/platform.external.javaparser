@@ -22,6 +22,7 @@ import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclar
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /**

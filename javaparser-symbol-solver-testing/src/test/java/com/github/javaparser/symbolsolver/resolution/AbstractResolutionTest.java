@@ -16,16 +16,17 @@
 
 package com.github.javaparser.symbolsolver.resolution;
 
-import com.github.javaparser.StaticJavaParser;
+import com.github.javaparser.JavaParser;
+import com.github.javaparser.ParseException;
 import com.github.javaparser.ast.CompilationUnit;
-import com.github.javaparser.symbolsolver.AbstractSymbolResolutionTest;
+import com.github.javaparser.symbolsolver.AbstractTest;
 
 import java.io.InputStream;
 
 /**
  * @author Federico Tomassetti
  */
-public abstract class AbstractResolutionTest extends AbstractSymbolResolutionTest {
+public abstract class AbstractResolutionTest extends AbstractTest {
 
     protected CompilationUnit parseSampleWithStandardExtension(String sampleName) {
         return parseSample(sampleName, "java");
@@ -40,6 +41,6 @@ public abstract class AbstractResolutionTest extends AbstractSymbolResolutionTes
         if (is == null) {
             throw new RuntimeException("Unable to find sample " + sampleName);
         }
-        return StaticJavaParser.parse(is);
+        return JavaParser.parse(is);
     }
 }

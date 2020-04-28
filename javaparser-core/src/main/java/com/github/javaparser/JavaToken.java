@@ -25,7 +25,7 @@ import java.util.Optional;
 import static com.github.javaparser.utils.CodeGenerationUtils.f;
 import static com.github.javaparser.utils.Utils.EOL;
 import static com.github.javaparser.utils.Utils.assertNotNull;
-import com.github.javaparser.ast.Generated;
+import javax.annotation.Generated;
 
 /**
  * A token from a parsed source file.

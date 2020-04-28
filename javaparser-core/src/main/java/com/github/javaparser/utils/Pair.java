@@ -21,8 +21,6 @@
 
 package com.github.javaparser.utils;
 
-import java.util.Objects;
-
 import static com.github.javaparser.utils.CodeGenerationUtils.f;
 
 /**
@@ -47,8 +45,8 @@ public class Pair<A, B> {
 
         Pair<?, ?> pair = (Pair<?, ?>) o;
 
-        if (!Objects.equals(a, pair.a)) return false;
-        if (!Objects.equals(b, pair.b)) return false;
+        if (a != null ? !a.equals(pair.a) : pair.a != null) return false;
+        if (b != null ? !b.equals(pair.b) : pair.b != null) return false;
 
         return true;
     }

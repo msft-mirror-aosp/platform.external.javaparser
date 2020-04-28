@@ -17,7 +17,7 @@
 package com.github.javaparser.symbolsolver.javaparsermodel.contexts;
 
 import com.github.javaparser.ast.stmt.Statement;
-import com.github.javaparser.ast.stmt.SwitchEntry;
+import com.github.javaparser.ast.stmt.SwitchEntryStmt;
 import com.github.javaparser.ast.stmt.SwitchStmt;
 import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedValueDeclaration;
@@ -36,22 +36,19 @@ import static com.github.javaparser.symbolsolver.javaparser.Navigator.requirePar
 /**
  * @author Federico Tomassetti
  */
-public class SwitchEntryContext extends AbstractJavaParserContext<SwitchEntry> {
+public class SwitchEntryContext extends AbstractJavaParserContext<SwitchEntryStmt> {
 
-    public SwitchEntryContext(SwitchEntry wrappedNode, TypeSolver typeSolver) {
+    public SwitchEntryContext(SwitchEntryStmt wrappedNode, TypeSolver typeSolver) {
         super(wrappedNode, typeSolver);
     }
 
     @Override
-    public SymbolReference<? extends ResolvedValueDeclaration> solveSymbol(String name) {
+    public SymbolReference<? extends ResolvedValueDeclaration> solveSymbol(String name, TypeSolver typeSolver) {
         SwitchStmt switchStmt = (SwitchStmt) requireParentNode(wrappedNode);
         ResolvedType type = JavaParserFacade.get(typeSolver).getType(switchStmt.getSelector());
         if (type.isReferenceType() && type.asReferenceType().getTypeDeclaration().isEnum()) {
             if (type instanceof ReferenceTypeImpl) {
                 ReferenceTypeImpl typeUsageOfTypeDeclaration = (ReferenceTypeImpl) type;
-                if (typeUsageOfTypeDeclaration.getTypeDeclaration().asEnum().hasEnumConstant(name)) {
-                    return SymbolReference.solved(typeUsageOfTypeDeclaration.getTypeDeclaration().asEnum().getEnumConstant(name));
-                }
                 if (typeUsageOfTypeDeclaration.getTypeDeclaration().hasField(name)) {
                     return SymbolReference.solved(typeUsageOfTypeDeclaration.getTypeDeclaration().getField(name));
                 }
@@ -60,26 +57,24 @@ public class SwitchEntryContext extends AbstractJavaParserContext<SwitchEntry> {
             }
         }
 
-        // look for declaration in this and previous switch entry statements
-        for (SwitchEntry seStmt : switchStmt.getEntries()) {
-            for (Statement stmt : seStmt.getStatements()) {
-                SymbolDeclarator symbolDeclarator = JavaParserFactory.getSymbolDeclarator(stmt, typeSolver);
-                SymbolReference<? extends ResolvedValueDeclaration> symbolReference = solveWith(symbolDeclarator, name);
-                if (symbolReference.isSolved()) {
-                    return symbolReference;
+        // look for declaration in other switch statements
+        for (SwitchEntryStmt seStmt : switchStmt.getEntries()) {
+            if (!seStmt.equals(wrappedNode)) {
+                for (Statement stmt : seStmt.getStatements()) {
+                    SymbolDeclarator symbolDeclarator = JavaParserFactory.getSymbolDeclarator(stmt, typeSolver);
+                    SymbolReference<? extends ResolvedValueDeclaration> symbolReference = solveWith(symbolDeclarator, name);
+                    if (symbolReference.isSolved()) {
+                        return symbolReference;
+                    }
                 }
-            }
-            // once we reach this switch entry statement, stop: we do not want to look in later switch entry statements
-            if (seStmt == wrappedNode) {
-                break;
             }
         }
 
-        return getParent().solveSymbol(name);
+        return getParent().solveSymbol(name, typeSolver);
     }
 
     @Override
-    public SymbolReference<ResolvedMethodDeclaration> solveMethod(String name, List<ResolvedType> argumentsTypes, boolean staticOnly) {
-        return getParent().solveMethod(name, argumentsTypes, false);
+    public SymbolReference<ResolvedMethodDeclaration> solveMethod(String name, List<ResolvedType> argumentsTypes, boolean staticOnly, TypeSolver typeSolver) {
+        return getParent().solveMethod(name, argumentsTypes, false, typeSolver);
     }
 }

@@ -21,47 +21,58 @@ import com.github.javaparser.resolution.declarations.ResolvedInterfaceDeclaratio
 import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
 import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.util.List;
+import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 
-class ReflectionMethodDeclarationTest {
+public class ReflectionMethodDeclarationTest {
 
     @Test
-    void testParameterNameOnClassesFromTheStdLibrary() {
+    public void testGetSignature() {
         TypeSolver typeResolver = new ReflectionTypeSolver();
 
         ResolvedClassDeclaration object = new ReflectionClassDeclaration(Object.class, typeResolver);
         ResolvedInterfaceDeclaration list = new ReflectionInterfaceDeclaration(List.class, typeResolver);
 
+        ResolvedMethodDeclaration hashCode = object.getAllMethods().stream().filter(m -> m.getName().equals("hashCode")).findFirst().get().getDeclaration();
         ResolvedMethodDeclaration equals = object.getAllMethods().stream().filter(m -> m.getName().equals("equals")).findFirst().get().getDeclaration();
         ResolvedMethodDeclaration containsAll = list.getAllMethods().stream().filter(m -> m.getName().equals("containsAll")).findFirst().get().getDeclaration();
         ResolvedMethodDeclaration subList = list.getAllMethods().stream().filter(m -> m.getName().equals("subList")).findFirst().get().getDeclaration();
 
-        assertEquals("arg0", equals.getParam(0).getName());
-        assertEquals("arg0", containsAll.getParam(0).getName());
-        assertEquals("arg0", subList.getParam(0).getName());
-        assertEquals("arg1", subList.getParam(1).getName());
-    }
-
-    class Foo {
-        void myMethod(int a, char c) {
-
-        }
+        assertEquals("hashCode()", hashCode.getSignature());
+        assertEquals("equals(java.lang.Object)", equals.getSignature());
+        assertEquals("containsAll(java.util.Collection<? extends java.lang.Object>)", containsAll.getSignature());
+        assertEquals("subList(int, int)", subList.getSignature());
     }
 
     @Test
-    void testParameterNameOnClassesFromThisProject() {
-        TypeSolver typeResolver = new ReflectionTypeSolver(false);
+    public void testGetGenericReturnType() {
+        TypeSolver typeResolver = new ReflectionTypeSolver();
 
-        ResolvedClassDeclaration foo = new ReflectionClassDeclaration(Foo.class, typeResolver);
+        ResolvedInterfaceDeclaration map = new ReflectionInterfaceDeclaration(Map.class, typeResolver);
 
-        ResolvedMethodDeclaration myMethod = foo.getAllMethods().stream().filter(m -> m.getName().equals("myMethod")).findFirst().get().getDeclaration();
-
-        assertEquals("arg0", myMethod.getParam(0).getName());
-        assertEquals("arg1", myMethod.getParam(1).getName());
+        ResolvedMethodDeclaration put = map.getAllMethods().stream().filter(m -> m.getName().equals("put")).findFirst().get().getDeclaration();
+        assertEquals(true, put.getReturnType().isTypeVariable());
+        assertEquals(true, put.getReturnType().asTypeParameter().declaredOnType());
+        assertEquals("java.util.Map.V", put.getReturnType().asTypeParameter().getQualifiedName());
     }
 
+    @Test
+    public void testGetGenericParameters() {
+        TypeSolver typeResolver = new ReflectionTypeSolver();
+
+        ResolvedInterfaceDeclaration map = new ReflectionInterfaceDeclaration(Map.class, typeResolver);
+
+        ResolvedMethodDeclaration put = map.getAllMethods().stream().filter(m -> m.getName().equals("put")).findFirst().get().getDeclaration();
+        assertEquals(true, put.getParam(0).getType().isTypeVariable());
+        assertEquals(true, put.getParam(0).getType().asTypeParameter().declaredOnType());
+        assertEquals("java.util.Map.K", put.getParam(0).getType().asTypeParameter().getQualifiedName());
+
+        assertEquals(true, put.getParam(1).getType().isTypeVariable());
+        assertEquals(true, put.getParam(1).getType().asTypeParameter().declaredOnType());
+        assertEquals("java.util.Map.V", put.getParam(1).getType().asTypeParameter().getQualifiedName());
+    }
 }

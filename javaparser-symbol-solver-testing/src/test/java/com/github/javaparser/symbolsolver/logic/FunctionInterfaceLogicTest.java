@@ -22,24 +22,24 @@ import com.github.javaparser.symbolsolver.model.typesystem.ReferenceTypeImpl;
 import com.github.javaparser.symbolsolver.reflectionmodel.ReflectionClassDeclaration;
 import com.github.javaparser.symbolsolver.reflectionmodel.ReflectionInterfaceDeclaration;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 
-class FunctionInterfaceLogicTest {
+public class FunctionInterfaceLogicTest {
 
     @Test
-    void testGetFunctionalMethodNegativeCaseOnClass() {
+    public void testGetFunctionalMethodNegativeCaseOnClass() {
         TypeSolver typeSolver = new ReflectionTypeSolver();
         ResolvedType string = new ReferenceTypeImpl(new ReflectionClassDeclaration(String.class, typeSolver), typeSolver);
         assertEquals(false, FunctionalInterfaceLogic.getFunctionalMethod(string).isPresent());
     }
 
     @Test
-    void testGetFunctionalMethodPositiveCasesOnInterfaces() {
+    public void testGetFunctionalMethodPositiveCasesOnInterfaces() {
         TypeSolver typeSolver = new ReflectionTypeSolver();
         ResolvedType function = new ReferenceTypeImpl(new ReflectionInterfaceDeclaration(Function.class, typeSolver), typeSolver);
         assertEquals(true, FunctionalInterfaceLogic.getFunctionalMethod(function).isPresent());

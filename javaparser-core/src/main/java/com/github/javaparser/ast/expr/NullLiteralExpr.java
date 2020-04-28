@@ -27,10 +27,10 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.metamodel.NullLiteralExprMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
+import javax.annotation.Generated;
 import com.github.javaparser.TokenRange;
 import java.util.function.Consumer;
 import java.util.Optional;
-import com.github.javaparser.ast.Generated;
 
 /**
  * A literal "null".
@@ -38,7 +38,7 @@ import com.github.javaparser.ast.Generated;
  *
  * @author Julio Vilmar Gesser
  */
-public class NullLiteralExpr extends LiteralExpr {
+public final class NullLiteralExpr extends LiteralExpr {
 
     @AllFieldsConstructor
     public NullLiteralExpr() {

@@ -38,11 +38,12 @@ import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
 import com.github.javaparser.metamodel.ParameterMetaModel;
+import java.util.EnumSet;
 import static com.github.javaparser.utils.Utils.assertNotNull;
+import javax.annotation.Generated;
 import com.github.javaparser.TokenRange;
 import com.github.javaparser.resolution.Resolvable;
 import com.github.javaparser.resolution.declarations.ResolvedParameterDeclaration;
-import com.github.javaparser.ast.Generated;
 
 /**
  * The parameters to a method or lambda. Lambda parameters may have inferred types, in that case "type" is UnknownType.
@@ -55,7 +56,7 @@ import com.github.javaparser.ast.Generated;
  *
  * @author Julio Vilmar Gesser
  */
-public class Parameter extends Node implements NodeWithType<Parameter, Type>, NodeWithAnnotations<Parameter>, NodeWithSimpleName<Parameter>, NodeWithFinalModifier<Parameter>, Resolvable<ResolvedParameterDeclaration> {
+public final class Parameter extends Node implements NodeWithType<Parameter, Type>, NodeWithAnnotations<Parameter>, NodeWithSimpleName<Parameter>, NodeWithFinalModifier<Parameter>, Resolvable<ResolvedParameterDeclaration> {
 
     private Type type;
 
@@ -63,18 +64,18 @@ public class Parameter extends Node implements NodeWithType<Parameter, Type>, No
 
     private NodeList<AnnotationExpr> varArgsAnnotations;
 
-    private NodeList<Modifier> modifiers;
+    private EnumSet<Modifier> modifiers;
 
     private NodeList<AnnotationExpr> annotations;
 
     private SimpleName name;
 
     public Parameter() {
-        this(null, new NodeList<>(), new NodeList<>(), new ClassOrInterfaceType(), false, new NodeList<>(), new SimpleName());
+        this(null, EnumSet.noneOf(Modifier.class), new NodeList<>(), new ClassOrInterfaceType(), false, new NodeList<>(), new SimpleName());
     }
 
     public Parameter(Type type, SimpleName name) {
-        this(null, new NodeList<>(), new NodeList<>(), type, false, new NodeList<>(), name);
+        this(null, EnumSet.noneOf(Modifier.class), new NodeList<>(), type, false, new NodeList<>(), name);
     }
 
     /**
@@ -84,15 +85,15 @@ public class Parameter extends Node implements NodeWithType<Parameter, Type>, No
      * @param name name of the parameter
      */
     public Parameter(Type type, String name) {
-        this(null, new NodeList<>(), new NodeList<>(), type, false, new NodeList<>(), new SimpleName(name));
+        this(null, EnumSet.noneOf(Modifier.class), new NodeList<>(), type, false, new NodeList<>(), new SimpleName(name));
     }
 
-    public Parameter(NodeList<Modifier> modifiers, Type type, SimpleName name) {
+    public Parameter(EnumSet<Modifier> modifiers, Type type, SimpleName name) {
         this(null, modifiers, new NodeList<>(), type, false, new NodeList<>(), name);
     }
 
     @AllFieldsConstructor
-    public Parameter(NodeList<Modifier> modifiers, NodeList<AnnotationExpr> annotations, Type type, boolean isVarArgs, NodeList<AnnotationExpr> varArgsAnnotations, SimpleName name) {
+    public Parameter(EnumSet<Modifier> modifiers, NodeList<AnnotationExpr> annotations, Type type, boolean isVarArgs, NodeList<AnnotationExpr> varArgsAnnotations, SimpleName name) {
         this(null, modifiers, annotations, type, isVarArgs, varArgsAnnotations, name);
     }
 
@@ -100,7 +101,7 @@ public class Parameter extends Node implements NodeWithType<Parameter, Type>, No
      * This constructor is used by the parser and is considered private.
      */
     @Generated("com.github.javaparser.generator.core.node.MainConstructorGenerator")
-    public Parameter(TokenRange tokenRange, NodeList<Modifier> modifiers, NodeList<AnnotationExpr> annotations, Type type, boolean isVarArgs, NodeList<AnnotationExpr> varArgsAnnotations, SimpleName name) {
+    public Parameter(TokenRange tokenRange, EnumSet<Modifier> modifiers, NodeList<AnnotationExpr> annotations, Type type, boolean isVarArgs, NodeList<AnnotationExpr> varArgsAnnotations, SimpleName name) {
         super(tokenRange);
         setModifiers(modifiers);
         setAnnotations(annotations);
@@ -177,7 +178,7 @@ public class Parameter extends Node implements NodeWithType<Parameter, Type>, No
      * @see Modifier
      */
     @Generated("com.github.javaparser.generator.core.node.PropertyGenerator")
-    public NodeList<Modifier> getModifiers() {
+    public EnumSet<Modifier> getModifiers() {
         return modifiers;
     }
 
@@ -214,16 +215,13 @@ public class Parameter extends Node implements NodeWithType<Parameter, Type>, No
     }
 
     @Generated("com.github.javaparser.generator.core.node.PropertyGenerator")
-    public Parameter setModifiers(final NodeList<Modifier> modifiers) {
+    public Parameter setModifiers(final EnumSet<Modifier> modifiers) {
         assertNotNull(modifiers);
         if (modifiers == this.modifiers) {
             return (Parameter) this;
         }
         notifyPropertyChange(ObservableProperty.MODIFIERS, this.modifiers, modifiers);
-        if (this.modifiers != null)
-            this.modifiers.setParentNode(null);
         this.modifiers = modifiers;
-        setAsParentNodeOf(modifiers);
         return this;
     }
 
@@ -235,12 +233,6 @@ public class Parameter extends Node implements NodeWithType<Parameter, Type>, No
         for (int i = 0; i < annotations.size(); i++) {
             if (annotations.get(i) == node) {
                 annotations.remove(i);
-                return true;
-            }
-        }
-        for (int i = 0; i < modifiers.size(); i++) {
-            if (modifiers.get(i) == node) {
-                modifiers.remove(i);
                 return true;
             }
         }
@@ -292,12 +284,6 @@ public class Parameter extends Node implements NodeWithType<Parameter, Type>, No
         for (int i = 0; i < annotations.size(); i++) {
             if (annotations.get(i) == node) {
                 annotations.set(i, (AnnotationExpr) replacementNode);
-                return true;
-            }
-        }
-        for (int i = 0; i < modifiers.size(); i++) {
-            if (modifiers.get(i) == node) {
-                modifiers.set(i, (Modifier) replacementNode);
                 return true;
             }
         }

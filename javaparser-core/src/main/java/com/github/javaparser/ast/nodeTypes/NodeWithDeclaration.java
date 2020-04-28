@@ -35,9 +35,7 @@ public interface NodeWithDeclaration {
      *
      * @return String representation of declaration
      */
-    default String getDeclarationAsString() {
-        return getDeclarationAsString(true, true, true);
-    }
+    String getDeclarationAsString();
 
     /**
      * As {@link NodeWithDeclaration#getDeclarationAsString(boolean, boolean, boolean)} including
@@ -47,9 +45,7 @@ public interface NodeWithDeclaration {
      * @param includingThrows flag to include the throws clause (if present) in the string produced
      * @return String representation of declaration based on parameter flags
      */
-    default String getDeclarationAsString(boolean includingModifiers, boolean includingThrows) {
-        return getDeclarationAsString(includingModifiers, includingThrows, true);
-    }
+    String getDeclarationAsString(boolean includingModifiers, boolean includingThrows);
 
     /**
      * A simple representation of the element declaration.

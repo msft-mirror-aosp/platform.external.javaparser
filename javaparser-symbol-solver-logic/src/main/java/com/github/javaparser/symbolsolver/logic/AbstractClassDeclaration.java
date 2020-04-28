@@ -27,8 +27,7 @@ import java.util.List;
  *
  * @author Federico Tomassetti
  */
-public abstract class AbstractClassDeclaration extends AbstractTypeDeclaration
-        implements ResolvedClassDeclaration, MethodResolutionCapability {
+public abstract class AbstractClassDeclaration extends AbstractTypeDeclaration implements ResolvedClassDeclaration {
 
     ///
     /// Public

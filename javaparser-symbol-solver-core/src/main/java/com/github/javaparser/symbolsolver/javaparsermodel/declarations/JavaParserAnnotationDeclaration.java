@@ -8,11 +8,12 @@ import com.github.javaparser.resolution.types.ResolvedType;
 import com.github.javaparser.symbolsolver.logic.AbstractTypeDeclaration;
 import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import static com.github.javaparser.symbolsolver.javaparser.Navigator.getParentNode;
 
 /**
  * @author Federico Tomassetti
@@ -28,25 +29,22 @@ public class JavaParserAnnotationDeclaration extends AbstractTypeDeclaration imp
     }
 
     @Override
-    public List<ResolvedReferenceType> getAncestors(boolean acceptIncompleteList) {
+    public List<ResolvedReferenceType> getAncestors() {
         throw new UnsupportedOperationException();
     }
 
     @Override
     public List<ResolvedFieldDeclaration> getAllFields() {
-        // TODO #1837
         throw new UnsupportedOperationException();
     }
 
     @Override
     public Set<ResolvedMethodDeclaration> getDeclaredMethods() {
-        // TODO #1838
         throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean isAssignableBy(ResolvedType type) {
-        // TODO #1836
         throw new UnsupportedOperationException();
     }
 
@@ -56,23 +54,23 @@ public class JavaParserAnnotationDeclaration extends AbstractTypeDeclaration imp
     }
 
     @Override
-    public boolean hasDirectlyAnnotation(String canonicalName) {
-        return AstResolutionUtils.hasDirectlyAnnotation(wrappedNode, typeSolver, canonicalName);
+    public boolean hasDirectlyAnnotation(String qualifiedName) {
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public String getPackageName() {
-        return AstResolutionUtils.getPackageName(wrappedNode);
+        return Helper.getPackageName(wrappedNode);
     }
 
     @Override
     public String getClassName() {
-        return AstResolutionUtils.getClassName("", wrappedNode);
+        return Helper.getClassName("", wrappedNode);
     }
 
     @Override
     public String getQualifiedName() {
-        String containerName = AstResolutionUtils.containerName(wrappedNode.getParentNode().orElse(null));
+        String containerName = Helper.containerName(wrappedNode.getParentNode().orElse(null));
         if (containerName.isEmpty()) {
             return wrappedNode.getName().getId();
         } else {
@@ -85,20 +83,13 @@ public class JavaParserAnnotationDeclaration extends AbstractTypeDeclaration imp
         return wrappedNode.getName().getId();
     }
 
-    /**
-     * Annotation declarations cannot have type parameters and hence this method always returns an empty list.
-     *
-     * @return An empty list.
-     */
     @Override
     public List<ResolvedTypeParameterDeclaration> getTypeParameters() {
-        // Annotation declarations cannot have type parameters - i.e. we can always return an empty list.
-        return Collections.emptyList();
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public Optional<ResolvedReferenceTypeDeclaration> containerType() {
-        // TODO #1841
         throw new UnsupportedOperationException("containerType is not supported for " + this.getClass().getCanonicalName());
     }
 
@@ -108,15 +99,5 @@ public class JavaParserAnnotationDeclaration extends AbstractTypeDeclaration imp
                 .filter(m -> m instanceof AnnotationMemberDeclaration)
                 .map(m -> new JavaParserAnnotationMemberDeclaration((AnnotationMemberDeclaration)m, typeSolver))
                 .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<ResolvedConstructorDeclaration> getConstructors() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public Optional<AnnotationDeclaration> toAst() {
-        return Optional.of(wrappedNode);
     }
 }

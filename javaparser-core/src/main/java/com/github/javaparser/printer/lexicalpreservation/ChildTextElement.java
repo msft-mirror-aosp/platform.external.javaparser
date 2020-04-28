@@ -21,11 +21,8 @@
 
 package com.github.javaparser.printer.lexicalpreservation;
 
-import com.github.javaparser.Range;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.comments.Comment;
-
-import java.util.Optional;
 
 /**
  * Represent the position of a child node in the NodeText of its parent.
@@ -103,10 +100,5 @@ class ChildTextElement extends TextElement {
     @Override
     public boolean isChildOfClass(Class<? extends Node> nodeClass) {
         return nodeClass.isInstance(child);
-    }
-
-    @Override
-    Optional<Range> getRange() {
-        return child.getRange();
     }
 }

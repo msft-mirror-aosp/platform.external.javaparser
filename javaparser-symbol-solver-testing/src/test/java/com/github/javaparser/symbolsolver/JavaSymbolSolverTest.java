@@ -16,21 +16,30 @@
 
 package com.github.javaparser.symbolsolver;
 
+import com.github.javaparser.ParseException;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.resolution.declarations.ResolvedDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
+import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
 import com.github.javaparser.resolution.types.ResolvedType;
+import com.github.javaparser.symbolsolver.javaparser.Navigator;
+import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
 import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
 import com.github.javaparser.symbolsolver.resolution.AbstractResolutionTest;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
-import org.junit.jupiter.api.Test;
+import com.google.common.collect.ImmutableSet;
+import org.junit.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.util.stream.Collectors;
 
-class JavaSymbolSolverTest extends AbstractResolutionTest {
+import static org.junit.Assert.assertEquals;
+
+public class JavaSymbolSolverTest extends AbstractResolutionTest {
 
     @Test
-    void resolveMethodDeclaration() {
+    public void resolveMethodDeclaration() {
         TypeSolver typeSolver = new ReflectionTypeSolver();
 
         CompilationUnit cu = parseSample("SymbolResolverExample");
@@ -45,7 +54,7 @@ class JavaSymbolSolverTest extends AbstractResolutionTest {
     }
 
     @Test
-    void resolveArrayType() {
+    public void resolveArrayType() {
         TypeSolver typeSolver = new ReflectionTypeSolver();
 
         CompilationUnit cu = parseSample("SymbolResolverExample");

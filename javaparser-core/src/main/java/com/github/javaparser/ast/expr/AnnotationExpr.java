@@ -20,28 +20,25 @@
  */
 package com.github.javaparser.ast.expr;
 
-import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.AllFieldsConstructor;
-import com.github.javaparser.ast.Generated;
-import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.nodeTypes.NodeWithName;
 import com.github.javaparser.ast.observer.ObservableProperty;
+import static com.github.javaparser.utils.Utils.assertNotNull;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.metamodel.AnnotationExprMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
-import com.github.javaparser.resolution.Resolvable;
-import com.github.javaparser.resolution.UnsolvedSymbolException;
-import com.github.javaparser.resolution.declarations.ResolvedAnnotationDeclaration;
-import java.util.Optional;
+import javax.annotation.Generated;
+import com.github.javaparser.TokenRange;
 import java.util.function.Consumer;
-import static com.github.javaparser.utils.Utils.assertNotNull;
+import java.util.Optional;
 
 /**
  * A base class for the different types of annotations.
  *
  * @author Julio Vilmar Gesser
  */
-public abstract class AnnotationExpr extends Expression implements NodeWithName<AnnotationExpr>, Resolvable<ResolvedAnnotationDeclaration> {
+public abstract class AnnotationExpr extends Expression implements NodeWithName<AnnotationExpr> {
 
     protected Name name;
 
@@ -130,20 +127,6 @@ public abstract class AnnotationExpr extends Expression implements NodeWithName<
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public void ifAnnotationExpr(Consumer<AnnotationExpr> action) {
         action.accept(this);
-    }
-
-    /**
-     * Attempts to resolve the declaration corresponding to the annotation expression. If successful, a
-     * {@link ResolvedAnnotationDeclaration} representing the declaration of the annotation referenced by this
-     * {@code AnnotationExpr} is returned. Otherwise, an {@link UnsolvedSymbolException} is thrown.
-     *
-     * @return a {@link ResolvedAnnotationDeclaration} representing the declaration of the annotation expression.
-     * @throws UnsolvedSymbolException if the declaration corresponding to the annotation expression could not be
-     *                                 resolved.
-     */
-    @Override
-    public ResolvedAnnotationDeclaration resolve() {
-        return getSymbolResolver().resolveDeclaration(this, ResolvedAnnotationDeclaration.class);
     }
 
     @Override

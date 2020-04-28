@@ -22,16 +22,15 @@ import com.github.javaparser.resolution.types.ResolvedWildcard;
 import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
 import com.github.javaparser.symbolsolver.reflectionmodel.ReflectionClassDeclaration;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.Collections;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-class WildcardUsageTest {
+public class WildcardUsageTest {
 
     class Foo {
     }
@@ -55,8 +54,8 @@ class WildcardUsageTest {
     private ResolvedWildcard extendsString;
     private ResolvedTypeVariable a;
 
-    @BeforeEach
-    void setup() {
+    @Before
+    public void setup() {
         typeSolver = new ReflectionTypeSolver();
         foo = new ReferenceTypeImpl(new ReflectionClassDeclaration(Foo.class, typeSolver), typeSolver);
         bar = new ReferenceTypeImpl(new ReflectionClassDeclaration(Bar.class, typeSolver), typeSolver);
@@ -74,7 +73,7 @@ class WildcardUsageTest {
     }
 
     @Test
-    void testIsArray() {
+    public void testIsArray() {
         assertEquals(false, unbounded.isArray());
         assertEquals(false, superFoo.isArray());
         assertEquals(false, superBar.isArray());
@@ -83,7 +82,7 @@ class WildcardUsageTest {
     }
 
     @Test
-    void testIsPrimitive() {
+    public void testIsPrimitive() {
         assertEquals(false, unbounded.isPrimitive());
         assertEquals(false, superFoo.isPrimitive());
         assertEquals(false, superBar.isPrimitive());
@@ -92,7 +91,7 @@ class WildcardUsageTest {
     }
 
     @Test
-    void testIsNull() {
+    public void testIsNull() {
         assertEquals(false, unbounded.isNull());
         assertEquals(false, superFoo.isNull());
         assertEquals(false, superBar.isNull());
@@ -101,7 +100,7 @@ class WildcardUsageTest {
     }
 
     @Test
-    void testIsReference() {
+    public void testIsReference() {
         assertEquals(true, unbounded.isReference());
         assertEquals(true, superFoo.isReference());
         assertEquals(true, superBar.isReference());
@@ -110,7 +109,7 @@ class WildcardUsageTest {
     }
 
     @Test
-    void testIsReferenceType() {
+    public void testIsReferenceType() {
         assertEquals(false, unbounded.isReferenceType());
         assertEquals(false, superFoo.isReferenceType());
         assertEquals(false, superBar.isReferenceType());
@@ -119,7 +118,7 @@ class WildcardUsageTest {
     }
 
     @Test
-    void testIsVoid() {
+    public void testIsVoid() {
         assertEquals(false, unbounded.isVoid());
         assertEquals(false, superFoo.isVoid());
         assertEquals(false, superBar.isVoid());
@@ -128,7 +127,7 @@ class WildcardUsageTest {
     }
 
     @Test
-    void testIsTypeVariable() {
+    public void testIsTypeVariable() {
         assertEquals(false, unbounded.isTypeVariable());
         assertEquals(false, superFoo.isTypeVariable());
         assertEquals(false, superBar.isTypeVariable());
@@ -137,7 +136,7 @@ class WildcardUsageTest {
     }
 
     @Test
-    void testIsWildcard() {
+    public void testIsWildcard() {
         assertEquals(true, unbounded.isWildcard());
         assertEquals(true, superFoo.isWildcard());
         assertEquals(true, superBar.isWildcard());
@@ -145,28 +144,28 @@ class WildcardUsageTest {
         assertEquals(true, extendsBar.isWildcard());
     }
 
-    @Test
-    void testAsArrayTypeUsage() {
-        assertThrows(UnsupportedOperationException.class, () -> unbounded.asArrayType());
+    @Test(expected = UnsupportedOperationException.class)
+    public void testAsArrayTypeUsage() {
+        unbounded.asArrayType();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testAsReferenceTypeUsage() {
+        unbounded.asReferenceType();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testAsTypeParameter() {
+        unbounded.asTypeParameter();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testAsPrimitive() {
+        unbounded.asPrimitive();
     }
 
     @Test
-    void testAsReferenceTypeUsage() {
-        assertThrows(UnsupportedOperationException.class, () -> unbounded.asReferenceType());
-    }
-
-    @Test
-    void testAsTypeParameter() {
-        assertThrows(UnsupportedOperationException.class, () -> unbounded.asTypeParameter());
-    }
-
-    @Test
-    void testAsPrimitive() {
-        assertThrows(UnsupportedOperationException.class, () -> unbounded.asPrimitive());
-    }
-
-    @Test
-    void testAsWildcard() {
+    public void testAsWildcard() {
         assertTrue(unbounded == unbounded.asWildcard());
         assertTrue(superFoo == superFoo.asWildcard());
         assertTrue(superBar == superBar.asWildcard());
@@ -175,7 +174,7 @@ class WildcardUsageTest {
     }
 
     @Test
-    void testAsDescribe() {
+    public void testAsDescribe() {
         assertEquals("?", unbounded.describe());
         assertEquals("? super com.github.javaparser.symbolsolver.model.typesystem.WildcardUsageTest.Foo", superFoo.describe());
         assertEquals("? super com.github.javaparser.symbolsolver.model.typesystem.WildcardUsageTest.Bar", superBar.describe());
@@ -184,7 +183,7 @@ class WildcardUsageTest {
     }
 
     @Test
-    void testReplaceParam() {
+    public void testReplaceParam() {
         ResolvedTypeParameterDeclaration tpA = ResolvedTypeParameterDeclaration.onType("A", "foo.Bar", Collections.emptyList());
         ResolvedTypeParameterDeclaration tpB = ResolvedTypeParameterDeclaration.onType("B", "foo.Bar", Collections.emptyList());
         assertTrue(unbounded == unbounded.replaceTypeVariables(tpA, string));
@@ -197,7 +196,7 @@ class WildcardUsageTest {
     }
 
     @Test
-    void testIsAssignableBySimple() {
+    public void testIsAssignableBySimple() {
         assertEquals(false, unbounded.isAssignableBy(object));
         assertEquals(true, object.isAssignableBy(unbounded));
         assertEquals(false, string.isAssignableBy(unbounded));

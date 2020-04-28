@@ -25,8 +25,6 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.type.TypeParameter;
 
-import static com.github.javaparser.StaticJavaParser.parseTypeParameter;
-
 /**
  * A node that can have type parameters.
  * <pre>
@@ -52,13 +50,6 @@ public interface NodeWithTypeParameters<N extends Node> {
     default N addTypeParameter(TypeParameter typeParameter) {
         getTypeParameters().add(typeParameter);
         return (N) this;
-    }
-
-    /**
-     * Adds a type parameter like "X extends Serializable"
-     */
-    default N addTypeParameter(String typeParameter) {
-        return addTypeParameter(parseTypeParameter(typeParameter));
     }
 
     N setTypeParameters(NodeList<TypeParameter> typeParameters);

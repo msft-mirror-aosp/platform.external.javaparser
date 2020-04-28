@@ -22,10 +22,8 @@
 package com.github.javaparser.printer.lexicalpreservation;
 
 import com.github.javaparser.JavaToken;
-import com.github.javaparser.Range;
+import com.github.javaparser.TokenTypes;
 import com.github.javaparser.ast.Node;
-
-import java.util.Optional;
 
 class TokenTextElement extends TextElement {
     private final JavaToken token;
@@ -52,7 +50,7 @@ class TokenTextElement extends TextElement {
         return token.getText();
     }
 
-    int getTokenKind() {
+    public int getTokenKind() {
         return token.getKind();
     }
 
@@ -113,10 +111,5 @@ class TokenTextElement extends TextElement {
     @Override
     public boolean isChildOfClass(Class<? extends Node> nodeClass) {
         return false;
-    }
-
-    @Override
-    Optional<Range> getRange() {
-        return token.getRange();
     }
 }

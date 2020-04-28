@@ -16,6 +16,7 @@
 
 package com.github.javaparser.symbolsolver.resolution.reflectionmodel;
 
+import com.github.javaparser.ParseException;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
@@ -29,14 +30,14 @@ import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
 import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
 import com.github.javaparser.symbolsolver.resolution.AbstractResolutionTest;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 
-class SymbolResolutionResolutionTest extends AbstractResolutionTest {
+public class SymbolResolutionResolutionTest extends AbstractResolutionTest {
 
     @Test
-    void getTypeOfField() {
+    public void getTypeOfField() {
         CompilationUnit cu = parseSample("ReflectionFieldOfItself");
         ClassOrInterfaceDeclaration clazz = Navigator.demandClass(cu, "MyClass");
         VariableDeclarator field = Navigator.demandField(clazz, "PUBLIC");
@@ -47,7 +48,7 @@ class SymbolResolutionResolutionTest extends AbstractResolutionTest {
     }
 
     @Test
-    void getTypeOfFieldAccess() {
+    public void getTypeOfFieldAccess() {
         CompilationUnit cu = parseSample("ReflectionFieldOfItself");
         ClassOrInterfaceDeclaration clazz = Navigator.demandClass(cu, "MyClass");
         VariableDeclarator field = Navigator.demandField(clazz, "PUBLIC");
@@ -58,7 +59,7 @@ class SymbolResolutionResolutionTest extends AbstractResolutionTest {
     }
 
     @Test
-    void conditionalExpressionExample() {
+    public void conditionalExpressionExample() {
         CompilationUnit cu = parseSample("JreConditionalExpression");
         ClassOrInterfaceDeclaration clazz = Navigator.demandClass(cu, "MyClass");
         MethodDeclaration method = Navigator.demandMethod(clazz, "foo1");
@@ -71,7 +72,7 @@ class SymbolResolutionResolutionTest extends AbstractResolutionTest {
     }
 
     @Test
-    void conditionalExpressionExampleFollowUp1() {
+    public void conditionalExpressionExampleFollowUp1() {
         CompilationUnit cu = parseSample("JreConditionalExpression");
         ClassOrInterfaceDeclaration clazz = Navigator.demandClass(cu, "MyClass");
         MethodDeclaration method = Navigator.demandMethod(clazz, "foo1");

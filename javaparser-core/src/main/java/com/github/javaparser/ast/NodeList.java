@@ -60,7 +60,6 @@ public class NodeList<N extends Node> implements List<N>, Iterable<N>, HasParent
         this.addAll(n);
     }
 
-    @SafeVarargs
     public NodeList(N... n) {
         this.addAll(Arrays.asList(n));
     }
@@ -481,9 +480,7 @@ public class NodeList<N extends Node> implements List<N>, Iterable<N>, HasParent
 
     @Override
     public void register(AstObserver observer) {
-        if(!this.observers.contains(observer)) {
-            this.observers.add(observer);
-        }
+        this.observers.add(observer);
     }
 
     @Override

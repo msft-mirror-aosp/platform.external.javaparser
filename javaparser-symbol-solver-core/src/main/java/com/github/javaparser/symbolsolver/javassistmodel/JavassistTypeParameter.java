@@ -95,12 +95,11 @@ public class JavassistTypeParameter implements ResolvedTypeParameterDeclaration 
     @Override
     public List<ResolvedTypeParameterDeclaration.Bound> getBounds() {
         List<Bound> bounds = new ArrayList<>();
-        SignatureAttribute.ObjectType classBound = wrapped.getClassBound();
-        if (classBound != null) {
-            bounds.add(Bound.extendsBound(JavassistUtils.signatureTypeToType(classBound, typeSolver, getContainer())));
+        if (wrapped.getClassBound() != null && !wrapped.getClassBound().toString().equals(Object.class.getCanonicalName())) {
+            throw new UnsupportedOperationException(wrapped.getClassBound().toString());
         }
         for (SignatureAttribute.ObjectType ot : wrapped.getInterfaceBound()) {
-            bounds.add(Bound.extendsBound(JavassistUtils.signatureTypeToType(ot, typeSolver, getContainer())));
+            throw new UnsupportedOperationException(ot.toString());
         }
         return bounds;
     }

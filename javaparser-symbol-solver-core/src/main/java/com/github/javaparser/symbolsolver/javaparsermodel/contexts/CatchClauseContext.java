@@ -1,8 +1,5 @@
 package com.github.javaparser.symbolsolver.javaparsermodel.contexts;
 
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.body.Parameter;
-import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.stmt.CatchClause;
 import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedValueDeclaration;
@@ -13,7 +10,6 @@ import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
 import com.github.javaparser.symbolsolver.model.resolution.Value;
 import com.github.javaparser.symbolsolver.resolution.SymbolDeclarator;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,7 +22,7 @@ public class CatchClauseContext extends AbstractJavaParserContext<CatchClause> {
         super(wrappedNode, typeSolver);
     }
 
-    public final SymbolReference<? extends ResolvedValueDeclaration> solveSymbol(String name) {
+    public final SymbolReference<? extends ResolvedValueDeclaration> solveSymbol(String name, TypeSolver typeSolver) {
         SymbolDeclarator sb = JavaParserFactory.getSymbolDeclarator(wrappedNode.getParameter(), typeSolver);
         SymbolReference<? extends ResolvedValueDeclaration> symbolReference = AbstractJavaParserContext.solveWith(sb, name);
         if (symbolReference.isSolved()) {
@@ -34,38 +30,25 @@ public class CatchClauseContext extends AbstractJavaParserContext<CatchClause> {
         }
 
         // if nothing is found we should ask the parent context
-        return getParent().solveSymbol(name);
+        return getParent().solveSymbol(name, typeSolver);
     }
 
     @Override
-    public final Optional<Value> solveSymbolAsValue(String name) {
+    public final Optional<Value> solveSymbolAsValue(String name, TypeSolver typeSolver) {
         SymbolDeclarator sb = JavaParserFactory.getSymbolDeclarator(wrappedNode.getParameter(), typeSolver);
-        Optional<Value> symbolReference = solveWithAsValue(sb, name);
+        Optional<Value> symbolReference = solveWithAsValue(sb, name, typeSolver);
         if (symbolReference.isPresent()) {
             // Perform parameter type substitution as needed
             return symbolReference;
         }
 
         // if nothing is found we should ask the parent context
-        return getParent().solveSymbolAsValue(name);
+        return getParent().solveSymbolAsValue(name, typeSolver);
     }
 
     @Override
     public final SymbolReference<ResolvedMethodDeclaration> solveMethod(
-            String name, List<ResolvedType> argumentsTypes, boolean staticOnly) {
-        return getParent().solveMethod(name, argumentsTypes, false);
-    }
-
-    @Override
-    public List<VariableDeclarator> localVariablesExposedToChild(Node child) {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public List<Parameter> parametersExposedToChild(Node child) {
-        if (child == getWrappedNode().getBody()) {
-            return Collections.singletonList(getWrappedNode().getParameter());
-        }
-        return Collections.emptyList();
+            String name, List<ResolvedType> argumentsTypes, boolean staticOnly, TypeSolver typeSolver) {
+        return getParent().solveMethod(name, argumentsTypes, false, typeSolver);
     }
 }

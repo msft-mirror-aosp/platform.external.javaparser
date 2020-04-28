@@ -16,6 +16,7 @@
 
 package com.github.javaparser.symbolsolver.resolution;
 
+import com.github.javaparser.ParseException;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.NameExpr;
@@ -24,15 +25,15 @@ import com.github.javaparser.symbolsolver.javaparser.Navigator;
 import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
 import com.github.javaparser.symbolsolver.model.resolution.SymbolReference;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-class QualifiedNameResolutionTest extends AbstractResolutionTest {
+public class QualifiedNameResolutionTest extends AbstractResolutionTest {
 
     @Test
-    void resolveLocalVariableInParentOfParent() {
+    public void resolveLocalVariableInParentOfParent() {
         CompilationUnit cu = parseSample("QualifiedNameTest");
         com.github.javaparser.ast.body.ClassOrInterfaceDeclaration referencesToField = Navigator.demandClass(cu, "QualifiedNameTest");
         MethodDeclaration method = Navigator.demandMethod(referencesToField, "foo1");

@@ -26,15 +26,16 @@ import com.github.javaparser.symbolsolver.reflectionmodel.ReflectionClassDeclara
 import com.github.javaparser.symbolsolver.reflectionmodel.ReflectionInterfaceDeclaration;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import com.google.common.collect.ImmutableList;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-class ArrayTypeTest {
+public class ArrayTypeTest {
 
     private ResolvedArrayType arrayOfBooleans;
     private ResolvedArrayType arrayOfStrings;
@@ -45,8 +46,8 @@ class ArrayTypeTest {
     private TypeSolver typeSolver;
     private ResolvedTypeParameterDeclaration tpA;
 
-    @BeforeEach
-    void setup() {
+    @Before
+    public void setup() {
         typeSolver = new ReflectionTypeSolver();
         OBJECT = new ReferenceTypeImpl(new ReflectionClassDeclaration(Object.class, typeSolver), typeSolver);
         STRING = new ReferenceTypeImpl(new ReflectionClassDeclaration(String.class, typeSolver), typeSolver);
@@ -62,84 +63,84 @@ class ArrayTypeTest {
     }
 
     @Test
-    void testIsArray() {
+    public void testIsArray() {
         assertEquals(true, arrayOfBooleans.isArray());
         assertEquals(true, arrayOfStrings.isArray());
     }
 
     @Test
-    void testIsPrimitive() {
+    public void testIsPrimitive() {
         assertEquals(false, arrayOfBooleans.isPrimitive());
         assertEquals(false, arrayOfStrings.isPrimitive());
     }
 
     @Test
-    void testIsNull() {
+    public void testIsNull() {
         assertEquals(false, arrayOfBooleans.isNull());
         assertEquals(false, arrayOfStrings.isNull());
     }
 
     @Test
-    void testIsReference() {
+    public void testIsReference() {
         assertEquals(true, arrayOfBooleans.isReference());
         assertEquals(true, arrayOfStrings.isReference());
     }
 
     @Test
-    void testIsReferenceType() {
+    public void testIsReferenceType() {
         assertEquals(false, arrayOfBooleans.isReferenceType());
         assertEquals(false, arrayOfStrings.isReferenceType());
     }
 
     @Test
-    void testIsVoid() {
+    public void testIsVoid() {
         assertEquals(false, arrayOfBooleans.isVoid());
         assertEquals(false, arrayOfStrings.isVoid());
     }
 
     @Test
-    void testIsTypeVariable() {
+    public void testIsTypeVariable() {
         assertEquals(false, arrayOfBooleans.isTypeVariable());
         assertEquals(false, arrayOfStrings.isTypeVariable());
     }
 
-    @Test
-    void testAsReferenceTypeUsage() {
-        assertThrows(UnsupportedOperationException.class, () -> arrayOfBooleans.asReferenceType());
+    @Test(expected = UnsupportedOperationException.class)
+    public void testAsReferenceTypeUsage() {
+        arrayOfBooleans.asReferenceType();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testAsTypeParameter() {
+        arrayOfBooleans.asTypeParameter();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void testAsPrimitive() {
+        arrayOfBooleans.asPrimitive();
     }
 
     @Test
-    void testAsTypeParameter() {
-        assertThrows(UnsupportedOperationException.class, () -> arrayOfBooleans.asTypeParameter());
+    public void testAsArrayTypeUsage() {
+        assertTrue(arrayOfBooleans == arrayOfBooleans.asArrayType());
+        assertTrue(arrayOfStrings == arrayOfStrings.asArrayType());
+        assertTrue(arrayOfListOfA == arrayOfListOfA.asArrayType());
     }
 
     @Test
-    void testAsPrimitive() {
-        assertThrows(UnsupportedOperationException.class, () -> arrayOfBooleans.asPrimitive());
-    }
-
-    @Test
-    void testAsArrayTypeUsage() {
-        assertSame(arrayOfBooleans, arrayOfBooleans.asArrayType());
-        assertSame(arrayOfStrings, arrayOfStrings.asArrayType());
-        assertSame(arrayOfListOfA, arrayOfListOfA.asArrayType());
-    }
-
-    @Test
-    void testAsDescribe() {
+    public void testAsDescribe() {
         assertEquals("boolean[]", arrayOfBooleans.describe());
         assertEquals("java.lang.String[]", arrayOfStrings.describe());
     }
 
     @Test
-    void testReplaceParam() {
-        assertSame(arrayOfBooleans, arrayOfBooleans.replaceTypeVariables(tpA, OBJECT));
-        assertSame(arrayOfStrings, arrayOfStrings.replaceTypeVariables(tpA, OBJECT));
+    public void testReplaceParam() {
+        assertTrue(arrayOfBooleans == arrayOfBooleans.replaceTypeVariables(tpA, OBJECT));
+        assertTrue(arrayOfStrings == arrayOfStrings.replaceTypeVariables(tpA, OBJECT));
         assertEquals(arrayOfListOfStrings, arrayOfListOfStrings.replaceTypeVariables(tpA, OBJECT));
         ResolvedArrayType arrayOfListOfObjects = new ResolvedArrayType(new ReferenceTypeImpl(
                 new ReflectionInterfaceDeclaration(List.class, typeSolver),
                 ImmutableList.of(OBJECT), typeSolver));
-        assertTrue(arrayOfListOfA.replaceTypeVariables(tpA, OBJECT).isArray());
+        assertEquals(true, arrayOfListOfA.replaceTypeVariables(tpA, OBJECT).isArray());
         assertEquals(ImmutableList.of(OBJECT),
                 arrayOfListOfA.replaceTypeVariables(tpA, OBJECT).asArrayType().getComponentType()
                         .asReferenceType().typeParametersValues());
@@ -152,11 +153,11 @@ class ArrayTypeTest {
                 arrayOfListOfA.replaceTypeVariables(tpA, OBJECT).asArrayType().getComponentType());
         assertEquals(arrayOfListOfObjects, arrayOfListOfA.replaceTypeVariables(tpA, OBJECT));
         assertEquals(arrayOfListOfStrings, arrayOfListOfA.replaceTypeVariables(tpA, STRING));
-        assertNotSame(arrayOfListOfA, arrayOfListOfA.replaceTypeVariables(tpA, OBJECT));
+        assertTrue(arrayOfListOfA != arrayOfListOfA.replaceTypeVariables(tpA, OBJECT));
     }
 
     @Test
-    void testIsAssignableBy() {
+    public void testIsAssignableBy() {
         assertEquals(false, arrayOfBooleans.isAssignableBy(OBJECT));
         assertEquals(false, arrayOfBooleans.isAssignableBy(STRING));
         assertEquals(false, arrayOfBooleans.isAssignableBy(ResolvedPrimitiveType.BOOLEAN));

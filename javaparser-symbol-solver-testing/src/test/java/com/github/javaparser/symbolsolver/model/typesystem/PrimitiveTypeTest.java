@@ -26,15 +26,15 @@ import com.github.javaparser.symbolsolver.reflectionmodel.ReflectionClassDeclara
 import com.github.javaparser.symbolsolver.reflectionmodel.ReflectionInterfaceDeclaration;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import com.google.common.collect.ImmutableList;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
-class PrimitiveTypeTest {
+public class PrimitiveTypeTest {
 
     private ResolvedArrayType arrayOfBooleans;
     private ResolvedArrayType arrayOfListOfA;
@@ -51,8 +51,8 @@ class PrimitiveTypeTest {
     private ReferenceTypeImpl floatBox;
     private ReferenceTypeImpl doubleBox;
 
-    @BeforeEach
-    void setup() {
+    @Before
+    public void setup() {
         typeSolver = new ReflectionTypeSolver();
         OBJECT = new ReferenceTypeImpl(new ReflectionClassDeclaration(Object.class, typeSolver), typeSolver);
         STRING = new ReferenceTypeImpl(new ReflectionClassDeclaration(String.class, typeSolver), typeSolver);
@@ -73,56 +73,56 @@ class PrimitiveTypeTest {
     }
 
     @Test
-    void testIsArray() {
+    public void testIsArray() {
         for (ResolvedPrimitiveType ptu : ResolvedPrimitiveType.values()) {
             assertEquals(false, ptu.isArray());
         }
     }
 
     @Test
-    void testIsPrimitive() {
+    public void testIsPrimitive() {
         for (ResolvedPrimitiveType ptu : ResolvedPrimitiveType.values()) {
             assertEquals(true, ptu.isPrimitive());
         }
     }
 
     @Test
-    void testIsNull() {
+    public void testIsNull() {
         for (ResolvedPrimitiveType ptu : ResolvedPrimitiveType.values()) {
             assertEquals(false, ptu.isNull());
         }
     }
 
     @Test
-    void testIsReference() {
+    public void testIsReference() {
         for (ResolvedPrimitiveType ptu : ResolvedPrimitiveType.values()) {
             assertEquals(false, ptu.isReference());
         }
     }
 
     @Test
-    void testIsReferenceType() {
+    public void testIsReferenceType() {
         for (ResolvedPrimitiveType ptu : ResolvedPrimitiveType.values()) {
             assertEquals(false, ptu.isReferenceType());
         }
     }
 
     @Test
-    void testIsVoid() {
+    public void testIsVoid() {
         for (ResolvedPrimitiveType ptu : ResolvedPrimitiveType.values()) {
             assertEquals(false, ptu.isVoid());
         }
     }
 
     @Test
-    void testIsTypeVariable() {
+    public void testIsTypeVariable() {
         for (ResolvedPrimitiveType ptu : ResolvedPrimitiveType.values()) {
             assertEquals(false, ptu.isTypeVariable());
         }
     }
 
     @Test
-    void testAsReferenceTypeUsage() {
+    public void testAsReferenceTypeUsage() {
         for (ResolvedPrimitiveType ptu : ResolvedPrimitiveType.values()) {
             try {
                 ptu.asReferenceType();
@@ -133,7 +133,7 @@ class PrimitiveTypeTest {
     }
 
     @Test
-    void testAsTypeParameter() {
+    public void testAsTypeParameter() {
         for (ResolvedPrimitiveType ptu : ResolvedPrimitiveType.values()) {
             try {
                 ptu.asTypeParameter();
@@ -144,7 +144,7 @@ class PrimitiveTypeTest {
     }
 
     @Test
-    void testAsArrayTypeUsage() {
+    public void testAsArrayTypeUsage() {
         for (ResolvedPrimitiveType ptu : ResolvedPrimitiveType.values()) {
             try {
                 ptu.asArrayType();
@@ -155,7 +155,7 @@ class PrimitiveTypeTest {
     }
 
     @Test
-    void testAsDescribe() {
+    public void testAsDescribe() {
         assertEquals("boolean", ResolvedPrimitiveType.BOOLEAN.describe());
         assertEquals("char", ResolvedPrimitiveType.CHAR.describe());
         assertEquals("byte", ResolvedPrimitiveType.BYTE.describe());
@@ -167,7 +167,7 @@ class PrimitiveTypeTest {
     }
 
     @Test
-    void testIsAssignableByOtherPrimitiveTypes() {
+    public void testIsAssignableByOtherPrimitiveTypes() {
         assertEquals(true, ResolvedPrimitiveType.BOOLEAN.isAssignableBy(ResolvedPrimitiveType.BOOLEAN));
         assertEquals(false, ResolvedPrimitiveType.BOOLEAN.isAssignableBy(ResolvedPrimitiveType.CHAR));
         assertEquals(false, ResolvedPrimitiveType.BOOLEAN.isAssignableBy(ResolvedPrimitiveType.BYTE));
@@ -242,7 +242,7 @@ class PrimitiveTypeTest {
     }
 
     @Test
-    void testIsAssignableByBoxedTypes() {
+    public void testIsAssignableByBoxedTypes() {
         assertEquals(true, ResolvedPrimitiveType.BOOLEAN.isAssignableBy(booleanBox));
         assertEquals(false, ResolvedPrimitiveType.BOOLEAN.isAssignableBy(characterBox));
         assertEquals(false, ResolvedPrimitiveType.BOOLEAN.isAssignableBy(byteBox));
@@ -317,7 +317,7 @@ class PrimitiveTypeTest {
     }
 
     @Test
-    void testIsAssignableByAnythingElse() {
+    public void testIsAssignableByAnythingElse() {
         for (ResolvedPrimitiveType ptu : ResolvedPrimitiveType.values()) {
             assertEquals(false, ptu.isAssignableBy(OBJECT));
             assertEquals(false, ptu.isAssignableBy(STRING));

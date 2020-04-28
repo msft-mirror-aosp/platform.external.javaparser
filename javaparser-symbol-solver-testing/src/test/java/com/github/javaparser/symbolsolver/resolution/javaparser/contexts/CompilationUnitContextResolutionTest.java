@@ -36,31 +36,31 @@ import com.github.javaparser.symbolsolver.resolution.typesolvers.JarTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.MemoryTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import com.google.common.collect.ImmutableList;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.IOException;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
  * @author Federico Tomassetti
-a */
-class CompilationUnitContextResolutionTest extends AbstractResolutionTest {
+ */
+public class CompilationUnitContextResolutionTest extends AbstractResolutionTest {
 
     private TypeSolver typeSolver;
 
-    @BeforeEach
-    void setup() {
+    @Before
+    public void setup() {
         typeSolver = new ReflectionTypeSolver();
     }
 
     @Test
-    void getParent() {
+    public void getParent() {
         CompilationUnit cu = parseSample("ClassWithTypeVariables");
         Context context = new CompilationUnitContext(cu, typeSolver);
 
@@ -68,13 +68,13 @@ class CompilationUnitContextResolutionTest extends AbstractResolutionTest {
     }
 
     @Test
-    void solveExistingGenericType() {
+    public void solveExistingGenericType() {
         CompilationUnit cu = parseSample("ClassWithTypeVariables");
         Context context = new CompilationUnitContext(cu, typeSolver);
 
-        Optional<ResolvedType> a = context.solveGenericType("A");
-        Optional<ResolvedType> b = context.solveGenericType("B");
-        Optional<ResolvedType> c = context.solveGenericType("C");
+        Optional<ResolvedType> a = context.solveGenericType("A", new MemoryTypeSolver());
+        Optional<ResolvedType> b = context.solveGenericType("B", new MemoryTypeSolver());
+        Optional<ResolvedType> c = context.solveGenericType("C", new MemoryTypeSolver());
 
         assertEquals(false, a.isPresent());
         assertEquals(false, b.isPresent());
@@ -82,137 +82,132 @@ class CompilationUnitContextResolutionTest extends AbstractResolutionTest {
     }
 
     @Test
-    void solveUnexistingGenericType() {
+    public void solveUnexistingGenericType() {
         CompilationUnit cu = parseSample("ClassWithTypeVariables");
         Context context = new CompilationUnitContext(cu, typeSolver);
 
-        Optional<ResolvedType> d = context.solveGenericType("D");
+        Optional<ResolvedType> d = context.solveGenericType("D", new MemoryTypeSolver());
 
         assertEquals(false, d.isPresent());
     }
 
     @Test
-    void solveSymbolReferringToStaticallyImportedValue() throws ParseException, IOException {
+    public void solveSymbolReferringToStaticallyImportedValue() throws ParseException, IOException {
         CompilationUnit cu = parseSample("CompilationUnitSymbols");
+        Context context = new CompilationUnitContext(cu, typeSolver);
 
         CombinedTypeSolver typeSolver = new CombinedTypeSolver();
         typeSolver.add(new ReflectionTypeSolver());
         typeSolver.add(new JarTypeSolver(adaptPath("src/test/resources/junit-4.8.1.jar")));
-
-        Context context = new CompilationUnitContext(cu, typeSolver);
-        SymbolReference<? extends ResolvedValueDeclaration> ref = context.solveSymbol("out");
-
+        SymbolReference<? extends ResolvedValueDeclaration> ref = context.solveSymbol("out", typeSolver);
         assertEquals(true, ref.isSolved());
         assertEquals("java.io.PrintStream", ref.getCorrespondingDeclaration().getType().asReferenceType().getQualifiedName());
     }
 
     @Test
-    void solveSymbolReferringToStaticallyImportedUsingAsteriskValue() throws ParseException, IOException {
+    public void solveSymbolReferringToStaticallyImportedUsingAsteriskValue() throws ParseException, IOException {
         CompilationUnit cu = parseSample("CompilationUnitSymbols");
+        Context context = new CompilationUnitContext(cu, typeSolver);
 
         CombinedTypeSolver typeSolver = new CombinedTypeSolver();
         typeSolver.add(new ReflectionTypeSolver());
         typeSolver.add(new JarTypeSolver(adaptPath("src/test/resources/junit-4.8.1.jar")));
-
-        Context context = new CompilationUnitContext(cu, typeSolver);
-        SymbolReference<? extends ResolvedValueDeclaration> ref = context.solveSymbol("err");
+        SymbolReference<? extends ResolvedValueDeclaration> ref = context.solveSymbol("err", typeSolver);
         assertEquals(true, ref.isSolved());
         assertEquals("java.io.PrintStream", ref.getCorrespondingDeclaration().getType().asReferenceType().getQualifiedName());
     }
 
     @Test
-    void solveSymbolReferringToStaticField() throws ParseException, IOException {
+    public void solveSymbolReferringToStaticField() throws ParseException, IOException {
         CompilationUnit cu = parseSample("CompilationUnitSymbols");
-        Context context = new CompilationUnitContext(cu, new ReflectionTypeSolver());
+        Context context = new CompilationUnitContext(cu, typeSolver);
 
-        SymbolReference<? extends ResolvedValueDeclaration> ref = context.solveSymbol("java.lang.System.out");
+        SymbolReference<? extends ResolvedValueDeclaration> ref = context.solveSymbol("java.lang.System.out", new ReflectionTypeSolver());
         assertEquals(true, ref.isSolved());
         assertEquals("java.io.PrintStream", ref.getCorrespondingDeclaration().getType().asReferenceType().getQualifiedName());
     }
 
     @Test
-    void solveSymbolAsValueReferringToStaticallyImportedValue() throws ParseException, IOException {
+    public void solveSymbolAsValueReferringToStaticallyImportedValue() throws ParseException, IOException {
         CompilationUnit cu = parseSample("CompilationUnitSymbols");
         Context context = new CompilationUnitContext(cu, typeSolver);
 
         CombinedTypeSolver typeSolver = new CombinedTypeSolver();
         typeSolver.add(new ReflectionTypeSolver());
         typeSolver.add(new JarTypeSolver(adaptPath("src/test/resources/junit-4.8.1.jar")));
-        Optional<Value> ref = context.solveSymbolAsValue("out");
+        Optional<Value> ref = context.solveSymbolAsValue("out", typeSolver);
         assertEquals(true, ref.isPresent());
         assertEquals("java.io.PrintStream", ref.get().getType().describe());
     }
 
     @Test
-    void solveSymbolAsValueReferringToStaticallyImportedUsingAsteriskValue() throws ParseException, IOException {
+    public void solveSymbolAsValueReferringToStaticallyImportedUsingAsteriskValue() throws ParseException, IOException {
         CompilationUnit cu = parseSample("CompilationUnitSymbols");
         Context context = new CompilationUnitContext(cu, typeSolver);
 
         CombinedTypeSolver typeSolver = new CombinedTypeSolver();
         typeSolver.add(new ReflectionTypeSolver());
         typeSolver.add(new JarTypeSolver(adaptPath("src/test/resources/junit-4.8.1.jar")));
-        Optional<Value> ref = context.solveSymbolAsValue("err");
+        Optional<Value> ref = context.solveSymbolAsValue("err", typeSolver);
         assertEquals(true, ref.isPresent());
         assertEquals("java.io.PrintStream", ref.get().getType().describe());
     }
 
     @Test
-    void solveSymbolAsValueReferringToStaticField() throws ParseException, IOException {
+    public void solveSymbolAsValueReferringToStaticField() throws ParseException, IOException {
         CompilationUnit cu = parseSample("CompilationUnitSymbols");
-        Context context = new CompilationUnitContext(cu, new ReflectionTypeSolver());
+        Context context = new CompilationUnitContext(cu, typeSolver);
 
-        Optional<Value> ref = context.solveSymbolAsValue("java.lang.System.out");
+        Optional<Value> ref = context.solveSymbolAsValue("java.lang.System.out", new ReflectionTypeSolver());
         assertEquals(true, ref.isPresent());
         assertEquals("java.io.PrintStream", ref.get().getType().describe());
     }
 
     @Test
-    void solveTypeInSamePackage() {
+    public void solveTypeInSamePackage() {
         CompilationUnit cu = parseSample("CompilationUnitWithImports");
+        Context context = new CompilationUnitContext(cu, typeSolver);
 
         ResolvedReferenceTypeDeclaration otherClass = mock(ResolvedReferenceTypeDeclaration.class);
         when(otherClass.getQualifiedName()).thenReturn("com.foo.OtherClassInSamePackage");
         MemoryTypeSolver memoryTypeSolver = new MemoryTypeSolver();
         memoryTypeSolver.addDeclaration("com.foo.OtherClassInSamePackage", otherClass);
 
-        Context context = new CompilationUnitContext(cu, memoryTypeSolver);
-        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("OtherClassInSamePackage");
-
+        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("OtherClassInSamePackage", memoryTypeSolver);
         assertEquals(true, ref.isSolved());
         assertEquals("com.foo.OtherClassInSamePackage", ref.getCorrespondingDeclaration().getQualifiedName());
     }
 
     @Test
-    void solveTypeImported() throws ParseException, IOException {
+    public void solveTypeImported() throws ParseException, IOException {
         CompilationUnit cu = parseSample("CompilationUnitWithImports");
-        Context context = new CompilationUnitContext(cu, new JarTypeSolver(adaptPath("src/test/resources/junit-4.8.1.jar")));
+        Context context = new CompilationUnitContext(cu, typeSolver);
 
-        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("Assert");
+        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("Assert", new JarTypeSolver(adaptPath("src/test/resources/junit-4.8.1.jar")));
         assertEquals(true, ref.isSolved());
         assertEquals("org.junit.Assert", ref.getCorrespondingDeclaration().getQualifiedName());
     }
 
     @Test
-    void solveTypeNotImported() throws ParseException, IOException {
+    public void solveTypeNotImported() throws ParseException, IOException {
         CompilationUnit cu = parseSample("CompilationUnitWithImports");
-        Context context = new CompilationUnitContext(cu, new JarTypeSolver(adaptPath("src/test/resources/junit-4.8.1.jar")));
+        Context context = new CompilationUnitContext(cu, typeSolver);
 
-        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("org.junit.Assume");
+        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("org.junit.Assume", new JarTypeSolver(adaptPath("src/test/resources/junit-4.8.1.jar")));
         assertEquals(true, ref.isSolved());
         assertEquals("org.junit.Assume", ref.getCorrespondingDeclaration().getQualifiedName());
     }
 
     @Test
-    void solveMethodStaticallyImportedWithAsterisk() throws ParseException, IOException {
+    public void solveMethodStaticallyImportedWithAsterisk() throws ParseException, IOException {
         CompilationUnit cu = parseSample("CompilationUnitWithImports");
+        Context context = new CompilationUnitContext(cu, typeSolver);
 
         CombinedTypeSolver typeSolver = new CombinedTypeSolver();
         typeSolver.add(new JarTypeSolver(adaptPath("src/test/resources/junit-4.8.1.jar")));
         typeSolver.add(new ReflectionTypeSolver());
 
-        Context context = new CompilationUnitContext(cu, typeSolver);
-
-        SymbolReference<ResolvedMethodDeclaration> ref = context.solveMethod("assertFalse", ImmutableList.of(ResolvedPrimitiveType.BOOLEAN), false);
+        SymbolReference<ResolvedMethodDeclaration> ref = context.solveMethod("assertFalse", ImmutableList.of(ResolvedPrimitiveType.BOOLEAN), false, typeSolver);
         assertEquals(true, ref.isSolved());
         assertEquals("assertFalse", ref.getCorrespondingDeclaration().getName());
         assertEquals(1, ref.getCorrespondingDeclaration().getNumberOfParams());
@@ -221,16 +216,15 @@ class CompilationUnitContextResolutionTest extends AbstractResolutionTest {
     }
 
     @Test
-    void solveMethodStaticallyImportedWithoutAsterisk() throws ParseException, IOException {
+    public void solveMethodStaticallyImportedWithoutAsterisk() throws ParseException, IOException {
         CompilationUnit cu = parseSample("CompilationUnitSymbols");
+        Context context = new CompilationUnitContext(cu, typeSolver);
 
         CombinedTypeSolver typeSolver = new CombinedTypeSolver();
         typeSolver.add(new JarTypeSolver(adaptPath("src/test/resources/junit-4.8.1.jar")));
         typeSolver.add(new ReflectionTypeSolver());
 
-        Context context = new CompilationUnitContext(cu, typeSolver);
-
-        SymbolReference<ResolvedMethodDeclaration> ref = context.solveMethod("assertEquals", ImmutableList.of(NullType.INSTANCE, NullType.INSTANCE), false);
+        SymbolReference<ResolvedMethodDeclaration> ref = context.solveMethod("assertEquals", ImmutableList.of(NullType.INSTANCE, NullType.INSTANCE), false, typeSolver);
         assertEquals(true, ref.isSolved());
         assertEquals("assertEquals", ref.getCorrespondingDeclaration().getName());
         assertEquals(2, ref.getCorrespondingDeclaration().getNumberOfParams());

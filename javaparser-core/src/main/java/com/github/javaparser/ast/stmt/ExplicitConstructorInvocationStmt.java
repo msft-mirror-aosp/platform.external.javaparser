@@ -22,26 +22,25 @@ package com.github.javaparser.ast.stmt;
 
 import com.github.javaparser.ast.AllFieldsConstructor;
 import com.github.javaparser.ast.NodeList;
-import com.github.javaparser.ast.expr.*;
-import com.github.javaparser.ast.nodeTypes.NodeWithArguments;
+import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.nodeTypes.NodeWithTypeArguments;
 import com.github.javaparser.ast.observer.ObservableProperty;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import static com.github.javaparser.utils.Utils.assertNotNull;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.metamodel.ExplicitConstructorInvocationStmtMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
+import javax.annotation.Generated;
 import com.github.javaparser.TokenRange;
 import com.github.javaparser.metamodel.OptionalProperty;
-import com.github.javaparser.resolution.Resolvable;
-import com.github.javaparser.resolution.UnsolvedSymbolException;
 import com.github.javaparser.resolution.declarations.ResolvedConstructorDeclaration;
 import java.util.function.Consumer;
-import com.github.javaparser.ast.Generated;
 
 /**
  * A call to super or this in a constructor or initializer.
@@ -52,7 +51,7 @@ import com.github.javaparser.ast.Generated;
  * @see com.github.javaparser.ast.expr.SuperExpr
  * @see com.github.javaparser.ast.expr.ThisExpr
  */
-public class ExplicitConstructorInvocationStmt extends Statement implements NodeWithTypeArguments<ExplicitConstructorInvocationStmt>, NodeWithArguments<ExplicitConstructorInvocationStmt>, Resolvable<ResolvedConstructorDeclaration> {
+public final class ExplicitConstructorInvocationStmt extends Statement implements NodeWithTypeArguments<ExplicitConstructorInvocationStmt> {
 
     @OptionalProperty
     private NodeList<Type> typeArguments;
@@ -65,11 +64,11 @@ public class ExplicitConstructorInvocationStmt extends Statement implements Node
     private NodeList<Expression> arguments;
 
     public ExplicitConstructorInvocationStmt() {
-        this(null, null, true, null, new NodeList<>());
+        this(null, new NodeList<>(), true, null, new NodeList<>());
     }
 
     public ExplicitConstructorInvocationStmt(final boolean isThis, final Expression expression, final NodeList<Expression> arguments) {
-        this(null, null, isThis, expression, arguments);
+        this(null, new NodeList<>(), isThis, expression, arguments);
     }
 
     @AllFieldsConstructor
@@ -105,6 +104,20 @@ public class ExplicitConstructorInvocationStmt extends Statement implements Node
     @Generated("com.github.javaparser.generator.core.node.PropertyGenerator")
     public NodeList<Expression> getArguments() {
         return arguments;
+    }
+
+    public Expression getArgument(int i) {
+        return getArguments().get(i);
+    }
+
+    public ExplicitConstructorInvocationStmt setArgument(int i, Expression argument) {
+        getArguments().set(i, argument);
+        return this;
+    }
+
+    public ExplicitConstructorInvocationStmt addArgument(Expression argument) {
+        getArguments().add(argument);
+        return this;
     }
 
     @Generated("com.github.javaparser.generator.core.node.PropertyGenerator")
@@ -274,20 +287,7 @@ public class ExplicitConstructorInvocationStmt extends Statement implements Node
         action.accept(this);
     }
 
-    /**
-     * Attempts to resolve the declaration corresponding to the invoked constructor. If successful, a
-     * {@link ResolvedConstructorDeclaration} representing the declaration of the constructor invoked by this
-     * {@code ExplicitConstructorInvocationStmt} is returned. Otherwise, an {@link UnsolvedSymbolException} is thrown.
-     *
-     * @return a {@link ResolvedConstructorDeclaration} representing the declaration of the invoked constructor.
-     * @throws UnsolvedSymbolException if the declaration corresponding to the explicit constructor invocation statement
-     *                                 could not be resolved.
-     * @see NameExpr#resolve()
-     * @see FieldAccessExpr#resolve()
-     * @see MethodCallExpr#resolve()
-     * @see ObjectCreationExpr#resolve()
-     */
-    public ResolvedConstructorDeclaration resolve() {
+    public ResolvedConstructorDeclaration resolveInvokedConstructor() {
         return getSymbolResolver().resolveDeclaration(this, ResolvedConstructorDeclaration.class);
     }
 

@@ -20,19 +20,21 @@
  */
 package com.github.javaparser.ast;
 
+import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.expr.Name;
+import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.nodeTypes.NodeWithName;
 import com.github.javaparser.ast.observer.ObservableProperty;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
-import static com.github.javaparser.StaticJavaParser.parseName;
+import static com.github.javaparser.JavaParser.*;
 import static com.github.javaparser.utils.Utils.assertNotNull;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.metamodel.ImportDeclarationMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
+import javax.annotation.Generated;
 import com.github.javaparser.TokenRange;
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.Generated;
 
 /**
  * An import declaration.
@@ -45,7 +47,7 @@ import com.github.javaparser.ast.Generated;
  * <p>The name does not include the asterisk or the static keyword.</p>
  * @author Julio Vilmar Gesser
  */
-public class ImportDeclaration extends Node implements NodeWithName<ImportDeclaration> {
+public final class ImportDeclaration extends Node implements NodeWithName<ImportDeclaration> {
 
     private Name name;
 

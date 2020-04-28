@@ -16,6 +16,7 @@
 
 package com.github.javaparser.symbolsolver.resolution.javaparser.contexts;
 
+import com.github.javaparser.ParseException;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.resolution.MethodAmbiguityException;
@@ -36,31 +37,31 @@ import com.github.javaparser.symbolsolver.model.typesystem.NullType;
 import com.github.javaparser.symbolsolver.model.typesystem.ReferenceTypeImpl;
 import com.github.javaparser.symbolsolver.reflectionmodel.ReflectionClassDeclaration;
 import com.github.javaparser.symbolsolver.resolution.AbstractResolutionTest;
+import com.github.javaparser.symbolsolver.resolution.typesolvers.MemoryTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import com.google.common.collect.ImmutableList;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 /**
  * @author Federico Tomassetti
  */
-class ClassOrInterfaceDeclarationContextResolutionTest extends AbstractResolutionTest {
+public class ClassOrInterfaceDeclarationContextResolutionTest extends AbstractResolutionTest {
 
     private TypeSolver typeSolver;
 
-    @BeforeEach
-    void setup() {
+    @Before
+    public void setup() {
         typeSolver = new ReflectionTypeSolver();
     }
 
     @Test
-    void getParentForTopClass() {
+    public void getParentForTopClass() {
         CompilationUnit cu = parseSample("ClassWithTypeVariables");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
@@ -70,14 +71,15 @@ class ClassOrInterfaceDeclarationContextResolutionTest extends AbstractResolutio
     }
 
     @Test
-    void solveExistingGenericType() {
+    public void solveExistingGenericType() {
         CompilationUnit cu = parseSample("ClassWithTypeVariables");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        Optional<ResolvedType> a = context.solveGenericType("A");
-        Optional<ResolvedType> b = context.solveGenericType("B");
-        Optional<ResolvedType> c = context.solveGenericType("C");
+        Optional<ResolvedType> a = context.solveGenericType("A", new MemoryTypeSolver());
+        Optional<ResolvedType> b = context.solveGenericType("B", new MemoryTypeSolver());
+        Optional<ResolvedType> c = context.solveGenericType("C", new MemoryTypeSolver());
+
         assertEquals(true, a.isPresent());
         assertEquals("A", a.get().describe());
         assertEquals(true, a.get().isTypeVariable());
@@ -90,408 +92,399 @@ class ClassOrInterfaceDeclarationContextResolutionTest extends AbstractResolutio
     }
 
     @Test
-    void solveUnexistingGenericType() {
+    public void solveUnexistingGenericType() {
         CompilationUnit cu = parseSample("ClassWithTypeVariables");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        Optional<ResolvedType> d = context.solveGenericType("D");
+        Optional<ResolvedType> d = context.solveGenericType("D", new MemoryTypeSolver());
 
         assertEquals(false, d.isPresent());
     }
 
     @Test
-    void solveSymbolReferringToDeclaredInstanceField() {
+    public void solveSymbolReferringToDeclaredInstanceField() {
         CompilationUnit cu = parseSample("ClassWithSymbols");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        SymbolReference<? extends ResolvedValueDeclaration> ref = context.solveSymbol("i");
+        SymbolReference<? extends ResolvedValueDeclaration> ref = context.solveSymbol("i", new MemoryTypeSolver());
         assertEquals(true, ref.isSolved());
         assertEquals("int", ref.getCorrespondingDeclaration().getType().describe());
     }
 
     @Test
-    void solveSymbolReferringToDeclaredStaticField() {
+    public void solveSymbolReferringToDeclaredStaticField() {
         CompilationUnit cu = parseSample("ClassWithSymbols");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        SymbolReference<? extends ResolvedValueDeclaration> ref = context.solveSymbol("j");
+        SymbolReference<? extends ResolvedValueDeclaration> ref = context.solveSymbol("j", new MemoryTypeSolver());
         assertEquals(true, ref.isSolved());
         assertEquals("long", ref.getCorrespondingDeclaration().getType().describe());
     }
 
     @Test
-    void solveSymbolReferringToInheritedInstanceField() {
+    public void solveSymbolReferringToInheritedInstanceField() {
         CompilationUnit cu = parseSample("ClassWithSymbols");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        SymbolReference<? extends ResolvedValueDeclaration> ref = context.solveSymbol("k");
+        SymbolReference<? extends ResolvedValueDeclaration> ref = context.solveSymbol("k", new MemoryTypeSolver());
         assertEquals(true, ref.isSolved());
         assertEquals("boolean", ref.getCorrespondingDeclaration().getType().describe());
     }
 
     @Test
-    void solveSymbolReferringToInterfaceInheritedInstanceField() {
+    public void solveSymbolReferringToInterfaceInheritedInstanceField() {
         CompilationUnit cu = parseSample("ClassWithSymbols");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        SymbolReference<? extends ResolvedValueDeclaration> ref = context.solveSymbol("o");
+        SymbolReference<? extends ResolvedValueDeclaration> ref = context.solveSymbol("o", new MemoryTypeSolver());
         assertEquals(true, ref.isSolved());
         assertEquals("int", ref.getCorrespondingDeclaration().getType().describe());
     }
 
     @Test
-    void solveSymbolReferringToInheritedStaticField() {
+    public void solveSymbolReferringToInheritedStaticField() {
         CompilationUnit cu = parseSample("ClassWithSymbols");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        SymbolReference<? extends ResolvedValueDeclaration> ref = context.solveSymbol("m");
+        SymbolReference<? extends ResolvedValueDeclaration> ref = context.solveSymbol("m", new MemoryTypeSolver());
         assertEquals(true, ref.isSolved());
         assertEquals("char", ref.getCorrespondingDeclaration().getType().describe());
     }
 
     @Test
-    void solveSymbolReferringToUnknownElement() {
+    public void solveSymbolReferringToUnknownElement() {
         CompilationUnit cu = parseSample("ClassWithSymbols");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        SymbolReference<? extends ResolvedValueDeclaration> ref = context.solveSymbol("zzz");
+        SymbolReference<? extends ResolvedValueDeclaration> ref = context.solveSymbol("zzz", new MemoryTypeSolver());
         assertEquals(false, ref.isSolved());
     }
 
     @Test
-    void solveSymbolAsValueReferringToDeclaredInstanceField() {
+    public void solveSymbolAsValueReferringToDeclaredInstanceField() {
         CompilationUnit cu = parseSample("ClassWithSymbols");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        Optional<Value> ref = context.solveSymbolAsValue("i");
+        Optional<Value> ref = context.solveSymbolAsValue("i", new MemoryTypeSolver());
         assertEquals(true, ref.isPresent());
         assertEquals("int", ref.get().getType().describe());
     }
 
     @Test
-    void solveSymbolAsValueReferringToDeclaredStaticField() {
+    public void solveSymbolAsValueReferringToDeclaredStaticField() {
         CompilationUnit cu = parseSample("ClassWithSymbols");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        Optional<Value> ref = context.solveSymbolAsValue("j");
+        Optional<Value> ref = context.solveSymbolAsValue("j", new MemoryTypeSolver());
         assertEquals(true, ref.isPresent());
         assertEquals("long", ref.get().getType().describe());
     }
 
     @Test
-    void solveSymbolAsValueReferringToInheritedInstanceField() {
+    public void solveSymbolAsValueReferringToInheritedInstanceField() {
         CompilationUnit cu = parseSample("ClassWithSymbols");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        Optional<Value> ref = context.solveSymbolAsValue("k");
+        Optional<Value> ref = context.solveSymbolAsValue("k", new MemoryTypeSolver());
         assertEquals(true, ref.isPresent());
         assertEquals("boolean", ref.get().getType().describe());
     }
 
     @Test
-    void solveSymbolAsValueReferringToInterfaceInheritedInstanceField() {
+    public void solveSymbolAsValueReferringToInterfaceInheritedInstanceField() {
         CompilationUnit cu = parseSample("ClassWithSymbols");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         ClassOrInterfaceDeclarationContext context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        Optional<Value> ref = context.solveSymbolAsValue("o");
+        Optional<Value> ref = context.solveSymbolAsValue("o", new MemoryTypeSolver());
         assertEquals(true, ref.isPresent());
         assertEquals("int", ref.get().getType().describe());
     }
 
     @Test
-    void solveSymbolAsValueReferringToInheritedStaticField() {
+    public void solveSymbolAsValueReferringToInheritedStaticField() {
         CompilationUnit cu = parseSample("ClassWithSymbols");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        Optional<Value> ref = context.solveSymbolAsValue("m");
+        Optional<Value> ref = context.solveSymbolAsValue("m", new MemoryTypeSolver());
         assertEquals(true, ref.isPresent());
         assertEquals("char", ref.get().getType().describe());
     }
 
     @Test
-    void solveSymbolAsValueReferringToUnknownElement() {
+    public void solveSymbolAsValueReferringToUnknownElement() {
         CompilationUnit cu = parseSample("ClassWithSymbols");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        Optional<Value> ref = context.solveSymbolAsValue("zzz");
+        Optional<Value> ref = context.solveSymbolAsValue("zzz", new MemoryTypeSolver());
         assertEquals(false, ref.isPresent());
     }
 
     @Test
-    void solveTypeRefToItself() {
+    public void solveTypeRefToItself() {
         CompilationUnit cu = parseSample("ClassWithTypes");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("A");
+        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("A", new MemoryTypeSolver());
         assertEquals(true, ref.isSolved());
     }
 
     @Test
-    void solveTypeRefToUnexisting() {
+    public void solveTypeRefToUnexisting() {
         CompilationUnit cu = parseSample("ClassWithTypes");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("Foo");
+        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("Foo", new MemoryTypeSolver());
         assertEquals(false, ref.isSolved());
     }
 
     @Test
-    void solveTypeRefToObject() {
+    public void solveTypeRefToObject() {
         CompilationUnit cu = parseSample("ClassWithTypes");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("Object");
+        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("Object", new ReflectionTypeSolver());
         assertEquals(true, ref.isSolved());
     }
 
     @Test
-    void solveTypeRefToJavaLangObject() {
+    public void solveTypeRefToJavaLangObject() {
         CompilationUnit cu = parseSample("ClassWithTypes");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("java.lang.Object");
+        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("java.lang.Object", new ReflectionTypeSolver());
         assertEquals(true, ref.isSolved());
     }
 
     @Test
-    void solveTypeRefToInternalClass() {
+    public void solveTypeRefToInternalClass() {
         CompilationUnit cu = parseSample("ClassWithTypes");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("B");
+        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("B", new MemoryTypeSolver());
         assertEquals(true, ref.isSolved());
     }
 
     @Test
-    void solveTypeRefToInternalEnum() {
+    public void solveTypeRefToInternalEnum() {
         CompilationUnit cu = parseSample("ClassWithTypes");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("E");
+        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("E", new MemoryTypeSolver());
         assertEquals(true, ref.isSolved());
     }
 
     @Test
-    void solveTypeRefToInternalOfInternalClass() {
+    public void solveTypeRefToInternalOfInternalClass() {
         CompilationUnit cu = parseSample("ClassWithTypes");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("C");
+        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("C", new MemoryTypeSolver());
         assertEquals(false, ref.isSolved());
     }
 
     @Test
-    void solveTypeRefToAnotherClassInFile() {
+    public void solveTypeRefToAnotherClassInFile() {
         CompilationUnit cu = parseSample("ClassWithTypes");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("Super");
+        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("Super", new MemoryTypeSolver());
         assertEquals(true, ref.isSolved());
     }
 
     @Test
-    void solveTypeRefToQualifiedInternalClass() {
+    public void solveTypeRefToQualifiedInternalClass() {
         CompilationUnit cu = parseSample("ClassWithTypes");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("A.B");
+        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("A.B", new MemoryTypeSolver());
         assertEquals(true, ref.isSolved());
     }
 
     @Test
-    void solveTypeRefToQualifiedInternalOfInternalClass() {
+    public void solveTypeRefToQualifiedInternalOfInternalClass() {
         CompilationUnit cu = parseSample("ClassWithTypes");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("B.C");
+        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("B.C", new MemoryTypeSolver());
         assertEquals(true, ref.isSolved());
     }
 
     @Test
-    void solveTypeRefToMoreQualifiedInternalOfInternalClass() {
+    public void solveTypeRefToMoreQualifiedInternalOfInternalClass() {
         CompilationUnit cu = parseSample("ClassWithTypes");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("A.B.C");
+        SymbolReference<ResolvedTypeDeclaration> ref = context.solveType("A.B.C", new MemoryTypeSolver());
         assertEquals(true, ref.isSolved());
     }
 
     @Test
-    void solveMethodSimpleCase() {
+    public void solveMethodSimpleCase() {
         CompilationUnit cu = parseSample("ClassWithMethods");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        SymbolReference<ResolvedMethodDeclaration> ref = context.solveMethod("foo0", ImmutableList.of(), false);
+        SymbolReference<ResolvedMethodDeclaration> ref = context.solveMethod("foo0", ImmutableList.of(), false, new ReflectionTypeSolver());
         assertEquals(true, ref.isSolved());
         assertEquals("A", ref.getCorrespondingDeclaration().declaringType().getName());
         assertEquals(0, ref.getCorrespondingDeclaration().getNumberOfParams());
     }
 
     @Test
-    void solveMethodOverrideCase() {
+    public void solveMethodOverrideCase() {
         CompilationUnit cu = parseSample("ClassWithMethods");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        SymbolReference<ResolvedMethodDeclaration> ref = context.solveMethod("foo1", ImmutableList.of(), false);
+        SymbolReference<ResolvedMethodDeclaration> ref = context.solveMethod("foo1", ImmutableList.of(), false, new ReflectionTypeSolver());
         assertEquals(true, ref.isSolved());
         assertEquals("A", ref.getCorrespondingDeclaration().declaringType().getName());
         assertEquals(0, ref.getCorrespondingDeclaration().getNumberOfParams());
     }
 
     @Test
-    void solveMethodInheritedCase() {
+    public void solveMethodInheritedCase() {
         CompilationUnit cu = parseSample("ClassWithMethods");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        SymbolReference<ResolvedMethodDeclaration> ref = context.solveMethod("foo2", ImmutableList.of(), false);
+        SymbolReference<ResolvedMethodDeclaration> ref = context.solveMethod("foo2", ImmutableList.of(), false, new ReflectionTypeSolver());
         assertEquals(true, ref.isSolved());
         assertEquals("Super", ref.getCorrespondingDeclaration().declaringType().getName());
         assertEquals(0, ref.getCorrespondingDeclaration().getNumberOfParams());
     }
 
     @Test
-    void solveMethodWithPrimitiveParameters() {
+    public void solveMethodWithPrimitiveParameters() {
         CompilationUnit cu = parseSample("ClassWithMethods");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
         ResolvedType intType = ResolvedPrimitiveType.INT;
 
-        SymbolReference<ResolvedMethodDeclaration> ref = context.solveMethod("foo3", ImmutableList.of(intType), false);
+        SymbolReference<ResolvedMethodDeclaration> ref = context.solveMethod("foo3", ImmutableList.of(intType), false, new ReflectionTypeSolver());
         assertEquals(true, ref.isSolved());
         assertEquals("A", ref.getCorrespondingDeclaration().declaringType().getName());
         assertEquals(1, ref.getCorrespondingDeclaration().getNumberOfParams());
     }
 
     @Test
-    void solveMethodWithMoreSpecializedParameter() {
+    public void solveMethodWithMoreSpecializedParameter() {
         CompilationUnit cu = parseSample("ClassWithMethods");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
         ResolvedType stringType = new ReferenceTypeImpl(new ReflectionClassDeclaration(String.class, typeSolver), typeSolver);
 
-        SymbolReference<ResolvedMethodDeclaration> ref = context.solveMethod("foo4", ImmutableList.of(stringType), false);
+        SymbolReference<ResolvedMethodDeclaration> ref = context.solveMethod("foo4", ImmutableList.of(stringType), false, new ReflectionTypeSolver());
         assertEquals(true, ref.isSolved());
         assertEquals("A", ref.getCorrespondingDeclaration().declaringType().getName());
         assertEquals(1, ref.getCorrespondingDeclaration().getNumberOfParams());
     }
 
-    @Test
-    void solveMethodWithAmbiguosCall() {
-        assertThrows(MethodAmbiguityException.class, () -> {
-            CompilationUnit cu = parseSample("ClassWithMethods");
+    @Test(expected = MethodAmbiguityException.class)
+    public void solveMethodWithAmbiguosCall() {
+        CompilationUnit cu = parseSample("ClassWithMethods");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
         Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
-        SymbolReference<ResolvedMethodDeclaration> ref = context.solveMethod("foo5", ImmutableList.of(NullType.INSTANCE), false);
-    });
-                
-}
+
+        SymbolReference<ResolvedMethodDeclaration> ref = context.solveMethod("foo5", ImmutableList.of(NullType.INSTANCE), false, new ReflectionTypeSolver());
+    }
 
     @Test
-    void solveMethodAsUsageSimpleCase() {
+    public void solveMethodAsUsageSimpleCase() {
         CompilationUnit cu = parseSample("ClassWithMethods");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
-        Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration,
-                                                                 new ReflectionTypeSolver());
+        Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        Optional<MethodUsage> ref = context.solveMethodAsUsage("foo0", ImmutableList.of());
+        Optional<MethodUsage> ref = context.solveMethodAsUsage("foo0", ImmutableList.of(), new ReflectionTypeSolver());
         assertEquals(true, ref.isPresent());
         assertEquals("A", ref.get().declaringType().getName());
         assertEquals(0, ref.get().getNoParams());
     }
 
     @Test
-    void solveMethodAsUsageOverrideCase() {
+    public void solveMethodAsUsageOverrideCase() {
         CompilationUnit cu = parseSample("ClassWithMethods");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
-        Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration,
-                                                                 new ReflectionTypeSolver());
+        Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        Optional<MethodUsage> ref = context.solveMethodAsUsage("foo1", ImmutableList.of());
+        Optional<MethodUsage> ref = context.solveMethodAsUsage("foo1", ImmutableList.of(), new ReflectionTypeSolver());
         assertEquals(true, ref.isPresent());
         assertEquals("A", ref.get().declaringType().getName());
         assertEquals(0, ref.get().getNoParams());
     }
 
     @Test
-    void solveMethodAsUsageInheritedCase() {
+    public void solveMethodAsUsageInheritedCase() {
         CompilationUnit cu = parseSample("ClassWithMethods");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
-        Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration,
-                                                                 new ReflectionTypeSolver());
+        Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
-        Optional<MethodUsage> ref = context.solveMethodAsUsage("foo2", ImmutableList.of());
+        Optional<MethodUsage> ref = context.solveMethodAsUsage("foo2", ImmutableList.of(), new ReflectionTypeSolver());
         assertEquals(true, ref.isPresent());
         assertEquals("Super", ref.get().declaringType().getName());
         assertEquals(0, ref.get().getNoParams());
     }
 
     @Test
-    void solveMethodAsUsageWithPrimitiveParameters() {
+    public void solveMethodAsUsageWithPrimitiveParameters() {
         CompilationUnit cu = parseSample("ClassWithMethods");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
-        Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration,
-                                                                 new ReflectionTypeSolver());
+        Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
         ResolvedType intType = ResolvedPrimitiveType.INT;
 
-        Optional<MethodUsage> ref = context.solveMethodAsUsage("foo3", ImmutableList.of(intType));
+        Optional<MethodUsage> ref = context.solveMethodAsUsage("foo3", ImmutableList.of(intType), new ReflectionTypeSolver());
         assertEquals(true, ref.isPresent());
         assertEquals("A", ref.get().declaringType().getName());
         assertEquals(1, ref.get().getNoParams());
     }
 
     @Test
-    void solveMethodAsUsageWithMoreSpecializedParameter() {
+    public void solveMethodAsUsageWithMoreSpecializedParameter() {
         CompilationUnit cu = parseSample("ClassWithMethods");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
-        Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration,
-                                                                 new ReflectionTypeSolver());
+        Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
 
         ResolvedType stringType = new ReferenceTypeImpl(new ReflectionClassDeclaration(String.class, typeSolver), typeSolver);
 
-        Optional<MethodUsage> ref = context.solveMethodAsUsage("foo4", ImmutableList.of(stringType));
+        Optional<MethodUsage> ref = context.solveMethodAsUsage("foo4", ImmutableList.of(stringType), new ReflectionTypeSolver());
         assertEquals(true, ref.isPresent());
         assertEquals("A", ref.get().declaringType().getName());
         assertEquals(1, ref.get().getNoParams());
     }
 
-    @Test
-    void solveMethodAsUsageWithAmbiguosCall() {
-        assertThrows(MethodAmbiguityException.class, () -> {
-            CompilationUnit cu = parseSample("ClassWithMethods");
+    @Test(expected = MethodAmbiguityException.class)
+    public void solveMethodAsUsageWithAmbiguosCall() {
+        CompilationUnit cu = parseSample("ClassWithMethods");
         ClassOrInterfaceDeclaration classOrInterfaceDeclaration = Navigator.demandClass(cu, "A");
-        Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, new ReflectionTypeSolver());
-        Optional<MethodUsage> ref = context.solveMethodAsUsage("foo5", ImmutableList.of(NullType.INSTANCE));
-    });
-                
-}
+        Context context = new ClassOrInterfaceDeclarationContext(classOrInterfaceDeclaration, typeSolver);
+
+        Optional<MethodUsage> ref = context.solveMethodAsUsage("foo5", ImmutableList.of(NullType.INSTANCE), new ReflectionTypeSolver());
+    }
 }

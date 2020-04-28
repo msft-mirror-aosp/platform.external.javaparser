@@ -27,14 +27,4 @@ package com.github.javaparser.resolution.declarations;
 public interface ResolvedEnumConstantDeclaration extends ResolvedValueDeclaration {
 
     String getName();
-
-    @Override
-    default boolean isEnumConstant() {
-        return true;
-    }
-
-    @Override
-    default ResolvedEnumConstantDeclaration asEnumConstant() {
-        return this;
-    }
 }

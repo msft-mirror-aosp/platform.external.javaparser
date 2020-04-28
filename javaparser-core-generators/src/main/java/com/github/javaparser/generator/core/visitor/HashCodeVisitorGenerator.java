@@ -11,7 +11,7 @@ import com.github.javaparser.metamodel.PropertyMetaModel;
 
 import java.util.List;
 
-import static com.github.javaparser.StaticJavaParser.parseStatement;
+import static com.github.javaparser.JavaParser.parseStatement;
 
 /**
  * Generates JavaParser's HashCodeVisitor.

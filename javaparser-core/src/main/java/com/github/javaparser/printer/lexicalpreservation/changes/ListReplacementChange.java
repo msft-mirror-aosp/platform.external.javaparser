@@ -3,6 +3,7 @@ package com.github.javaparser.printer.lexicalpreservation.changes;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.observer.ObservableProperty;
+import com.github.javaparser.utils.Pair;
 
 import java.util.Optional;
 

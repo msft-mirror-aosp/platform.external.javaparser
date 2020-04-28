@@ -80,6 +80,14 @@ public class Problem {
     }
 
     /**
+     * @deprecated use getLocation()
+     */
+    @Deprecated
+    public Optional<TokenRange> getRange() {
+        return getLocation();
+    }
+
+    /**
      * @return the cause that was passed into the constructor.
      */
     public Optional<Throwable> getCause() {

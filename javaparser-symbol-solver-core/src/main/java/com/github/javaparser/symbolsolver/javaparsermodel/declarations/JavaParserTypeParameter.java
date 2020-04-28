@@ -57,7 +57,7 @@ public class JavaParserTypeParameter extends AbstractTypeDeclaration implements 
     }
 
     public SymbolReference<ResolvedMethodDeclaration> solveMethod(String name, List<ResolvedType> parameterTypes) {
-        return getContext().solveMethod(name, parameterTypes, false);
+        return getContext().solveMethod(name, parameterTypes, false, typeSolver);
     }
 
     @Override
@@ -121,7 +121,7 @@ public class JavaParserTypeParameter extends AbstractTypeDeclaration implements 
             return JavaParserFacade.get(typeSolver).getTypeDeclaration(jpTypeDeclaration);
         } else if (parentNode instanceof com.github.javaparser.ast.body.ConstructorDeclaration){
             com.github.javaparser.ast.body.ConstructorDeclaration jpConstructorDeclaration = (com.github.javaparser.ast.body.ConstructorDeclaration) parentNode;
-            Optional<ClassOrInterfaceDeclaration> jpTypeDeclaration = jpConstructorDeclaration.findAncestor(com.github.javaparser.ast.body.ClassOrInterfaceDeclaration.class);
+            Optional<ClassOrInterfaceDeclaration> jpTypeDeclaration = jpConstructorDeclaration.getAncestorOfType(com.github.javaparser.ast.body.ClassOrInterfaceDeclaration.class);
             if (jpTypeDeclaration.isPresent()) {
                 ResolvedReferenceTypeDeclaration typeDeclaration = JavaParserFacade.get(typeSolver).getTypeDeclaration(jpTypeDeclaration.get());
                 if (typeDeclaration.isClass()) {
@@ -179,7 +179,7 @@ public class JavaParserTypeParameter extends AbstractTypeDeclaration implements 
     }
 
     @Override
-    public List<ResolvedReferenceType> getAncestors(boolean acceptIncompleteList) {
+    public List<ResolvedReferenceType> getAncestors() {
         throw new UnsupportedOperationException();
     }
 
@@ -219,10 +219,5 @@ public class JavaParserTypeParameter extends AbstractTypeDeclaration implements 
             return Optional.of((ResolvedReferenceTypeDeclaration) container);
         }
         return Optional.empty();
-    }
-
-    @Override
-    public List<ResolvedConstructorDeclaration> getConstructors() {
-        return Collections.emptyList();
     }
 }

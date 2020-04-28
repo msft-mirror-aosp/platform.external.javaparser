@@ -11,6 +11,14 @@ public class TokenTypes {
         return getCategory(kind).isWhitespace();
     }
 
+    /**
+     * @deprecated use isEndOfLineToken
+     */
+    @Deprecated
+    public static boolean isEndOfLineCharacter(int kind) {
+        return isEndOfLineToken(kind);
+    }
+
     public static boolean isEndOfLineToken(int kind) {
         return getCategory(kind).isEndOfLine();
     }
@@ -25,6 +33,14 @@ public class TokenTypes {
 
     public static boolean isComment(int kind) {
         return getCategory(kind).isComment();
+    }
+
+    /**
+     * @deprecated use eolTokenKind
+     */
+    @Deprecated
+    public static int eolToken() {
+        return eolTokenKind();
     }
 
     /**
@@ -48,6 +64,14 @@ public class TokenTypes {
      */
     public static int spaceTokenKind() {
         return SPACE;
+    }
+
+    /**
+     * @deprecated use spaceTokenKind
+     */
+    @Deprecated
+    public static int spaceToken() {
+        return spaceTokenKind();
     }
 
     /**

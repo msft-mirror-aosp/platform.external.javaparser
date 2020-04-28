@@ -49,6 +49,6 @@ public class CsmMix implements CsmElement {
 
     @Override
     public String toString() {
-        return elements.stream().map(e -> e.toString()).collect(Collectors.joining(",", "CsmMix[", "]"));
+        return "CsmMix[" + String.join(", ", elements.stream().map(e -> elements.toString()).collect(Collectors.toList())) + "]";
     }
 }

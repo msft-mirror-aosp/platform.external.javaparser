@@ -1,8 +1,8 @@
 package com.github.javaparser.symbolsolver.javaparsermodel.declarations;
 
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
@@ -13,12 +13,12 @@ import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
 import com.github.javaparser.symbolsolver.resolution.AbstractResolutionTest;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
-class JavaParserAnonymousClassDeclarationTest extends AbstractResolutionTest {
+public class JavaParserAnonymousClassDeclarationTest extends AbstractResolutionTest {
 
   @Test
-  void anonymousClassAsMethodArgument() {
+  public void anonymousClassAsMethodArgument() {
     CompilationUnit cu = parseSample("AnonymousClassDeclarations");
     ClassOrInterfaceDeclaration aClass = Navigator.demandClass(cu, "AnonymousClassDeclarations");
     MethodDeclaration method = Navigator.demandMethod(aClass, "fooBar1");
@@ -34,7 +34,7 @@ class JavaParserAnonymousClassDeclarationTest extends AbstractResolutionTest {
   }
 
   @Test
-  void callingSuperClassInnerClassMethod() {
+  public void callingSuperClassInnerClassMethod() {
     CompilationUnit cu = parseSample("AnonymousClassDeclarations");
     ClassOrInterfaceDeclaration aClass = Navigator.demandClass(cu, "AnonymousClassDeclarations");
     MethodDeclaration method = Navigator.demandMethod(aClass, "fooBar2");
@@ -50,7 +50,7 @@ class JavaParserAnonymousClassDeclarationTest extends AbstractResolutionTest {
   }
 
   @Test
-  void callingAnonymousClassInnerMethod() {
+  public void callingAnonymousClassInnerMethod() {
     CompilationUnit cu = parseSample("AnonymousClassDeclarations");
     ClassOrInterfaceDeclaration aClass = Navigator.demandClass(cu, "AnonymousClassDeclarations");
     MethodDeclaration method = Navigator.demandMethod(aClass, "fooBar3");
@@ -67,7 +67,7 @@ class JavaParserAnonymousClassDeclarationTest extends AbstractResolutionTest {
   }
 
   @Test
-  void usingAnonymousSuperClassInnerType() {
+  public void usingAnonymousSuperClassInnerType() {
     CompilationUnit cu = parseSample("AnonymousClassDeclarations");
     ClassOrInterfaceDeclaration aClass = Navigator.demandClass(cu, "AnonymousClassDeclarations");
     MethodDeclaration method = Navigator.demandMethod(aClass, "fooBar4");
@@ -82,7 +82,7 @@ class JavaParserAnonymousClassDeclarationTest extends AbstractResolutionTest {
   }
 
   @Test
-  void usingAnonymousClassInnerType() {
+  public void usingAnonymousClassInnerType() {
     CompilationUnit cu = parseSample("AnonymousClassDeclarations");
     ClassOrInterfaceDeclaration aClass = Navigator.demandClass(cu, "AnonymousClassDeclarations");
     MethodDeclaration method = Navigator.demandMethod(aClass, "fooBar5");
@@ -94,20 +94,5 @@ class JavaParserAnonymousClassDeclarationTest extends AbstractResolutionTest {
         JavaParserFacade.get(combinedTypeSolver).solveMethodAsUsage(methodCall);
 
     assertThat(methodUsage.getQualifiedSignature(), is("java.lang.Enum.toString()"));
-  }
-
-  @Test
-  void callingScopedAnonymousClassInnerMethod() {
-    CompilationUnit cu = parseSample("AnonymousClassDeclarations");
-    ClassOrInterfaceDeclaration aClass = Navigator.demandClass(cu, "AnonymousClassDeclarations");
-    MethodDeclaration method = Navigator.demandMethod(aClass, "fooBar6");
-    MethodCallExpr methodCall = Navigator.findMethodCall(method, "innerClassMethod").get();
-
-    CombinedTypeSolver combinedTypeSolver = new CombinedTypeSolver();
-    combinedTypeSolver.add(new ReflectionTypeSolver());
-    MethodUsage methodUsage =
-            JavaParserFacade.get(combinedTypeSolver).solveMethodAsUsage(methodCall);
-
-    assertThat(methodUsage.getQualifiedSignature(), is("AnonymousClassDeclarations.DoFn.ProcessContext.innerClassMethod()"));
   }
 }

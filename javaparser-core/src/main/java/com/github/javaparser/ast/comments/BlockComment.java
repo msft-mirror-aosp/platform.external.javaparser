@@ -27,10 +27,10 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.metamodel.BlockCommentMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
+import javax.annotation.Generated;
 import com.github.javaparser.TokenRange;
 import java.util.function.Consumer;
 import java.util.Optional;
-import com.github.javaparser.ast.Generated;
 
 /**
  * <p>
@@ -41,7 +41,7 @@ import com.github.javaparser.ast.Generated;
  *
  * @author Julio Vilmar Gesser
  */
-public class BlockComment extends Comment {
+public final class BlockComment extends Comment {
 
     public BlockComment() {
         this(null, "empty");

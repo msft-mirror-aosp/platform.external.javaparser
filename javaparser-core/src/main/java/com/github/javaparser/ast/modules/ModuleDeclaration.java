@@ -13,15 +13,16 @@ import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
 import com.github.javaparser.metamodel.ModuleDeclarationMetaModel;
-import static com.github.javaparser.StaticJavaParser.parseModuleDirective;
+import java.util.Arrays;
+import java.util.List;
 import static com.github.javaparser.utils.Utils.assertNotNull;
+import javax.annotation.Generated;
 import com.github.javaparser.TokenRange;
-import com.github.javaparser.ast.Generated;
 
 /**
  * A Java 9 Jigsaw module declaration. <code>@Foo module com.github.abc { requires a.B; }</code>
  */
-public class ModuleDeclaration extends Node implements NodeWithName<ModuleDeclaration>, NodeWithAnnotations<ModuleDeclaration> {
+public final class ModuleDeclaration extends Node implements NodeWithName<ModuleDeclaration>, NodeWithAnnotations<ModuleDeclaration> {
 
     private Name name;
 
@@ -29,7 +30,7 @@ public class ModuleDeclaration extends Node implements NodeWithName<ModuleDeclar
 
     private boolean isOpen;
 
-    private NodeList<ModuleDirective> directives;
+    private NodeList<ModuleStmt> moduleStmts;
 
     public ModuleDeclaration() {
         this(null, new NodeList<>(), new Name(), false, new NodeList<>());
@@ -40,20 +41,20 @@ public class ModuleDeclaration extends Node implements NodeWithName<ModuleDeclar
     }
 
     @AllFieldsConstructor
-    public ModuleDeclaration(NodeList<AnnotationExpr> annotations, Name name, boolean isOpen, NodeList<ModuleDirective> directives) {
-        this(null, annotations, name, isOpen, directives);
+    public ModuleDeclaration(NodeList<AnnotationExpr> annotations, Name name, boolean isOpen, NodeList<ModuleStmt> moduleStmts) {
+        this(null, annotations, name, isOpen, moduleStmts);
     }
 
     /**
      * This constructor is used by the parser and is considered private.
      */
     @Generated("com.github.javaparser.generator.core.node.MainConstructorGenerator")
-    public ModuleDeclaration(TokenRange tokenRange, NodeList<AnnotationExpr> annotations, Name name, boolean isOpen, NodeList<ModuleDirective> directives) {
+    public ModuleDeclaration(TokenRange tokenRange, NodeList<AnnotationExpr> annotations, Name name, boolean isOpen, NodeList<ModuleStmt> moduleStmts) {
         super(tokenRange);
         setAnnotations(annotations);
         setName(name);
         setOpen(isOpen);
-        setDirectives(directives);
+        setModuleStmts(moduleStmts);
         customInitialization();
     }
 
@@ -118,9 +119,9 @@ public class ModuleDeclaration extends Node implements NodeWithName<ModuleDeclar
                 return true;
             }
         }
-        for (int i = 0; i < directives.size(); i++) {
-            if (directives.get(i) == node) {
-                directives.remove(i);
+        for (int i = 0; i < moduleStmts.size(); i++) {
+            if (moduleStmts.get(i) == node) {
+                moduleStmts.remove(i);
                 return true;
             }
         }
@@ -143,21 +144,21 @@ public class ModuleDeclaration extends Node implements NodeWithName<ModuleDeclar
     }
 
     @Generated("com.github.javaparser.generator.core.node.PropertyGenerator")
-    public NodeList<ModuleDirective> getDirectives() {
-        return directives;
+    public NodeList<ModuleStmt> getModuleStmts() {
+        return moduleStmts;
     }
 
     @Generated("com.github.javaparser.generator.core.node.PropertyGenerator")
-    public ModuleDeclaration setDirectives(final NodeList<ModuleDirective> directives) {
-        assertNotNull(directives);
-        if (directives == this.directives) {
+    public ModuleDeclaration setModuleStmts(final NodeList<ModuleStmt> moduleStmts) {
+        assertNotNull(moduleStmts);
+        if (moduleStmts == this.moduleStmts) {
             return (ModuleDeclaration) this;
         }
-        notifyPropertyChange(ObservableProperty.DIRECTIVES, this.directives, directives);
-        if (this.directives != null)
-            this.directives.setParentNode(null);
-        this.directives = directives;
-        setAsParentNodeOf(directives);
+        notifyPropertyChange(ObservableProperty.MODULE_STMTS, this.moduleStmts, moduleStmts);
+        if (this.moduleStmts != null)
+            this.moduleStmts.setParentNode(null);
+        this.moduleStmts = moduleStmts;
+        setAsParentNodeOf(moduleStmts);
         return this;
     }
 
@@ -184,9 +185,9 @@ public class ModuleDeclaration extends Node implements NodeWithName<ModuleDeclar
                 return true;
             }
         }
-        for (int i = 0; i < directives.size(); i++) {
-            if (directives.get(i) == node) {
-                directives.set(i, (ModuleDirective) replacementNode);
+        for (int i = 0; i < moduleStmts.size(); i++) {
+            if (moduleStmts.get(i) == node) {
+                moduleStmts.set(i, (ModuleStmt) replacementNode);
                 return true;
             }
         }
@@ -195,17 +196,5 @@ public class ModuleDeclaration extends Node implements NodeWithName<ModuleDeclar
             return true;
         }
         return super.replace(node, replacementNode);
-    }
-
-    /**
-     * Add a directive to the module, like "exports R.S to T1.U1, T2.U2;"
-     */
-    public ModuleDeclaration addDirective(String directive) {
-        return addDirective(parseModuleDirective(directive));
-    }
-
-    public ModuleDeclaration addDirective(ModuleDirective directive) {
-        getDirectives().add(directive);
-        return this;
     }
 }

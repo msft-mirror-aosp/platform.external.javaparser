@@ -21,12 +21,10 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.MethodCallExpr;
 import com.github.javaparser.ast.expr.NameExpr;
-import com.github.javaparser.resolution.UnsolvedSymbolException;
+import com.github.javaparser.resolution.declarations.ResolvedValueDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedTypeDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedTypeParameterDeclaration;
-import com.github.javaparser.resolution.declarations.ResolvedValueDeclaration;
-import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.github.javaparser.resolution.types.ResolvedType;
 import com.github.javaparser.symbolsolver.core.resolution.Context;
 import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
@@ -37,13 +35,11 @@ import com.github.javaparser.symbolsolver.model.resolution.Value;
 import com.github.javaparser.symbolsolver.reflectionmodel.ReflectionClassDeclaration;
 import com.github.javaparser.symbolsolver.resolution.SymbolDeclarator;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Optional;
+import java.util.*;
 
+import static com.github.javaparser.symbolsolver.javaparser.Navigator.getParentNode;
 import static com.github.javaparser.symbolsolver.javaparser.Navigator.requireParentNode;
-import static java.util.Collections.singletonList;
+import static java.util.Collections.*;
 
 /**
  * @author Federico Tomassetti
@@ -89,7 +85,9 @@ public abstract class AbstractJavaParserContext<N extends Node> implements Conte
 
         AbstractJavaParserContext<?> that = (AbstractJavaParserContext<?>) o;
 
-        return wrappedNode != null ? wrappedNode.equals(that.wrappedNode) : that.wrappedNode == null;
+        if (wrappedNode != null ? !wrappedNode.equals(that.wrappedNode) : that.wrappedNode != null) return false;
+
+        return true;
     }
 
     @Override
@@ -98,12 +96,12 @@ public abstract class AbstractJavaParserContext<N extends Node> implements Conte
     }
 
     @Override
-    public Optional<ResolvedType> solveGenericType(String name) {
+    public Optional<ResolvedType> solveGenericType(String name, TypeSolver typeSolver) {
         Context parent = getParent();
         if (parent == null) {
             return Optional.empty();
         } else {
-            return parent.solveGenericType(name);
+            return parent.solveGenericType(name, typeSolver);
         }
     }
 
@@ -142,21 +140,21 @@ public abstract class AbstractJavaParserContext<N extends Node> implements Conte
     /// Protected methods
     ///
 
-    protected Optional<Value> solveWithAsValue(SymbolDeclarator symbolDeclarator, String name) {
+    protected Optional<Value> solveWithAsValue(SymbolDeclarator symbolDeclarator, String name, TypeSolver typeSolver) {
         return symbolDeclarator.getSymbolDeclarations().stream()
                 .filter(d -> d.getName().equals(name))
                 .map(Value::from)
                 .findFirst();
     }
 
-    protected Collection<ResolvedReferenceTypeDeclaration> findTypeDeclarations(Optional<Expression> optScope) {
+    protected Collection<ResolvedReferenceTypeDeclaration> findTypeDeclarations(Optional<Expression> optScope, TypeSolver typeSolver) {
         if (optScope.isPresent()) {
             Expression scope = optScope.get();
 
             // consider static methods
             if (scope instanceof NameExpr) {
-                NameExpr scopeAsName = scope.asNameExpr();
-                SymbolReference<ResolvedTypeDeclaration> symbolReference = this.solveType(scopeAsName.getName().getId());
+                NameExpr scopeAsName = (NameExpr) scope;
+                SymbolReference<ResolvedTypeDeclaration> symbolReference = this.solveType(scopeAsName.getName().getId(), typeSolver);
                 if (symbolReference.isSolved() && symbolReference.getCorrespondingDeclaration().isType()) {
                     return singletonList(symbolReference.getCorrespondingDeclaration().asReferenceType());
                 }
@@ -166,14 +164,7 @@ public abstract class AbstractJavaParserContext<N extends Node> implements Conte
             try {
                 typeOfScope = JavaParserFacade.get(typeSolver).getType(scope);
             } catch (Exception e) {
-                // If the scope corresponds to a type we should treat it differently
-                if (scope instanceof FieldAccessExpr) {
-                    FieldAccessExpr scopeName = (FieldAccessExpr) scope;
-                    if (this.solveType(scopeName.toString()).isSolved()) {
-                        return Collections.emptyList();
-                    }
-                }
-                throw new UnsolvedSymbolException(scope.toString(), wrappedNode.toString(), e);
+                throw new RuntimeException("Issue calculating the type of the scope of " + this, e);
             }
             if (typeOfScope.isWildcard()) {
                 if (typeOfScope.asWildcard().isExtends() || typeOfScope.asWildcard().isSuper()) {
@@ -192,12 +183,6 @@ public abstract class AbstractJavaParserContext<N extends Node> implements Conte
                 return result;
             } else if (typeOfScope.isConstraint()) {
                 return singletonList(typeOfScope.asConstraintType().getBound().asReferenceType().getTypeDeclaration());
-            } else if (typeOfScope.isUnionType()) {
-                return typeOfScope.asUnionType().getCommonAncestor()
-                        .map(ResolvedReferenceType::getTypeDeclaration)
-                        .map(Collections::singletonList)
-                        .orElseThrow(() -> new UnsolvedSymbolException("No common ancestor available for UnionType"
-                                + typeOfScope.describe()));
             }
             return singletonList(typeOfScope.asReferenceType().getTypeDeclaration());
         }
@@ -205,7 +190,4 @@ public abstract class AbstractJavaParserContext<N extends Node> implements Conte
         return singletonList(typeOfScope.asReferenceType().getTypeDeclaration());
     }
 
-    public N getWrappedNode() {
-        return wrappedNode;
-    }
 }

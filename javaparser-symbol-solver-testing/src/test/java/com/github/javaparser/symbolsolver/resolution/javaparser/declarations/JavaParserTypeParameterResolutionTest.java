@@ -16,6 +16,7 @@
 
 package com.github.javaparser.symbolsolver.resolution.javaparser.declarations;
 
+import com.github.javaparser.ParseException;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
@@ -29,12 +30,12 @@ import com.github.javaparser.symbolsolver.javaparsermodel.declarations.JavaParse
 import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
 import com.github.javaparser.symbolsolver.resolution.AbstractResolutionTest;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-class JavaParserTypeParameterResolutionTest extends AbstractResolutionTest {
+public class JavaParserTypeParameterResolutionTest extends AbstractResolutionTest {
 
     private void testGenericArguments(String containingMethodName) {
         CompilationUnit cu = parseSample("GenericMethodArguments");
@@ -48,17 +49,17 @@ class JavaParserTypeParameterResolutionTest extends AbstractResolutionTest {
     }
 
     @Test
-    void genericMethodWithGenericClassBasedArgument() {
+    public void genericMethodWithGenericClassBasedArgument() {
         testGenericArguments("useCase1");
     }
 
     @Test
-    void genericMethodWithGenericClassArgument() {
+    public void genericMethodWithGenericClassArgument() {
         testGenericArguments("useCase2");
     }
 
     @Test
-    void declaredOnMethodPositiveCase() {
+    public void declaredOnMethodPositiveCase() {
         CompilationUnit cu = parseSample("MethodTypeParameter");
         TypeSolver typeSolver = new ReflectionTypeSolver();
         JavaParserFacade javaParserFacade = JavaParserFacade.get(typeSolver);
@@ -75,7 +76,7 @@ class JavaParserTypeParameterResolutionTest extends AbstractResolutionTest {
     }
 
     @Test
-    void declaredOnMethodNegativeCase() {
+    public void declaredOnMethodNegativeCase() {
         CompilationUnit cu = parseSample("ClassTypeParameter");
         TypeSolver typeSolver = new ReflectionTypeSolver();
         JavaParserFacade javaParserFacade = JavaParserFacade.get(typeSolver);

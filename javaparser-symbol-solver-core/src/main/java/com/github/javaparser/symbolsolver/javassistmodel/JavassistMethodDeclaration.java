@@ -18,7 +18,6 @@ package com.github.javaparser.symbolsolver.javassistmodel;
 
 import com.github.javaparser.ast.AccessSpecifier;
 import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.resolution.MethodUsage;
 import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedParameterDeclaration;
@@ -26,7 +25,6 @@ import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclar
 import com.github.javaparser.resolution.declarations.ResolvedTypeParameterDeclaration;
 import com.github.javaparser.resolution.types.ResolvedType;
 import com.github.javaparser.symbolsolver.core.resolution.Context;
-import com.github.javaparser.symbolsolver.core.resolution.TypeVariableResolutionCapability;
 import com.github.javaparser.symbolsolver.declarations.common.MethodDeclarationCommonLogic;
 import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
 import javassist.CtMethod;
@@ -35,13 +33,15 @@ import javassist.bytecode.BadBytecode;
 import javassist.bytecode.SignatureAttribute;
 
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
  * @author Federico Tomassetti
  */
-public class JavassistMethodDeclaration implements ResolvedMethodDeclaration, TypeVariableResolutionCapability {
+public class JavassistMethodDeclaration implements ResolvedMethodDeclaration {
     private CtMethod ctMethod;
     private TypeSolver typeSolver;
 
@@ -91,8 +91,6 @@ public class JavassistMethodDeclaration implements ResolvedMethodDeclaration, Ty
     public ResolvedReferenceTypeDeclaration declaringType() {
         if (ctMethod.getDeclaringClass().isInterface()) {
             return new JavassistInterfaceDeclaration(ctMethod.getDeclaringClass(), typeSolver);
-        } else if (ctMethod.getDeclaringClass().isEnum()) {
-            return new JavassistEnumDeclaration(ctMethod.getDeclaringClass(), typeSolver);
         } else {
             return new JavassistClassDeclaration(ctMethod.getDeclaringClass(), typeSolver);
         }
@@ -107,7 +105,9 @@ public class JavassistMethodDeclaration implements ResolvedMethodDeclaration, Ty
             } else {
                 return JavassistFactory.typeUsageFor(ctMethod.getReturnType(), typeSolver);
             }
-        } catch (NotFoundException | BadBytecode e) {
+        } catch (NotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (BadBytecode e) {
             throw new RuntimeException(e);
         }
     }
@@ -129,15 +129,17 @@ public class JavassistMethodDeclaration implements ResolvedMethodDeclaration, Ty
             if ((ctMethod.getModifiers() & javassist.Modifier.VARARGS) > 0) {
                 variadic = i == (ctMethod.getParameterTypes().length - 1);
             }
-            Optional<String> paramName = JavassistUtils.extractParameterName(ctMethod, i);
-            String signature = ctMethod.getGenericSignature() == null ? ctMethod.getSignature() : ctMethod.getGenericSignature();
-            SignatureAttribute.MethodSignature methodSignature = SignatureAttribute.toMethodSignature(signature);
-            SignatureAttribute.Type signatureType = methodSignature.getParameterTypes()[i];
-            return new JavassistParameterDeclaration(JavassistUtils.signatureTypeToType(signatureType,
-                    typeSolver, this), typeSolver, variadic, paramName.orElse(null));
-
-        } catch (NotFoundException | BadBytecode e) {
+            if (ctMethod.getGenericSignature() != null) {
+                SignatureAttribute.MethodSignature methodSignature = SignatureAttribute.toMethodSignature(ctMethod.getGenericSignature());
+                SignatureAttribute.Type signatureType = methodSignature.getParameterTypes()[i];
+                return new JavassistParameterDeclaration(JavassistUtils.signatureTypeToType(signatureType, typeSolver, this), typeSolver, variadic);
+            } else {
+                return new JavassistParameterDeclaration(ctMethod.getParameterTypes()[i], typeSolver, variadic);
+            }
+        } catch (NotFoundException e) {
             throw new RuntimeException(e);
+        } catch (BadBytecode badBytecode) {
+            throw new RuntimeException(badBytecode);
         }
     }
 
@@ -158,7 +160,7 @@ public class JavassistMethodDeclaration implements ResolvedMethodDeclaration, Ty
     public List<ResolvedTypeParameterDeclaration> getTypeParameters() {
         try {
             if (ctMethod.getGenericSignature() == null) {
-                return new ArrayList<>();
+                return Collections.emptyList();
             }
             SignatureAttribute.MethodSignature methodSignature = SignatureAttribute.toMethodSignature(ctMethod.getGenericSignature());
             return Arrays.stream(methodSignature.getTypeParameters()).map((jasTp) -> new JavassistTypeParameter(jasTp, this, typeSolver)).collect(Collectors.toList());
@@ -169,7 +171,7 @@ public class JavassistMethodDeclaration implements ResolvedMethodDeclaration, Ty
 
     @Override
     public AccessSpecifier accessSpecifier() {
-        return JavassistFactory.modifiersToAccessLevel(ctMethod.getModifiers());
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -192,10 +194,5 @@ public class JavassistMethodDeclaration implements ResolvedMethodDeclaration, Ty
         } catch (NotFoundException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public Optional<MethodDeclaration> toAst() {
-        return Optional.empty();
     }
 }

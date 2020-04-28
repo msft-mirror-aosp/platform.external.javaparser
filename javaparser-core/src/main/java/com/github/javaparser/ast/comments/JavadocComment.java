@@ -20,6 +20,7 @@
  */
 package com.github.javaparser.ast.comments;
 
+import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.AllFieldsConstructor;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
@@ -28,18 +29,17 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.metamodel.JavadocCommentMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
+import javax.annotation.Generated;
 import com.github.javaparser.TokenRange;
 import java.util.function.Consumer;
 import java.util.Optional;
-import com.github.javaparser.ast.Generated;
-import static com.github.javaparser.StaticJavaParser.parseJavadoc;
 
 /**
  * A Javadoc comment. <code>/&#42;&#42; a comment &#42;/</code>
  *
  * @author Julio Vilmar Gesser
  */
-public class JavadocComment extends Comment {
+public final class JavadocComment extends Comment {
 
     public JavadocComment() {
         this(null, "empty");
@@ -72,7 +72,7 @@ public class JavadocComment extends Comment {
     }
 
     public Javadoc parse() {
-        return parseJavadoc(getContent());
+        return JavaParser.parseJavadoc(getContent());
     }
 
     @Override

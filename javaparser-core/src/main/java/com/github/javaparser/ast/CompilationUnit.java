@@ -20,7 +20,10 @@
  */
 package com.github.javaparser.ast;
 
-import com.github.javaparser.*;
+import com.github.javaparser.JavaParser;
+import com.github.javaparser.ParseResult;
+import com.github.javaparser.ParseStart;
+import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.body.AnnotationDeclaration;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.EnumDeclaration;
@@ -42,26 +45,23 @@ import com.github.javaparser.printer.PrettyPrinter;
 import com.github.javaparser.utils.ClassUtils;
 import com.github.javaparser.utils.CodeGenerationUtils;
 import com.github.javaparser.utils.Utils;
+import javax.annotation.Generated;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-import static com.github.javaparser.JavaToken.Kind.EOF;
+import java.util.stream.Collectors;
+import static com.github.javaparser.JavaParser.parseName;
 import static com.github.javaparser.Providers.UTF8;
 import static com.github.javaparser.Providers.provider;
-import static com.github.javaparser.Range.range;
-import static com.github.javaparser.StaticJavaParser.parseImport;
-import static com.github.javaparser.StaticJavaParser.parseName;
-import static com.github.javaparser.ast.Modifier.createModifierList;
 import static com.github.javaparser.utils.CodeGenerationUtils.subtractPaths;
 import static com.github.javaparser.utils.Utils.assertNotNull;
 import com.github.javaparser.ast.Node;
-import com.github.javaparser.TokenRange;
-import com.github.javaparser.ast.Generated;
 
 /**
  * <p>
@@ -78,7 +78,7 @@ import com.github.javaparser.ast.Generated;
  * @see TypeDeclaration
  * @see Storage
  */
-public class CompilationUnit extends Node {
+public final class CompilationUnit extends Node {
 
     @OptionalProperty
     private PackageDeclaration packageDeclaration;
@@ -222,10 +222,8 @@ public class CompilationUnit extends Node {
         return this;
     }
 
-    public CompilationUnit addImport(ImportDeclaration importDeclaration) {
-        if (getImports().stream().noneMatch(im -> im.toString().equals(importDeclaration.toString()))) {
-            getImports().add(importDeclaration);
-        }
+    public CompilationUnit addImport(ImportDeclaration imports) {
+        getImports().add(imports);
         return this;
     }
 
@@ -311,13 +309,12 @@ public class CompilationUnit extends Node {
      * @throws RuntimeException if clazz is an anonymous or local class
      */
     public CompilationUnit addImport(Class<?> clazz) {
-        if (clazz.isArray()) {
-            return addImport(clazz.getComponentType());
-        }
-        if (ClassUtils.isPrimitiveOrWrapper(clazz) || "java.lang".equals(clazz.getPackage().getName()))
+        if (ClassUtils.isPrimitiveOrWrapper(clazz) || clazz.getName().startsWith("java.lang"))
             return this;
         else if (clazz.isMemberClass())
             return addImport(clazz.getName().replace("$", "."));
+        else if (clazz.isArray() && !ClassUtils.isPrimitiveOrWrapper(clazz.getComponentType()) && !clazz.getComponentType().getName().startsWith("java.lang"))
+            return addImport(clazz.getComponentType().getName());
         else if (clazz.isAnonymousClass() || clazz.isLocalClass())
             throw new RuntimeException(clazz.getName() + " is an anonymous or local class therefore it can't be added with addImport");
         return addImport(clazz.getName());
@@ -342,7 +339,13 @@ public class CompilationUnit extends Node {
             i.append(".*");
         }
         i.append(";");
-        return addImport(parseImport(i.toString()));
+        ImportDeclaration importDeclaration = JavaParser.parseImport(i.toString());
+        if (getImports().stream().anyMatch(im -> im.toString().equals(importDeclaration.toString())))
+            return this;
+        else {
+            getImports().add(importDeclaration);
+            return this;
+        }
     }
 
     /**
@@ -352,7 +355,7 @@ public class CompilationUnit extends Node {
      * @return the newly created class
      */
     public ClassOrInterfaceDeclaration addClass(String name) {
-        return addClass(name, Modifier.Keyword.PUBLIC);
+        return addClass(name, Modifier.PUBLIC);
     }
 
     /**
@@ -362,8 +365,8 @@ public class CompilationUnit extends Node {
      * @param modifiers the modifiers (like Modifier.PUBLIC)
      * @return the newly created class
      */
-    public ClassOrInterfaceDeclaration addClass(String name, Modifier.Keyword... modifiers) {
-        ClassOrInterfaceDeclaration classOrInterfaceDeclaration = new ClassOrInterfaceDeclaration(createModifierList(modifiers), false, name);
+    public ClassOrInterfaceDeclaration addClass(String name, Modifier... modifiers) {
+        ClassOrInterfaceDeclaration classOrInterfaceDeclaration = new ClassOrInterfaceDeclaration(Arrays.stream(modifiers).collect(Collectors.toCollection(() -> EnumSet.noneOf(Modifier.class))), false, name);
         getTypes().add(classOrInterfaceDeclaration);
         return classOrInterfaceDeclaration;
     }
@@ -375,7 +378,7 @@ public class CompilationUnit extends Node {
      * @return the newly created class
      */
     public ClassOrInterfaceDeclaration addInterface(String name) {
-        return addInterface(name, Modifier.Keyword.PUBLIC);
+        return addInterface(name, Modifier.PUBLIC);
     }
 
     /**
@@ -385,8 +388,8 @@ public class CompilationUnit extends Node {
      * @param modifiers the modifiers (like Modifier.PUBLIC)
      * @return the newly created class
      */
-    public ClassOrInterfaceDeclaration addInterface(String name, Modifier.Keyword... modifiers) {
-        ClassOrInterfaceDeclaration classOrInterfaceDeclaration = new ClassOrInterfaceDeclaration(createModifierList(modifiers), true, name);
+    public ClassOrInterfaceDeclaration addInterface(String name, Modifier... modifiers) {
+        ClassOrInterfaceDeclaration classOrInterfaceDeclaration = new ClassOrInterfaceDeclaration(Arrays.stream(modifiers).collect(Collectors.toCollection(() -> EnumSet.noneOf(Modifier.class))), true, name);
         getTypes().add(classOrInterfaceDeclaration);
         return classOrInterfaceDeclaration;
     }
@@ -398,7 +401,7 @@ public class CompilationUnit extends Node {
      * @return the newly created class
      */
     public EnumDeclaration addEnum(String name) {
-        return addEnum(name, Modifier.Keyword.PUBLIC);
+        return addEnum(name, Modifier.PUBLIC);
     }
 
     /**
@@ -408,8 +411,8 @@ public class CompilationUnit extends Node {
      * @param modifiers the modifiers (like Modifier.PUBLIC)
      * @return the newly created class
      */
-    public EnumDeclaration addEnum(String name, Modifier.Keyword... modifiers) {
-        EnumDeclaration enumDeclaration = new EnumDeclaration(createModifierList(modifiers), name);
+    public EnumDeclaration addEnum(String name, Modifier... modifiers) {
+        EnumDeclaration enumDeclaration = new EnumDeclaration(Arrays.stream(modifiers).collect(Collectors.toCollection(() -> EnumSet.noneOf(Modifier.class))), name);
         getTypes().add(enumDeclaration);
         return enumDeclaration;
     }
@@ -421,7 +424,7 @@ public class CompilationUnit extends Node {
      * @return the newly created class
      */
     public AnnotationDeclaration addAnnotationDeclaration(String name) {
-        return addAnnotationDeclaration(name, Modifier.Keyword.PUBLIC);
+        return addAnnotationDeclaration(name, Modifier.PUBLIC);
     }
 
     /**
@@ -431,8 +434,8 @@ public class CompilationUnit extends Node {
      * @param modifiers the modifiers (like Modifier.PUBLIC)
      * @return the newly created class
      */
-    public AnnotationDeclaration addAnnotationDeclaration(String name, Modifier.Keyword... modifiers) {
-        AnnotationDeclaration annotationDeclaration = new AnnotationDeclaration(createModifierList(modifiers), name);
+    public AnnotationDeclaration addAnnotationDeclaration(String name, Modifier... modifiers) {
+        AnnotationDeclaration annotationDeclaration = new AnnotationDeclaration(Arrays.stream(modifiers).collect(Collectors.toCollection(() -> EnumSet.noneOf(Modifier.class))), name);
         getTypes().add(annotationDeclaration);
         return annotationDeclaration;
     }
@@ -565,42 +568,6 @@ public class CompilationUnit extends Node {
         return this;
     }
 
-    public CompilationUnit setStorage(Path path, Charset charset) {
-        this.storage = new Storage(this, path, charset);
-        return this;
-    }
-
-    /**
-     * Create (or overwrite) a module declaration in this compilation unit with name "name".
-     *
-     * @return the module
-     */
-    public ModuleDeclaration setModule(String name) {
-        final ModuleDeclaration module = new ModuleDeclaration(parseName(name), false);
-        setModule(module);
-        return module;
-    }
-
-    /**
-     * Recalculates the ranges of all nodes by looking at the sizes of the tokens.
-     * This is useful when you have manually inserted or deleted tokens and still want to use the ranges.
-     */
-    public void recalculatePositions() {
-        if (!getTokenRange().isPresent()) {
-            throw new IllegalStateException("Can't recalculate positions without tokens.");
-        }
-        Position cursor = Position.HOME;
-        for (JavaToken t : getTokenRange().get()) {
-            int tokenLength = t.getKind() == EOF.getKind() ? 0 : t.getText().length() - 1;
-            t.setRange(range(cursor, cursor.right(tokenLength)));
-            if (t.getCategory().isEndOfLine()) {
-                cursor = cursor.nextLine();
-            } else {
-                cursor = cursor.right(tokenLength + 1);
-            }
-        }
-    }
-
     /**
      * Information about where this compilation unit was loaded from.
      * This class only stores the absolute location.
@@ -612,18 +579,9 @@ public class CompilationUnit extends Node {
 
         private final Path path;
 
-        private final Charset encoding;
-
         private Storage(CompilationUnit compilationUnit, Path path) {
             this.compilationUnit = compilationUnit;
             this.path = path.toAbsolutePath();
-            this.encoding = UTF8;
-        }
-
-        private Storage(CompilationUnit compilationUnit, Path path, Charset encoding) {
-            this.compilationUnit = compilationUnit;
-            this.path = path.toAbsolutePath();
-            this.encoding = encoding;
         }
 
         /**
@@ -638,13 +596,6 @@ public class CompilationUnit extends Node {
          */
         public CompilationUnit getCompilationUnit() {
             return compilationUnit;
-        }
-
-        /**
-         * @return the encoding used to read the file.
-         */
-        public Charset getEncoding() {
-            return encoding;
         }
 
         /**
@@ -673,27 +624,16 @@ public class CompilationUnit extends Node {
         }
 
         /**
-         * Saves a compilation unit to its original location with formatting according to the function passed as a
-         * parameter.
+         * Saves a compilation unit to its original location with formatting according to the function
+         * passed as a parameter.
          *
          * @param makeOutput a function that formats the compilation unit
          */
         public void save(Function<CompilationUnit, String> makeOutput) {
-            save(makeOutput, encoding);
-        }
-
-        /**
-         * Saves a compilation unit to its original location with formatting and encoding according to the function and
-         * encoding passed as a parameter.
-         *
-         * @param makeOutput a function that formats the compilation unit
-         * @param encoding the encoding to use for the saved file
-         */
-        public void save(Function<CompilationUnit, String> makeOutput, Charset encoding) {
             try {
                 Files.createDirectories(path.getParent());
                 final String code = makeOutput.apply(getCompilationUnit());
-                Files.write(path, code.getBytes(encoding));
+                Files.write(path, code.getBytes(UTF8));
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }

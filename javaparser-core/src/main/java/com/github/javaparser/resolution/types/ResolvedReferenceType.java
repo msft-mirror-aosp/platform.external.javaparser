@@ -21,10 +21,7 @@
 
 package com.github.javaparser.resolution.types;
 
-import com.github.javaparser.ast.AccessSpecifier;
 import com.github.javaparser.resolution.MethodUsage;
-import com.github.javaparser.resolution.declarations.ResolvedFieldDeclaration;
-import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedTypeParameterDeclaration;
 import com.github.javaparser.resolution.types.parametrization.ResolvedTypeParameterValueProvider;
@@ -34,8 +31,6 @@ import com.github.javaparser.utils.Pair;
 
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static com.github.javaparser.ast.Modifier.Keyword.PRIVATE;
 
 /**
  * A ReferenceType like a class, an interface or an enum. Note that this type can contain also the values
@@ -62,9 +57,6 @@ public abstract class ResolvedReferenceType implements ResolvedType,
     }
 
     public ResolvedReferenceType(ResolvedReferenceTypeDeclaration typeDeclaration, List<ResolvedType> typeArguments) {
-        if (typeDeclaration == null) {
-            throw new IllegalArgumentException("TypeDeclaration is not expected to be null");
-        }
         if (typeDeclaration.isTypeParameter()) {
             throw new IllegalArgumentException("You should use only Classes, Interfaces and enums");
         }
@@ -163,7 +155,7 @@ public abstract class ResolvedReferenceType implements ResolvedType,
 
     @Override
     public ResolvedType replaceTypeVariables(ResolvedTypeParameterDeclaration tpToReplace, ResolvedType replaced,
-                                             Map<ResolvedTypeParameterDeclaration, ResolvedType> inferredTypes) {
+                                     Map<ResolvedTypeParameterDeclaration, ResolvedType> inferredTypes) {
         if (replaced == null) {
             throw new IllegalArgumentException();
         }
@@ -187,7 +179,7 @@ public abstract class ResolvedReferenceType implements ResolvedType,
 
         List<ResolvedType> values = result.typeParametersValues();
         // FIXME
-        if (values.contains(tpToReplace)) {
+        if(values.contains(tpToReplace)){
             int index = values.indexOf(tpToReplace);
             values.set(index, replaced);
             return create(result.getTypeDeclaration(), values);
@@ -224,13 +216,6 @@ public abstract class ResolvedReferenceType implements ResolvedType,
      * Foo&lt;Boolean, String&gt;.
      */
     public abstract List<ResolvedReferenceType> getAllAncestors();
-
-    /**
-     * Return direct ancestors, that means the superclasses and interfaces implemented directly.
-     * This list should include Object if the class has no other superclass or the interface is not extending another interface.
-     * There is an exception for Object itself.
-     */
-    public abstract List<ResolvedReferenceType> getDirectAncestors();
 
     public final List<ResolvedReferenceType> getAllInterfacesAncestors() {
         return getAllAncestors().stream()
@@ -276,9 +261,9 @@ public abstract class ResolvedReferenceType implements ResolvedType,
     public List<Pair<ResolvedTypeParameterDeclaration, ResolvedType>> getTypeParametersMap() {
         List<Pair<ResolvedTypeParameterDeclaration, ResolvedType>> typeParametersMap = new ArrayList<>();
         if (!isRawType()) {
-            for (int i = 0; i < typeDeclaration.getTypeParameters().size(); i++) {
-                typeParametersMap.add(new Pair<>(typeDeclaration.getTypeParameters().get(i), typeParametersValues().get(i)));
-            }
+	        for (int i = 0; i < typeDeclaration.getTypeParameters().size(); i++) {
+	            typeParametersMap.add(new Pair<>(typeDeclaration.getTypeParameters().get(0), typeParametersValues().get(i)));
+	        }
         }
         return typeParametersMap;
     }
@@ -338,11 +323,6 @@ public abstract class ResolvedReferenceType implements ResolvedType,
      */
     public abstract Set<MethodUsage> getDeclaredMethods();
 
-    /**
-     * Fields declared on this type.
-     */
-    public abstract Set<ResolvedFieldDeclaration> getDeclaredFields();
-
     public boolean isRawType() {
         if (!typeDeclaration.getTypeParameters().isEmpty()) {
             if (typeParametersMap().isEmpty()) {
@@ -350,7 +330,9 @@ public abstract class ResolvedReferenceType implements ResolvedType,
             }
             for (String name : typeParametersMap().getNames()) {
                 Optional<ResolvedType> value = typeParametersMap().getValueBySignature(name);
-                if (!value.isPresent() || !value.get().isTypeVariable() || !value.get().asTypeVariable().qualifiedName().equals(name)) {
+                if (value.isPresent() && value.get().isTypeVariable() && value.get().asTypeVariable().qualifiedName().equals(name)) {
+                    // nothing to do
+                } else {
                     return false;
                 }
             }
@@ -376,39 +358,6 @@ public abstract class ResolvedReferenceType implements ResolvedType,
     }
 
     public abstract ResolvedType toRawType();
-
-    /**
-     * Get a list of all the methods available on this type. This list includes methods declared in this type and
-     * methods inherited. This list includes methods of all sort of visibility. However it does not include methods
-     * that have been overwritten.
-     */
-    public List<ResolvedMethodDeclaration> getAllMethods() {
-        List<ResolvedMethodDeclaration> allMethods = new LinkedList<>(this.getTypeDeclaration().getDeclaredMethods());
-        getDirectAncestors().forEach(a ->
-                allMethods.addAll(a.getAllMethods()));
-        return allMethods;
-    }
-
-    /**
-     * Fields which are visible to inheritors. They include all inherited fields which are visible to this
-     * type plus all declared fields which are not private.
-     */
-    public List<ResolvedFieldDeclaration> getAllFieldsVisibleToInheritors() {
-        List<ResolvedFieldDeclaration> res = new LinkedList<>(this.getDeclaredFields().stream()
-                .filter(f -> f.accessSpecifier() != AccessSpecifier.PRIVATE)
-                .collect(Collectors.toList()));
-
-        getDirectAncestors().forEach(a ->
-                res.addAll(a.getAllFieldsVisibleToInheritors()));
-
-        return res;
-    }
-
-    public List<ResolvedMethodDeclaration> getAllMethodsVisibleToInheritors() {
-        return this.getAllMethods().stream()
-                .filter(m -> m.accessSpecifier() != AccessSpecifier.PRIVATE)
-                .collect(Collectors.toList());
-    }
 
     //
     // Protected methods
@@ -475,9 +424,11 @@ public abstract class ResolvedReferenceType implements ResolvedType,
                         }
                     } else {
                         if (thisParam instanceof ResolvedTypeVariable && otherParam instanceof ResolvedTypeVariable) {
-                            List<ResolvedType> thisBounds = thisParam.asTypeVariable().asTypeParameter().getBounds().stream().map(ResolvedTypeParameterDeclaration.Bound::getType).collect(Collectors.toList());
-                            List<ResolvedType> otherBounds = otherParam.asTypeVariable().asTypeParameter().getBounds().stream().map(ResolvedTypeParameterDeclaration.Bound::getType).collect(Collectors.toList());
-                            return thisBounds.size() == otherBounds.size() && otherBounds.containsAll(thisBounds);
+                            List<ResolvedType> thisBounds = thisParam.asTypeVariable().asTypeParameter().getBounds().stream().map(bound -> bound.getType()).collect(Collectors.toList());
+                            List<ResolvedType> otherBounds = otherParam.asTypeVariable().asTypeParameter().getBounds().stream().map(bound -> bound.getType()).collect(Collectors.toList());
+                            if (thisBounds.size() == otherBounds.size() && otherBounds.containsAll(thisBounds)) {
+                                return true;
+                            }
                         }
                         return false;
                     }
@@ -493,14 +444,7 @@ public abstract class ResolvedReferenceType implements ResolvedType,
     //
 
     private static List<ResolvedType> deriveParams(ResolvedReferenceTypeDeclaration typeDeclaration) {
-        if (typeDeclaration == null) {
-            throw new IllegalArgumentException("TypeDeclaration is not expected to be null");
-        }
-        List<ResolvedTypeParameterDeclaration> typeParameters = typeDeclaration.getTypeParameters();
-        if (typeParameters == null) {
-            throw new RuntimeException("Type parameters are not expected to be null");
-        }
-        return typeParameters.stream().map(ResolvedTypeVariable::new).collect(Collectors.toList());
+        return typeDeclaration.getTypeParameters().stream().map((tp) -> new ResolvedTypeVariable(tp)).collect(Collectors.toList());
     }
 
     public abstract ResolvedReferenceType deriveTypeParameters(ResolvedTypeParametersMap typeParametersMap);

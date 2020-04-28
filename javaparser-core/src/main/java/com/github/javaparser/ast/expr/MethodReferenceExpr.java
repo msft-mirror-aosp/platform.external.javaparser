@@ -28,6 +28,8 @@ import com.github.javaparser.ast.observer.ObservableProperty;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import static com.github.javaparser.utils.Utils.assertNonEmpty;
 import static com.github.javaparser.utils.Utils.assertNotNull;
@@ -36,10 +38,10 @@ import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.metamodel.MethodReferenceExprMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
 import com.github.javaparser.metamodel.NonEmptyProperty;
+import javax.annotation.Generated;
 import com.github.javaparser.TokenRange;
 import com.github.javaparser.metamodel.OptionalProperty;
 import java.util.function.Consumer;
-import com.github.javaparser.ast.Generated;
 
 /**
  * Method reference expressions introduced in Java 8 specifically designed to simplify lambda Expressions.
@@ -52,7 +54,7 @@ import com.github.javaparser.ast.Generated;
  *
  * @author Raquel Pau
  */
-public class MethodReferenceExpr extends Expression implements NodeWithTypeArguments<MethodReferenceExpr>, NodeWithIdentifier<MethodReferenceExpr> {
+public final class MethodReferenceExpr extends Expression implements NodeWithTypeArguments<MethodReferenceExpr>, NodeWithIdentifier<MethodReferenceExpr> {
 
     private Expression scope;
 

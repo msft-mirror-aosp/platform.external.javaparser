@@ -16,6 +16,7 @@
 
 package com.github.javaparser.symbolsolver.resolution;
 
+import com.github.javaparser.ParseException;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.MethodCallExpr;
@@ -27,15 +28,15 @@ import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
 import com.github.javaparser.symbolsolver.model.resolution.SymbolReference;
 import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-class StatementContextResolutionTest extends AbstractResolutionTest {
+public class StatementContextResolutionTest extends AbstractResolutionTest {
 
     @Test
-    void resolveLocalVariableInParentOfParent() {
+    public void resolveLocalVariableInParentOfParent() {
         CompilationUnit cu = parseSample("LocalVariableInParent");
         com.github.javaparser.ast.body.ClassOrInterfaceDeclaration referencesToField = Navigator.demandClass(cu, "LocalVariableInParent");
         MethodDeclaration method = Navigator.demandMethod(referencesToField, "foo1");
@@ -47,7 +48,7 @@ class StatementContextResolutionTest extends AbstractResolutionTest {
     }
 
     @Test
-    void resolveLocalVariableInParent() {
+    public void resolveLocalVariableInParent() {
         CompilationUnit cu = parseSample("LocalVariableInParent");
         com.github.javaparser.ast.body.ClassOrInterfaceDeclaration referencesToField = Navigator.demandClass(cu, "LocalVariableInParent");
         MethodDeclaration method = Navigator.demandMethod(referencesToField, "foo3");
@@ -59,7 +60,7 @@ class StatementContextResolutionTest extends AbstractResolutionTest {
     }
 
     @Test
-    void resolveLocalVariableInSameParent() {
+    public void resolveLocalVariableInSameParent() {
         CompilationUnit cu = parseSample("LocalVariableInParent");
         com.github.javaparser.ast.body.ClassOrInterfaceDeclaration referencesToField = Navigator.demandClass(cu, "LocalVariableInParent");
         MethodDeclaration method = Navigator.demandMethod(referencesToField, "foo2");
@@ -71,7 +72,7 @@ class StatementContextResolutionTest extends AbstractResolutionTest {
     }
 
     @Test
-    void resolveLocalAndSeveralAnnidatedLevels() {
+    public void resolveLocalAndSeveralAnnidatedLevels() {
         CompilationUnit cu = parseSample("LocalVariableInParent");
         com.github.javaparser.ast.body.ClassOrInterfaceDeclaration referencesToField = Navigator.demandClass(cu, "LocalVariableInParent");
         MethodDeclaration method = Navigator.demandMethod(referencesToField, "foo4");
@@ -88,7 +89,7 @@ class StatementContextResolutionTest extends AbstractResolutionTest {
     }
 
     @Test
-    void resolveMethodOnGenericClass() {
+    public void resolveMethodOnGenericClass() {
         CompilationUnit cu = parseSample("LocalVariableInParent");
         com.github.javaparser.ast.body.ClassOrInterfaceDeclaration referencesToField = Navigator.demandClass(cu, "LocalVariableInParent");
         MethodDeclaration method = Navigator.demandMethod(referencesToField, "foo5");

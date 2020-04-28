@@ -17,16 +17,13 @@
 package com.github.javaparser.symbolsolver.javassistmodel;
 
 import com.github.javaparser.ast.AccessSpecifier;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.resolution.MethodUsage;
 import com.github.javaparser.resolution.UnsolvedSymbolException;
 import com.github.javaparser.resolution.declarations.*;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.github.javaparser.resolution.types.ResolvedType;
 import com.github.javaparser.symbolsolver.core.resolution.Context;
-import com.github.javaparser.symbolsolver.core.resolution.MethodUsageResolutionCapability;
 import com.github.javaparser.symbolsolver.logic.AbstractTypeDeclaration;
-import com.github.javaparser.symbolsolver.logic.MethodResolutionCapability;
 import com.github.javaparser.symbolsolver.model.resolution.SymbolReference;
 import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
 import com.github.javaparser.symbolsolver.model.typesystem.ReferenceTypeImpl;
@@ -47,8 +44,7 @@ import java.util.stream.Collectors;
 /**
  * @author Federico Tomassetti
  */
-public class JavassistInterfaceDeclaration extends AbstractTypeDeclaration
-        implements ResolvedInterfaceDeclaration, MethodResolutionCapability, MethodUsageResolutionCapability {
+public class JavassistInterfaceDeclaration extends AbstractTypeDeclaration implements ResolvedInterfaceDeclaration {
 
     private CtClass ctClass;
     private TypeSolver typeSolver;
@@ -73,8 +69,12 @@ public class JavassistInterfaceDeclaration extends AbstractTypeDeclaration
 
     @Override
     public List<ResolvedReferenceType> getInterfacesExtended() {
-        return Arrays.stream(ctClass.getClassFile().getInterfaces()).map(i -> typeSolver.solveType(i))
-                .map(i -> new ReferenceTypeImpl(i, typeSolver)).collect(Collectors.toList());
+        try {
+            return Arrays.stream(ctClass.getInterfaces()).map(i -> new JavassistInterfaceDeclaration(i, typeSolver))
+                    .map(i -> new ReferenceTypeImpl(i, typeSolver)).collect(Collectors.toList());
+        } catch (NotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -86,7 +86,7 @@ public class JavassistInterfaceDeclaration extends AbstractTypeDeclaration
     public String getClassName() {
         String className = ctClass.getName().replace('$', '.');
         if (getPackageName() != null) {
-            return className.substring(getPackageName().length() + 1);
+            return className.substring(getPackageName().length() + 1, className.length());
         }
         return className;
     }
@@ -97,13 +97,12 @@ public class JavassistInterfaceDeclaration extends AbstractTypeDeclaration
     }
 
     @Deprecated
-    public Optional<MethodUsage> solveMethodAsUsage(String name, List<ResolvedType> argumentsTypes,
+    public Optional<MethodUsage> solveMethodAsUsage(String name, List<ResolvedType> argumentsTypes, TypeSolver typeSolver,
                                                     Context invokationContext, List<ResolvedType> typeParameterValues) {
 
-        return JavassistUtils.getMethodUsage(ctClass, name, argumentsTypes, typeSolver, getTypeParameters(), typeParameterValues);
+        return JavassistUtils.getMethodUsage(ctClass, name, argumentsTypes, typeSolver, invokationContext);
     }
 
-    @Override
     @Deprecated
     public SymbolReference<ResolvedMethodDeclaration> solveMethod(String name, List<ResolvedType> argumentsTypes, boolean staticOnly) {
         List<ResolvedMethodDeclaration> candidates = new ArrayList<>();
@@ -158,24 +157,17 @@ public class JavassistInterfaceDeclaration extends AbstractTypeDeclaration
     }
 
     @Override
-    public List<ResolvedReferenceType> getAncestors(boolean acceptIncompleteList) {
+    public List<ResolvedReferenceType> getAncestors() {
         List<ResolvedReferenceType> ancestors = new ArrayList<>();
         try {
             for (CtClass interfaze : ctClass.getInterfaces()) {
-                try {
-                    ResolvedReferenceType superInterfaze = JavassistFactory.typeUsageFor(interfaze, typeSolver).asReferenceType();
-                    ancestors.add(superInterfaze);
-                } catch (UnsolvedSymbolException e) {
-                    if (!acceptIncompleteList) {
-                        // we only throw an exception if we require a complete list; otherwise, we attempt to continue gracefully
-                        throw e;
-                    }
-                }
+                ResolvedReferenceType superInterfaze = JavassistFactory.typeUsageFor(interfaze, typeSolver).asReferenceType();
+                ancestors.add(superInterfaze);
             }
         } catch (NotFoundException e) {
             throw new RuntimeException(e);
         }
-        ancestors = ancestors.stream().filter(a -> !a.getQualifiedName().equals(Object.class.getCanonicalName()))
+        ancestors = ancestors.stream().filter(a -> a.getQualifiedName() != Object.class.getCanonicalName())
                 .collect(Collectors.toList());
         ancestors.add(new ReferenceTypeImpl(typeSolver.solveType(Object.class.getCanonicalName()), typeSolver));
         return ancestors;
@@ -190,7 +182,19 @@ public class JavassistInterfaceDeclaration extends AbstractTypeDeclaration
 
     @Override
     public boolean hasDirectlyAnnotation(String canonicalName) {
-        return ctClass.hasAnnotation(canonicalName);
+        try {
+            for (Object annotationRaw : ctClass.getAnnotations()) {
+                if (annotationRaw.getClass().getCanonicalName().equals(canonicalName)) {
+                    return true;
+                }
+                if (Arrays.stream(annotationRaw.getClass().getInterfaces()).anyMatch(it -> it.getCanonicalName().equals(canonicalName))) {
+                    return true;
+                }
+            }
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
     }
 
     @Override
@@ -225,7 +229,7 @@ public class JavassistInterfaceDeclaration extends AbstractTypeDeclaration
 
         String[] interfaceFQNs = getInterfaceFQNs();
         for (String interfaceFQN : interfaceFQNs) {
-            SymbolReference<? extends ResolvedValueDeclaration> interfaceRef = solveSymbolForFQN(name, interfaceFQN);
+            SymbolReference<? extends ResolvedValueDeclaration> interfaceRef = solveSymbolForFQN(name, typeSolver, interfaceFQN);
             if (interfaceRef.isSolved()) {
                 return interfaceRef;
             }
@@ -234,7 +238,7 @@ public class JavassistInterfaceDeclaration extends AbstractTypeDeclaration
         return SymbolReference.unsolved(ResolvedValueDeclaration.class);
     }
 
-    private SymbolReference<? extends ResolvedValueDeclaration> solveSymbolForFQN(String symbolName, String fqn) {
+    private SymbolReference<? extends ResolvedValueDeclaration> solveSymbolForFQN(String symbolName, TypeSolver typeSolver, String fqn) {
         if (fqn == null) {
             return SymbolReference.unsolved(ResolvedValueDeclaration.class);
         }
@@ -284,15 +288,5 @@ public class JavassistInterfaceDeclaration extends AbstractTypeDeclaration
         In case the name is composed of the internal type only, i.e. f.getName() returns B, it will also works.
          */
         return this.internalTypes().stream().anyMatch(f -> f.getName().endsWith(name));
-    }
-
-    @Override
-    public List<ResolvedConstructorDeclaration> getConstructors() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public Optional<ClassOrInterfaceDeclaration> toAst() {
-        return Optional.empty();
     }
 }

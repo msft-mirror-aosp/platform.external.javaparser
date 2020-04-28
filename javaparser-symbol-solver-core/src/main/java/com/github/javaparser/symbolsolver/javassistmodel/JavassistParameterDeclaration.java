@@ -28,14 +28,12 @@ public class JavassistParameterDeclaration implements ResolvedParameterDeclarati
     private ResolvedType type;
     private TypeSolver typeSolver;
     private boolean variadic;
-    private String name;
 
-    public JavassistParameterDeclaration(CtClass type, TypeSolver typeSolver, boolean variadic, String name) {
-        this(JavassistFactory.typeUsageFor(type, typeSolver), typeSolver, variadic, name);
+    public JavassistParameterDeclaration(CtClass type, TypeSolver typeSolver, boolean variadic) {
+        this(JavassistFactory.typeUsageFor(type, typeSolver), typeSolver, variadic);
     }
 
-    public JavassistParameterDeclaration(ResolvedType type, TypeSolver typeSolver, boolean variadic, String name) {
-        this.name = name;
+    public JavassistParameterDeclaration(ResolvedType type, TypeSolver typeSolver, boolean variadic) {
         this.type = type;
         this.typeSolver = typeSolver;
         this.variadic = variadic;
@@ -51,23 +49,18 @@ public class JavassistParameterDeclaration implements ResolvedParameterDeclarati
     }
 
     @Override
-    public boolean hasName() {
-        return name != null;
-    }
-
-    @Override
     public String getName() {
-        return name;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean isField() {
-        return false;
+        throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean isParameter() {
-        return true;
+        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -77,7 +70,7 @@ public class JavassistParameterDeclaration implements ResolvedParameterDeclarati
 
     @Override
     public boolean isType() {
-        return false;
+        throw new UnsupportedOperationException();
     }
 
     @Override

@@ -19,7 +19,11 @@ package com.github.javaparser.symbolsolver.javaparsermodel.contexts;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.FieldAccessExpr;
 import com.github.javaparser.ast.expr.ThisExpr;
-import com.github.javaparser.resolution.declarations.*;
+import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
+import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
+import com.github.javaparser.resolution.declarations.ResolvedTypeDeclaration;
+import com.github.javaparser.resolution.declarations.ResolvedValueDeclaration;
+import com.github.javaparser.resolution.declarations.ResolvedFieldDeclaration;
 import com.github.javaparser.resolution.types.ResolvedPrimitiveType;
 import com.github.javaparser.resolution.types.ResolvedType;
 import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
@@ -33,6 +37,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
+import static com.github.javaparser.symbolsolver.javaparser.Navigator.getParentNode;
 import static com.github.javaparser.symbolsolver.javaparser.Navigator.requireParentNode;
 
 /**
@@ -47,28 +52,28 @@ public class FieldAccessContext extends AbstractJavaParserContext<FieldAccessExp
     }
 
     @Override
-    public SymbolReference<? extends ResolvedValueDeclaration> solveSymbol(String name) {
+    public SymbolReference<? extends ResolvedValueDeclaration> solveSymbol(String name, TypeSolver typeSolver) {
         if (wrappedNode.getName().toString().equals(name)) {
             if (wrappedNode.getScope() instanceof ThisExpr) {
                 ResolvedType typeOfThis = JavaParserFacade.get(typeSolver).getTypeOfThisIn(wrappedNode);
                 return new SymbolSolver(typeSolver).solveSymbolInType(typeOfThis.asReferenceType().getTypeDeclaration(), name);
             }
         }
-        return JavaParserFactory.getContext(requireParentNode(wrappedNode), typeSolver).solveSymbol(name);
+        return JavaParserFactory.getContext(requireParentNode(wrappedNode), typeSolver).solveSymbol(name, typeSolver);
     }
 
     @Override
-    public SymbolReference<ResolvedTypeDeclaration> solveType(String name) {
-        return JavaParserFactory.getContext(requireParentNode(wrappedNode), typeSolver).solveType(name);
+    public SymbolReference<ResolvedTypeDeclaration> solveType(String name, TypeSolver typeSolver) {
+        return JavaParserFactory.getContext(requireParentNode(wrappedNode), typeSolver).solveType(name, typeSolver);
     }
 
     @Override
-    public SymbolReference<ResolvedMethodDeclaration> solveMethod(String name, List<ResolvedType> parameterTypes, boolean staticOnly) {
-        return JavaParserFactory.getContext(requireParentNode(wrappedNode), typeSolver).solveMethod(name, parameterTypes, false);
+    public SymbolReference<ResolvedMethodDeclaration> solveMethod(String name, List<ResolvedType> parameterTypes, boolean staticOnly, TypeSolver typeSolver) {
+        return JavaParserFactory.getContext(requireParentNode(wrappedNode), typeSolver).solveMethod(name, parameterTypes, false, typeSolver);
     }
 
     @Override
-    public Optional<Value> solveSymbolAsValue(String name) {
+    public Optional<Value> solveSymbolAsValue(String name, TypeSolver typeSolver) {
         Expression scope = wrappedNode.getScope();
         if (wrappedNode.getName().toString().equals(name)) {
             ResolvedType typeOfScope = JavaParserFacade.get(typeSolver).getType(scope);
@@ -76,31 +81,19 @@ public class FieldAccessContext extends AbstractJavaParserContext<FieldAccessExp
                 return Optional.of(new Value(ResolvedPrimitiveType.INT, ARRAY_LENGTH_FIELD_NAME));
             }
             if (typeOfScope.isReferenceType()) {
-                if (typeOfScope.asReferenceType().getTypeDeclaration().isEnum()) {
-                    ResolvedEnumDeclaration enumDeclaration = (ResolvedEnumDeclaration)typeOfScope.asReferenceType().getTypeDeclaration();
-                    if (enumDeclaration.hasEnumConstant(name)) {
-                        return Optional.of(new Value(enumDeclaration.getEnumConstant(name).getType(), name));
-                    }
-                }
                 Optional<ResolvedType> typeUsage = typeOfScope.asReferenceType().getFieldType(name);
                 return typeUsage.map(resolvedType -> new Value(resolvedType, name));
             } else {
                 return Optional.empty();
             }
         } else {
-            return getParent().solveSymbolAsValue(name);
+            return getParent().solveSymbolAsValue(name, typeSolver);
         }
     }
 
-    public SymbolReference<ResolvedValueDeclaration> solveField(String name) {
-        Collection<ResolvedReferenceTypeDeclaration> rrtds = findTypeDeclarations(Optional.of(wrappedNode.getScope()));
+    public SymbolReference<ResolvedFieldDeclaration> solveField(String name, TypeSolver typeSolver) {
+        Collection<ResolvedReferenceTypeDeclaration> rrtds = findTypeDeclarations(Optional.of(wrappedNode.getScope()), typeSolver);
         for (ResolvedReferenceTypeDeclaration rrtd : rrtds) {
-            if (rrtd.isEnum()) {
-                Optional<ResolvedEnumConstantDeclaration> enumConstant = rrtd.asEnum().getEnumConstants().stream().filter(c -> c.getName().equals(name)).findFirst();
-                if (enumConstant.isPresent()) {
-                    return SymbolReference.solved(enumConstant.get());
-                }
-            }
             try {
                 return SymbolReference.solved(rrtd.getField(wrappedNode.getName().getId()));
             } catch (Throwable t) {

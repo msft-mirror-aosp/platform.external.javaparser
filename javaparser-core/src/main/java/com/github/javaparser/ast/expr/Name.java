@@ -20,21 +20,27 @@
  */
 package com.github.javaparser.ast.expr;
 
-import com.github.javaparser.TokenRange;
+import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.AllFieldsConstructor;
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 import com.github.javaparser.ast.nodeTypes.NodeWithIdentifier;
 import com.github.javaparser.ast.observer.ObservableProperty;
+import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
 import com.github.javaparser.metamodel.NameMetaModel;
 import com.github.javaparser.metamodel.NonEmptyProperty;
-import com.github.javaparser.metamodel.OptionalProperty;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import static com.github.javaparser.utils.Utils.assertNonEmpty;
-import com.github.javaparser.ast.visitor.CloneVisitor;
-import com.github.javaparser.ast.Generated;
+import static com.github.javaparser.utils.Utils.assertNotNull;
+import javax.annotation.Generated;
+import com.github.javaparser.TokenRange;
+import com.github.javaparser.metamodel.OptionalProperty;
 
 /**
  * A name that may consist of multiple identifiers.
@@ -48,7 +54,7 @@ import com.github.javaparser.ast.Generated;
  * @author Julio Vilmar Gesser
  * @see SimpleName
  */
-public class Name extends Node implements NodeWithIdentifier<Name> {
+public final class Name extends Node implements NodeWithIdentifier<Name>, NodeWithAnnotations<Name> {
 
     @NonEmptyProperty
     private String identifier;
@@ -56,27 +62,34 @@ public class Name extends Node implements NodeWithIdentifier<Name> {
     @OptionalProperty
     private Name qualifier;
 
+    private NodeList<AnnotationExpr> annotations;
+
     public Name() {
-        this(null, null, "empty");
+        this(null, null, "empty", new NodeList<>());
     }
 
     public Name(final String identifier) {
-        this(null, null, identifier);
+        this(null, null, identifier, new NodeList<>());
+    }
+
+    public Name(Name qualifier, final String identifier) {
+        this(null, qualifier, identifier, new NodeList<>());
     }
 
     @AllFieldsConstructor
-    public Name(Name qualifier, final String identifier) {
-        this(null, qualifier, identifier);
+    public Name(Name qualifier, final String identifier, NodeList<AnnotationExpr> annotations) {
+        this(null, qualifier, identifier, annotations);
     }
 
     /**
      * This constructor is used by the parser and is considered private.
      */
     @Generated("com.github.javaparser.generator.core.node.MainConstructorGenerator")
-    public Name(TokenRange tokenRange, Name qualifier, String identifier) {
+    public Name(TokenRange tokenRange, Name qualifier, String identifier, NodeList<AnnotationExpr> annotations) {
         super(tokenRange);
         setQualifier(qualifier);
         setIdentifier(identifier);
+        setAnnotations(annotations);
         customInitialization();
     }
 
@@ -106,6 +119,20 @@ public class Name extends Node implements NodeWithIdentifier<Name> {
         notifyPropertyChange(ObservableProperty.IDENTIFIER, this.identifier, identifier);
         this.identifier = identifier;
         return this;
+    }
+
+    /**
+     * Creates a new {@link Name} from a qualified name.<br>
+     * The qualified name can contains "." (dot) characters.
+     *
+     * @param qualifiedName qualified name
+     * @return instanceof {@link Name}
+     * @deprecated use JavaParser.parseName instead
+     */
+    @Deprecated
+    public static Name parse(String qualifiedName) {
+        assertNonEmpty(qualifiedName);
+        return JavaParser.parseName(qualifiedName);
     }
 
     /**
@@ -141,6 +168,12 @@ public class Name extends Node implements NodeWithIdentifier<Name> {
     public boolean remove(Node node) {
         if (node == null)
             return false;
+        for (int i = 0; i < annotations.size(); i++) {
+            if (annotations.get(i) == node) {
+                annotations.remove(i);
+                return true;
+            }
+        }
         if (qualifier != null) {
             if (node == qualifier) {
                 removeQualifier();
@@ -153,6 +186,25 @@ public class Name extends Node implements NodeWithIdentifier<Name> {
     @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
     public Name removeQualifier() {
         return setQualifier((Name) null);
+    }
+
+    @Generated("com.github.javaparser.generator.core.node.PropertyGenerator")
+    public NodeList<AnnotationExpr> getAnnotations() {
+        return annotations;
+    }
+
+    @Generated("com.github.javaparser.generator.core.node.PropertyGenerator")
+    public Name setAnnotations(final NodeList<AnnotationExpr> annotations) {
+        assertNotNull(annotations);
+        if (annotations == this.annotations) {
+            return (Name) this;
+        }
+        notifyPropertyChange(ObservableProperty.ANNOTATIONS, this.annotations, annotations);
+        if (this.annotations != null)
+            this.annotations.setParentNode(null);
+        this.annotations = annotations;
+        setAsParentNodeOf(annotations);
+        return this;
     }
 
     @Override
@@ -172,6 +224,12 @@ public class Name extends Node implements NodeWithIdentifier<Name> {
     public boolean replace(Node node, Node replacementNode) {
         if (node == null)
             return false;
+        for (int i = 0; i < annotations.size(); i++) {
+            if (annotations.get(i) == node) {
+                annotations.set(i, (AnnotationExpr) replacementNode);
+                return true;
+            }
+        }
         if (qualifier != null) {
             if (node == qualifier) {
                 setQualifier((Name) replacementNode);
@@ -179,19 +237,5 @@ public class Name extends Node implements NodeWithIdentifier<Name> {
             }
         }
         return super.replace(node, replacementNode);
-    }
-
-    /**
-     * A top level name is a name that is not contained in a larger Name instance.
-     */
-    public boolean isTopLevel() {
-        return !isInternal();
-    }
-
-    /**
-     * An internal name is a name that constitutes a part of a larger Name instance.
-     */
-    public boolean isInternal() {
-        return getParentNode().filter(parent -> parent instanceof Name).isPresent();
     }
 }

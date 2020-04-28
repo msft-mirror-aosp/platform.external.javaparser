@@ -68,8 +68,4 @@ class AnonymousClassDeclarations {
         });
     }
 
-    void fooBar6() {
-        new DoFn.ProcessContext() {}.innerClassMethod();
-    }
-
 }

@@ -27,7 +27,6 @@ import com.github.javaparser.ast.AccessSpecifier;
  * Anything which can have an AccessSpecifier.
  *
  * @author Federico Tomassetti
- * @see AccessSpecifier
  */
 public interface HasAccessSpecifier {
 

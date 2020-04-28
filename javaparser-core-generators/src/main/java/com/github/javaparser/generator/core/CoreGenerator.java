@@ -1,7 +1,6 @@
 package com.github.javaparser.generator.core;
 
 import com.github.javaparser.ParserConfiguration;
-import com.github.javaparser.StaticJavaParser;
 import com.github.javaparser.generator.core.node.*;
 import com.github.javaparser.generator.core.other.TokenKindGenerator;
 import com.github.javaparser.generator.core.visitor.*;
@@ -11,8 +10,6 @@ import com.github.javaparser.utils.SourceRoot;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static com.github.javaparser.ParserConfiguration.LanguageLevel.RAW;
-
 /**
  * Generates all generated visitors in the javaparser-core module.
  * Suggested usage is by running the run_core_generators.sh script.
@@ -20,7 +17,6 @@ import static com.github.javaparser.ParserConfiguration.LanguageLevel.RAW;
  */
 public class CoreGenerator {
     private static final ParserConfiguration parserConfiguration = new ParserConfiguration()
-            .setLanguageLevel(RAW)
 //                                .setStoreTokens(false)
 //                                .setAttributeComments(false)
 //                                .setLexicalPreservationEnabled(true)
@@ -35,7 +31,6 @@ public class CoreGenerator {
         final SourceRoot sourceRoot = new SourceRoot(root, parserConfiguration)
 //                .setPrinter(LexicalPreservingPrinter::print)
                 ;
-        StaticJavaParser.setConfiguration(parserConfiguration);
 
         final Path generatedJavaCcRoot = Paths.get(args[0], "..", "javaparser-core", "target", "generated-sources", "javacc");
         final SourceRoot generatedJavaCcSourceRoot = new SourceRoot(generatedJavaCcRoot, parserConfiguration)
@@ -71,7 +66,7 @@ public class CoreGenerator {
         new CloneGenerator(sourceRoot).generate();
         new GetMetaModelGenerator(sourceRoot).generate();
         new MainConstructorGenerator(sourceRoot).generate();
-        new NodeModifierGenerator(sourceRoot).generate();
+        new FinalGenerator(sourceRoot).generate();
         new AcceptGenerator(sourceRoot).generate();
         new TokenKindGenerator(sourceRoot, generatedJavaCcSourceRoot).generate();
     }

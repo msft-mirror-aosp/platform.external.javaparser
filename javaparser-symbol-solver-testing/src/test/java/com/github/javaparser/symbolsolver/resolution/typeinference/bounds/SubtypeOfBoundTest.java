@@ -8,17 +8,17 @@ import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
 import com.github.javaparser.symbolsolver.model.typesystem.ReferenceTypeImpl;
 import com.github.javaparser.symbolsolver.resolution.typeinference.*;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
 import static com.github.javaparser.symbolsolver.resolution.typeinference.TypeHelper.isProperType;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
-class SubtypeOfBoundTest {
+public class SubtypeOfBoundTest {
 
     private TypeSolver typeSolver = new ReflectionTypeSolver();
     private ResolvedReferenceType iterableType = new ReferenceTypeImpl(new ReflectionTypeSolver().solveType(Iterable.class.getCanonicalName()), typeSolver);
@@ -28,7 +28,7 @@ class SubtypeOfBoundTest {
     private ResolvedType objectType = new ReferenceTypeImpl(new ReflectionTypeSolver().solveType(Object.class.getCanonicalName()), typeSolver);
 
     @Test
-    void recognizeProperLowerBound1() {
+    public void recognizeProperLowerBound1() {
         ResolvedTypeParameterDeclaration typeParameterDeclaration = mock(ResolvedTypeParameterDeclaration.class);
 
         // { Integer <: α, Double <: α, α <: Object } describes two proper lower bounds and one proper upper bound for α.
@@ -40,7 +40,7 @@ class SubtypeOfBoundTest {
     }
 
     @Test
-    void recognizeProperLowerBound2() {
+    public void recognizeProperLowerBound2() {
         ResolvedTypeParameterDeclaration typeParameterDeclaration = mock(ResolvedTypeParameterDeclaration.class);
 
         // { Integer <: α, Double <: α, α <: Object } describes two proper lower bounds and one proper upper bound for α.
@@ -52,7 +52,7 @@ class SubtypeOfBoundTest {
     }
 
     @Test
-    void recognizeProperUpperBound1() {
+    public void recognizeProperUpperBound1() {
         ResolvedTypeParameterDeclaration typeParameterDeclaration = mock(ResolvedTypeParameterDeclaration.class);
 
         // { Integer <: α, Double <: α, α <: Object } describes two proper lower bounds and one proper upper bound for α.
@@ -64,7 +64,7 @@ class SubtypeOfBoundTest {
     }
 
     @Test
-    void recognizeProperUpperBound2() {
+    public void recognizeProperUpperBound2() {
         ResolvedTypeParameterDeclaration typeParameterDeclaration1 = mock(ResolvedTypeParameterDeclaration.class);
         ResolvedTypeParameterDeclaration typeParameterDeclaration2 = mock(ResolvedTypeParameterDeclaration.class);
         // { α <: Iterable<?>, β <: Object, α <: List<β> } describes a proper upper bound for each of α and β, along with a dependency between them.

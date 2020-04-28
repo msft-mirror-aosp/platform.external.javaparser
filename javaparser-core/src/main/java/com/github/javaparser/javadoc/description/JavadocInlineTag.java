@@ -57,7 +57,6 @@ public class JavadocInlineTag implements JavadocDescriptionElement {
         LINKPLAIN,
         LITERAL,
         VALUE,
-        SYSTEM_PROPERTY,
         UNKNOWN;
 
         Type() {
@@ -87,21 +86,9 @@ public class JavadocInlineTag implements JavadocDescriptionElement {
         this.content = content;
     }
 
-    public Type getType() {
-        return type;
-    }
-
-    public String getContent() {
-        return content;
-    }
-
-    public String getName() {
-        return tagName;
-    }
-
     @Override
     public String toText() {
-        return "{@" + tagName + this.content +"}";
+        return "@" + tagName + this.content;
     }
 
     @Override

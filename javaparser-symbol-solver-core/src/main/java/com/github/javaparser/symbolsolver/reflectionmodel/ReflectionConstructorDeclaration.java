@@ -17,7 +17,6 @@
 package com.github.javaparser.symbolsolver.reflectionmodel;
 
 import com.github.javaparser.ast.AccessSpecifier;
-import com.github.javaparser.ast.body.ConstructorDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedClassDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedConstructorDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedParameterDeclaration;
@@ -28,7 +27,6 @@ import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
 import java.lang.reflect.Constructor;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -39,7 +37,8 @@ public class ReflectionConstructorDeclaration implements ResolvedConstructorDecl
     private Constructor<?> constructor;
     private TypeSolver typeSolver;
 
-    public ReflectionConstructorDeclaration(Constructor<?> constructor, TypeSolver typeSolver) {
+    public ReflectionConstructorDeclaration(Constructor<?> constructor,
+                                            TypeSolver typeSolver) {
         this.constructor = constructor;
         this.typeSolver = typeSolver;
     }
@@ -63,14 +62,12 @@ public class ReflectionConstructorDeclaration implements ResolvedConstructorDecl
         if (constructor.isVarArgs()) {
             variadic = i == (constructor.getParameterCount() - 1);
         }
-        return new ReflectionParameterDeclaration(constructor.getParameterTypes()[i],
-                constructor.getGenericParameterTypes()[i], typeSolver, variadic,
-                constructor.getParameters()[i].getName());
+        return new ReflectionParameterDeclaration(constructor.getParameterTypes()[i], constructor.getGenericParameterTypes()[i], typeSolver, variadic);
     }
 
     @Override
     public String getName() {
-        return constructor.getDeclaringClass().getSimpleName();
+        return constructor.getName();
     }
 
     @Override
@@ -94,10 +91,5 @@ public class ReflectionConstructorDeclaration implements ResolvedConstructorDecl
             throw new IllegalArgumentException();
         }
         return ReflectionFactory.typeUsageFor(this.constructor.getExceptionTypes()[index], typeSolver);
-    }
-
-    @Override
-    public Optional<ConstructorDeclaration> toAst() {
-        return Optional.empty();
     }
 }

@@ -22,7 +22,6 @@
 package com.github.javaparser.printer;
 
 import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.visitor.VoidVisitor;
 
 /**
  * Pretty printer for AST nodes.
@@ -39,8 +38,8 @@ public class PrettyPrinter {
     }
 
     public String print(Node node) {
-        final VoidVisitor<Void> visitor = configuration.getVisitorFactory().apply(configuration);
+        final PrettyPrintVisitor visitor = configuration.getVisitorFactory().apply(configuration);
         node.accept(visitor, null);
-        return visitor.toString();
+        return visitor.getSource();
     }
 }

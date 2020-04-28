@@ -21,21 +21,21 @@ import com.github.javaparser.resolution.types.ResolvedTypeVariable;
 import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
 import com.github.javaparser.symbolsolver.reflectionmodel.ReflectionClassDeclaration;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.*;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
-class TypeVariableUsageTest {
+public class TypeVariableUsageTest {
 
     private ResolvedTypeVariable tpA;
     private ReferenceTypeImpl tpString;
     private TypeSolver typeSolver;
 
-    @BeforeEach
-    void setup() {
+    @Before
+    public void setup() {
         tpA = new ResolvedTypeVariable(ResolvedTypeParameterDeclaration.onType("A", "foo.Bar", Collections.emptyList()));
         
         typeSolver = new ReflectionTypeSolver();
@@ -43,7 +43,7 @@ class TypeVariableUsageTest {
     }
 
     @Test
-    void testIsAssignableBySimple() {
+    public void testIsAssignableBySimple() {
         assertEquals(false, tpString.isAssignableBy(tpA));
     }
 

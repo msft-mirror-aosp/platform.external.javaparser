@@ -42,7 +42,7 @@ public class ResolvedTypeVariable implements ResolvedType {
 
     @Override
     public String toString() {
-        return "TypeVariable {" + typeParameter.toString() + "}";
+        return "TypeVariable {" + typeParameter.getQualifiedName() + "}";
     }
 
     public String qualifiedName() {

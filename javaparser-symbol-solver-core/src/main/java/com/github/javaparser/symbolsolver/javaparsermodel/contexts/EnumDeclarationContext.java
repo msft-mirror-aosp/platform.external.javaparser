@@ -44,7 +44,7 @@ public class EnumDeclarationContext extends AbstractJavaParserContext<EnumDeclar
     }
 
     @Override
-    public SymbolReference<? extends ResolvedValueDeclaration> solveSymbol(String name) {
+    public SymbolReference<? extends ResolvedValueDeclaration> solveSymbol(String name, TypeSolver typeSolver) {
         if (typeSolver == null) throw new IllegalArgumentException();
 
         // among constants
@@ -59,17 +59,17 @@ public class EnumDeclarationContext extends AbstractJavaParserContext<EnumDeclar
         }
 
         // then to parent
-        return getParent().solveSymbol(name);
+        return getParent().solveSymbol(name, typeSolver);
     }
 
     @Override
-    public SymbolReference<ResolvedTypeDeclaration> solveType(String name) {
-        return javaParserTypeDeclarationAdapter.solveType(name);
+    public SymbolReference<ResolvedTypeDeclaration> solveType(String name, TypeSolver typeSolver) {
+        return javaParserTypeDeclarationAdapter.solveType(name, typeSolver);
     }
 
     @Override
-    public SymbolReference<ResolvedMethodDeclaration> solveMethod(String name, List<ResolvedType> argumentsTypes, boolean staticOnly) {
-        return javaParserTypeDeclarationAdapter.solveMethod(name, argumentsTypes, staticOnly);
+    public SymbolReference<ResolvedMethodDeclaration> solveMethod(String name, List<ResolvedType> argumentsTypes, boolean staticOnly, TypeSolver typeSolver) {
+        return javaParserTypeDeclarationAdapter.solveMethod(name, argumentsTypes, staticOnly, typeSolver);
     }
 
     ///

@@ -36,11 +36,12 @@ import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.metamodel.TypeParameterMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
+import javax.annotation.Generated;
 import com.github.javaparser.TokenRange;
+import com.github.javaparser.resolution.declarations.ResolvedTypeParameterDeclaration;
 import com.github.javaparser.resolution.types.ResolvedTypeVariable;
 import java.util.function.Consumer;
 import java.util.Optional;
-import com.github.javaparser.ast.Generated;
 
 /**
  * A type parameter.
@@ -54,7 +55,7 @@ import com.github.javaparser.ast.Generated;
  * @author Julio Vilmar Gesser
  * @see com.github.javaparser.ast.nodeTypes.NodeWithTypeParameters
  */
-public class TypeParameter extends ReferenceType implements NodeWithSimpleName<TypeParameter>, NodeWithAnnotations<TypeParameter> {
+public final class TypeParameter extends ReferenceType implements NodeWithSimpleName<TypeParameter>, NodeWithAnnotations<TypeParameter> {
 
     private SimpleName name;
 
@@ -70,6 +71,15 @@ public class TypeParameter extends ReferenceType implements NodeWithSimpleName<T
 
     public TypeParameter(final String name, final NodeList<ClassOrInterfaceType> typeBound) {
         this(null, new SimpleName(name), typeBound, new NodeList<>());
+    }
+
+    /**
+     * @deprecated range shouldn't be in utility constructors.
+     */
+    @Deprecated
+    public TypeParameter(Range range, final SimpleName name, final NodeList<ClassOrInterfaceType> typeBound) {
+        this(null, name, typeBound, new NodeList<>());
+        setRange(range);
     }
 
     @AllFieldsConstructor

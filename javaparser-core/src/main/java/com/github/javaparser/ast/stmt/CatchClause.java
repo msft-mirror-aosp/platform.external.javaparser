@@ -20,22 +20,25 @@
  */
 package com.github.javaparser.ast.stmt;
 
-import com.github.javaparser.TokenRange;
-import com.github.javaparser.ast.*;
+import com.github.javaparser.ast.AllFieldsConstructor;
+import com.github.javaparser.ast.Modifier;
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.body.Parameter;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.nodeTypes.NodeWithBlockStmt;
 import com.github.javaparser.ast.observer.ObservableProperty;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
-import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
+import java.util.EnumSet;
+import static com.github.javaparser.utils.Utils.assertNotNull;
+import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.metamodel.CatchClauseMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
-import static com.github.javaparser.utils.Utils.assertNotNull;
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.Generated;
+import javax.annotation.Generated;
+import com.github.javaparser.TokenRange;
 
 /**
  * The catch part of a try-catch-finally. <br/>In <code>try { ... } catch (Exception e) { ... }</code> the CatchClause
@@ -43,7 +46,7 @@ import com.github.javaparser.ast.Generated;
  *
  * @author Julio Vilmar Gesser
  */
-public class CatchClause extends Node implements NodeWithBlockStmt<CatchClause> {
+public final class CatchClause extends Node implements NodeWithBlockStmt<CatchClause> {
 
     private Parameter parameter;
 
@@ -53,7 +56,7 @@ public class CatchClause extends Node implements NodeWithBlockStmt<CatchClause> 
         this(null, new Parameter(), new BlockStmt());
     }
 
-    public CatchClause(final NodeList<Modifier> exceptModifier, final NodeList<AnnotationExpr> exceptAnnotations, final ClassOrInterfaceType exceptType, final SimpleName exceptName, final BlockStmt body) {
+    public CatchClause(final EnumSet<Modifier> exceptModifier, final NodeList<AnnotationExpr> exceptAnnotations, final ClassOrInterfaceType exceptType, final SimpleName exceptName, final BlockStmt body) {
         this(null, new Parameter(null, exceptModifier, exceptAnnotations, exceptType, false, new NodeList<>(), exceptName), body);
     }
 

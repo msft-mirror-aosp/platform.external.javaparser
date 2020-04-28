@@ -41,7 +41,8 @@ public class AnonymousClassDeclarationContext extends AbstractJavaParserContext<
   @Override
   public SymbolReference<ResolvedMethodDeclaration> solveMethod(String name,
                                                                 List<ResolvedType> argumentsTypes,
-                                                                boolean staticOnly) {
+                                                                boolean staticOnly,
+                                                                TypeSolver typeSolver) {
     List<ResolvedMethodDeclaration> candidateMethods =
         myDeclaration
             .getDeclaredMethods()
@@ -55,7 +56,8 @@ public class AnonymousClassDeclarationContext extends AbstractJavaParserContext<
             MethodResolutionLogic.solveMethodInType(ancestor.getTypeDeclaration(),
                                                     name,
                                                     argumentsTypes,
-                                                    staticOnly);
+                                                    staticOnly,
+                                                    typeSolver);
         // consider methods from superclasses and only default methods from interfaces :
         // not true, we should keep abstract as a valid candidate
         // abstract are removed in MethodResolutionLogic.isApplicable is necessary
@@ -69,7 +71,7 @@ public class AnonymousClassDeclarationContext extends AbstractJavaParserContext<
     // see issue #75
     if (candidateMethods.isEmpty()) {
       SymbolReference<ResolvedMethodDeclaration> parentSolution =
-          getParent().solveMethod(name, argumentsTypes, staticOnly);
+          getParent().solveMethod(name, argumentsTypes, staticOnly, typeSolver);
       if (parentSolution.isSolved()) {
         candidateMethods.add(parentSolution.getCorrespondingDeclaration());
       }
@@ -82,7 +84,8 @@ public class AnonymousClassDeclarationContext extends AbstractJavaParserContext<
                                                                                  typeSolver),
                                                   name,
                                                   argumentsTypes,
-                                                  false);
+                                                  false,
+                                                  typeSolver);
       if (res.isSolved()) {
         candidateMethods.add(res.getCorrespondingDeclaration());
       }
@@ -95,7 +98,7 @@ public class AnonymousClassDeclarationContext extends AbstractJavaParserContext<
   }
 
   @Override
-  public SymbolReference<ResolvedTypeDeclaration> solveType(String name) {
+  public SymbolReference<ResolvedTypeDeclaration> solveType(String name, TypeSolver typeSolver) {
     List<com.github.javaparser.ast.body.TypeDeclaration> typeDeclarations =
         myDeclaration
             .findMembersOfKind(com.github.javaparser.ast.body.TypeDeclaration.class);
@@ -121,7 +124,8 @@ public class AnonymousClassDeclarationContext extends AbstractJavaParserContext<
             .map(internalType ->
                      JavaParserFactory
                          .getContext(internalType, typeSolver)
-                         .solveType(name.substring(internalType.getName().getId().length() + 1)));
+                         .solveType(name.substring(internalType.getName().getId().length() + 1),
+                                    typeSolver));
 
     if (recursiveMatch.isPresent()) {
       return recursiveMatch.get();
@@ -164,18 +168,19 @@ public class AnonymousClassDeclarationContext extends AbstractJavaParserContext<
       }
     }
     
-    return getParent().solveType(name);
+    return getParent().solveType(name, typeSolver);
   }
 
   @Override
-  public SymbolReference<? extends ResolvedValueDeclaration> solveSymbol(String name) {
+  public SymbolReference<? extends ResolvedValueDeclaration> solveSymbol(String name,
+                                                                         TypeSolver typeSolver) {
     Preconditions.checkArgument(typeSolver != null);
 
     if (myDeclaration.hasVisibleField(name)) {
       return SymbolReference.solved(myDeclaration.getVisibleField(name));
     }
 
-    return getParent().solveSymbol(name);
+    return getParent().solveSymbol(name, typeSolver);
   }
 
 }

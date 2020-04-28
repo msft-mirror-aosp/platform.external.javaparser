@@ -28,8 +28,8 @@ import com.github.javaparser.ast.expr.*;
 import java.lang.annotation.Annotation;
 import java.util.Optional;
 
-import static com.github.javaparser.StaticJavaParser.parseExpression;
-import static com.github.javaparser.StaticJavaParser.parseName;
+import static com.github.javaparser.JavaParser.parseExpression;
+import static com.github.javaparser.JavaParser.parseName;
 
 /**
  * A node that can be annotated.
@@ -70,7 +70,7 @@ public interface NodeWithAnnotations<N extends Node> {
     default N addAnnotation(String name) {
         NormalAnnotationExpr annotation = new NormalAnnotationExpr(
                 parseName(name), new NodeList<>());
-        addAnnotation(annotation);
+        getAnnotations().add(annotation);
         return (N) this;
     }
 
@@ -84,7 +84,7 @@ public interface NodeWithAnnotations<N extends Node> {
     default NormalAnnotationExpr addAndGetAnnotation(String name) {
         NormalAnnotationExpr annotation = new NormalAnnotationExpr(
                 parseName(name), new NodeList<>());
-        addAnnotation(annotation);
+        getAnnotations().add(annotation);
         return annotation;
     }
 
@@ -120,7 +120,7 @@ public interface NodeWithAnnotations<N extends Node> {
     default N addMarkerAnnotation(String name) {
         MarkerAnnotationExpr markerAnnotationExpr = new MarkerAnnotationExpr(
                 parseName(name));
-        addAnnotation(markerAnnotationExpr);
+        getAnnotations().add(markerAnnotationExpr);
         return (N) this;
     }
 
@@ -146,19 +146,8 @@ public interface NodeWithAnnotations<N extends Node> {
     default N addSingleMemberAnnotation(String name, Expression expression) {
         SingleMemberAnnotationExpr singleMemberAnnotationExpr = new SingleMemberAnnotationExpr(
                 parseName(name), expression);
-        return addAnnotation(singleMemberAnnotationExpr);
-    }
-
-    /**
-     * Annotates this with a single member annotation
-     *
-     * @param clazz the class of the annotation
-     * @param expression the part between ()
-     * @return this
-     */
-    default N addSingleMemberAnnotation(Class<? extends Annotation> clazz, Expression expression) {
-        tryAddImportToParentCompilationUnit(clazz);
-        return addSingleMemberAnnotation(clazz.getSimpleName(), expression);
+        getAnnotations().add(singleMemberAnnotationExpr);
+        return (N) this;
     }
 
     /**

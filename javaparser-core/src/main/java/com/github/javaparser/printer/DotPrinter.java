@@ -21,7 +21,6 @@
 
 package com.github.javaparser.printer;
 
-import static com.github.javaparser.utils.Utils.EOL;
 import static com.github.javaparser.utils.Utils.assertNotNull;
 import static java.util.stream.Collectors.toList;
 
@@ -49,7 +48,7 @@ public class DotPrinter {
         StringBuilder output = new StringBuilder();
         output.append("digraph {");
         output(node, null, "root", output);
-        output.append(EOL + "}");
+        output.append(System.lineSeparator() + "}");
         return output.toString();
     }
 
@@ -66,19 +65,19 @@ public class DotPrinter {
 
         String ndName = nextNodeName();
         if (outputNodeType)
-            builder.append(EOL + ndName + " [label=\"" + escape(name) + " (" + metaModel.getTypeName()
+            builder.append(System.lineSeparator() + ndName + " [label=\"" + name + " (" + metaModel.getTypeName()
                     + ")\"];");
         else
-            builder.append(EOL + ndName + " [label=\"" + escape(name) + "\"];");
+            builder.append(System.lineSeparator() + ndName + " [label=\"" + name + "\"];");
 
         if (parentNodeName != null)
-            builder.append(EOL + parentNodeName + " -> " + ndName + ";");
+            builder.append(System.lineSeparator() + parentNodeName + " -> " + ndName + ";");
 
         for (PropertyMetaModel a : attributes) {
             String attrName = nextNodeName();
-            builder.append(EOL + attrName + " [label=\"" + escape(a.getName()) + "='"
-                    + escape(a.getValue(node).toString()) + "'\"];");
-            builder.append(EOL + ndName + " -> " + attrName + ";");
+            builder.append(System.lineSeparator() + attrName + " [label=\"" + a.getName() + "='"
+                    + a.getValue(node).toString() + "'\"];");
+            builder.append(System.lineSeparator() + ndName + " -> " + attrName + ";");
 
         }
 
@@ -92,8 +91,8 @@ public class DotPrinter {
             NodeList<? extends Node> nl = (NodeList<? extends Node>) sl.getValue(node);
             if (nl != null && nl.isNonEmpty()) {
                 String ndLstName = nextNodeName();
-                builder.append(EOL + ndLstName + " [label=\"" + escape(sl.getName()) + "\"];");
-                builder.append(EOL + ndName + " -> " + ndLstName + ";");
+                builder.append(System.lineSeparator() + ndLstName + " [label=\"" + sl.getName() + "\"];");
+                builder.append(System.lineSeparator() + ndName + " -> " + ndLstName + ";");
                 String slName = sl.getName().substring(0, sl.getName().length() - 1);
                 for (Node nd : nl)
                     output(nd, ndLstName, slName, builder);
@@ -103,9 +102,5 @@ public class DotPrinter {
 
     private String nextNodeName() {
         return "n" + (nodeCount++);
-    }
-
-    private static String escape(String value) {
-        return value.replace("\"", "\\\"");
     }
 }

@@ -16,34 +16,26 @@
 
 package com.github.javaparser.symbolsolver.javassistmodel;
 
-import com.github.javaparser.symbolsolver.AbstractSymbolResolutionTest;
+import com.github.javaparser.symbolsolver.AbstractTest;
 import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JarTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.io.IOException;
-import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.Assert.assertEquals;
 
-class JavassistInterfaceDeclarationTest extends AbstractSymbolResolutionTest {
+public class JavassistInterfaceDeclarationTest extends AbstractTest {
 
     private TypeSolver typeSolver;
 
-    private TypeSolver anotherTypeSolver;
-
-    @BeforeEach
-    void setup() throws IOException {
-        Path pathToJar = adaptPath("src/test/resources/javaparser-core-3.0.0-alpha.2.jar");
+    @Before
+    public void setup() throws IOException {
+        String pathToJar = adaptPath("src/test/resources/javaparser-core-3.0.0-alpha.2.jar");
         typeSolver = new CombinedTypeSolver(new JarTypeSolver(pathToJar), new ReflectionTypeSolver());
-
-        Path anotherPathToJar = adaptPath("src/test/resources/test-artifact-1.0.0.jar");
-        anotherTypeSolver = new CombinedTypeSolver(new JarTypeSolver(anotherPathToJar), new ReflectionTypeSolver());
     }
 
     ///
@@ -51,94 +43,79 @@ class JavassistInterfaceDeclarationTest extends AbstractSymbolResolutionTest {
     ///
 
     @Test
-    void testIsClass() {
+    public void testIsClass() {
         JavassistInterfaceDeclaration nodeWithAnnotations = (JavassistInterfaceDeclaration) typeSolver.solveType("com.github.javaparser.ast.nodeTypes.NodeWithAnnotations");
         assertEquals(false, nodeWithAnnotations.isClass());
     }
 
     @Test
-    void testIsInterface() {
+    public void testIsInterface() {
         JavassistInterfaceDeclaration nodeWithAnnotations = (JavassistInterfaceDeclaration) typeSolver.solveType("com.github.javaparser.ast.nodeTypes.NodeWithAnnotations");
         assertEquals(true, nodeWithAnnotations.isInterface());
     }
 
     @Test
-    void testIsEnum() {
+    public void testIsEnum() {
         JavassistInterfaceDeclaration nodeWithAnnotations = (JavassistInterfaceDeclaration) typeSolver.solveType("com.github.javaparser.ast.nodeTypes.NodeWithAnnotations");
         assertEquals(false, nodeWithAnnotations.isEnum());
     }
 
     @Test
-    void testIsTypeVariable() {
+    public void testIsTypeVariable() {
         JavassistInterfaceDeclaration nodeWithAnnotations = (JavassistInterfaceDeclaration) typeSolver.solveType("com.github.javaparser.ast.nodeTypes.NodeWithAnnotations");
         assertEquals(false, nodeWithAnnotations.isTypeParameter());
     }
 
     @Test
-    void testIsType() {
+    public void testIsType() {
         JavassistInterfaceDeclaration nodeWithAnnotations = (JavassistInterfaceDeclaration) typeSolver.solveType("com.github.javaparser.ast.nodeTypes.NodeWithAnnotations");
         assertEquals(true, nodeWithAnnotations.isType());
     }
 
     @Test
-    void testAsType() {
+    public void testAsType() {
         JavassistInterfaceDeclaration nodeWithAnnotations = (JavassistInterfaceDeclaration) typeSolver.solveType("com.github.javaparser.ast.nodeTypes.NodeWithAnnotations");
         assertEquals(nodeWithAnnotations, nodeWithAnnotations.asType());
     }
 
-    @Test
-    void testAsClass() {
-        assertThrows(UnsupportedOperationException.class, () -> {
-            JavassistInterfaceDeclaration nodeWithAnnotations = (JavassistInterfaceDeclaration) typeSolver.solveType("com.github.javaparser.ast.nodeTypes.NodeWithAnnotations");
+    @Test(expected = UnsupportedOperationException.class)
+    public void testAsClass() {
+        JavassistInterfaceDeclaration nodeWithAnnotations = (JavassistInterfaceDeclaration) typeSolver.solveType("com.github.javaparser.ast.nodeTypes.NodeWithAnnotations");
         nodeWithAnnotations.asClass();
-    });
-}
+    }
 
     @Test
-    void testAsInterface() {
+    public void testAsInterface() {
         JavassistInterfaceDeclaration nodeWithAnnotations = (JavassistInterfaceDeclaration) typeSolver.solveType("com.github.javaparser.ast.nodeTypes.NodeWithAnnotations");
         assertEquals(nodeWithAnnotations, nodeWithAnnotations.asInterface());
     }
 
-    @Test
-    void testAsEnum() {
-        assertThrows(UnsupportedOperationException.class, () -> {
-            JavassistInterfaceDeclaration nodeWithAnnotations = (JavassistInterfaceDeclaration) typeSolver.solveType("com.github.javaparser.ast.nodeTypes.NodeWithAnnotations");
+    @Test(expected = UnsupportedOperationException.class)
+    public void testAsEnum() {
+        JavassistInterfaceDeclaration nodeWithAnnotations = (JavassistInterfaceDeclaration) typeSolver.solveType("com.github.javaparser.ast.nodeTypes.NodeWithAnnotations");
         nodeWithAnnotations.asEnum();
-    });
-}
+    }
 
     @Test
-    void testGetPackageName() {
+    public void testGetPackageName() {
         JavassistInterfaceDeclaration nodeWithAnnotations = (JavassistInterfaceDeclaration) typeSolver.solveType("com.github.javaparser.ast.nodeTypes.NodeWithAnnotations");
         assertEquals("com.github.javaparser.ast.nodeTypes", nodeWithAnnotations.getPackageName());
     }
 
     @Test
-    void testGetClassName() {
+    public void testGetClassName() {
         JavassistInterfaceDeclaration nodeWithAnnotations = (JavassistInterfaceDeclaration) typeSolver.solveType("com.github.javaparser.ast.nodeTypes.NodeWithAnnotations");
         assertEquals("NodeWithAnnotations", nodeWithAnnotations.getClassName());
     }
 
     @Test
-    void testGetQualifiedName() {
+    public void testGetQualifiedName() {
         JavassistInterfaceDeclaration nodeWithAnnotations = (JavassistInterfaceDeclaration) typeSolver.solveType("com.github.javaparser.ast.nodeTypes.NodeWithAnnotations");
         assertEquals("com.github.javaparser.ast.nodeTypes.NodeWithAnnotations", nodeWithAnnotations.getQualifiedName());
-    }
-
-    @Test
-    void testHasDirectlyAnnotation(){
-        JavassistInterfaceDeclaration compilationUnit = (JavassistInterfaceDeclaration) anotherTypeSolver.solveType("com.github.javaparser.test.TestInterface");
-        assertTrue(compilationUnit.hasDirectlyAnnotation("com.github.javaparser.test.TestAnnotation"));
-    }
-
-    @Test
-    void testHasAnnotation(){
-        JavassistInterfaceDeclaration compilationUnit = (JavassistInterfaceDeclaration) anotherTypeSolver.solveType("com.github.javaparser.test.TestChildInterface");
-        assertTrue(compilationUnit.hasAnnotation("com.github.javaparser.test.TestAnnotation"));
     }
 
     ///
     /// Test ancestors
     ///
+
 }

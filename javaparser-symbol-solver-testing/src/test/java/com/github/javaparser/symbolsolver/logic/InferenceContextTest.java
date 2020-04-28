@@ -27,19 +27,19 @@ import com.github.javaparser.symbolsolver.reflectionmodel.ReflectionClassDeclara
 import com.github.javaparser.symbolsolver.reflectionmodel.ReflectionInterfaceDeclaration;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import com.google.common.collect.ImmutableList;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
  * @author Federico Tomassetti
  */
-class InferenceContextTest {
+public class InferenceContextTest {
 
     private TypeSolver typeSolver;
     private ResolvedReferenceType string;
@@ -48,8 +48,8 @@ class InferenceContextTest {
     private ResolvedReferenceType listOfE;
     private ResolvedTypeParameterDeclaration tpE;
 
-    @BeforeEach
-    void setup() {
+    @Before
+    public void setup() {
         typeSolver = new ReflectionTypeSolver();
         string = new ReferenceTypeImpl(new ReflectionClassDeclaration(String.class, typeSolver), typeSolver);
         object = new ReferenceTypeImpl(new ReflectionClassDeclaration(Object.class, typeSolver), typeSolver);
@@ -65,19 +65,19 @@ class InferenceContextTest {
     }
 
     @Test
-    void noVariablesArePlacedWhenNotNeeded() {
+    public void noVariablesArePlacedWhenNotNeeded() {
         ResolvedType result = new InferenceContext(MyObjectProvider.INSTANCE).addPair(object, string);
         assertEquals(object, result);
     }
 
     @Test
-    void placingASingleVariableTopLevel() {
+    public void placingASingleVariableTopLevel() {
         ResolvedType result = new InferenceContext(MyObjectProvider.INSTANCE).addPair(new ResolvedTypeVariable(tpE), listOfString);
         assertEquals(new InferenceVariableType(0, MyObjectProvider.INSTANCE), result);
     }
 
     @Test
-    void placingASingleVariableInside() {
+    public void placingASingleVariableInside() {
         ResolvedType result = new InferenceContext(MyObjectProvider.INSTANCE).addPair(listOfE, listOfString);
         assertEquals(listOf(new InferenceVariableType(0, MyObjectProvider.INSTANCE)), result);
     }

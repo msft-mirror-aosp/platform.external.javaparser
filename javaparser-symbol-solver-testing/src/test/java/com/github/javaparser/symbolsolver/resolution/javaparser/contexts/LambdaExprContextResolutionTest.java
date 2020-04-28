@@ -31,31 +31,29 @@ import com.github.javaparser.symbolsolver.resolution.AbstractResolutionTest;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
-import com.github.javaparser.symbolsolver.utils.LeanParserConfiguration;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.File;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author Malte Langkabel
  */
-class LambdaExprContextResolutionTest extends AbstractResolutionTest {
+public class LambdaExprContextResolutionTest extends AbstractResolutionTest {
 
     private TypeSolver typeSolver;
 
-    @BeforeEach
-    void setup() {
+    @Before
+    public void setup() {
         typeSolver = new ReflectionTypeSolver();
     }
 
     @Test
-    void solveParameterOfLambdaInMethodCallExpr() {
+    public void solveParameterOfLambdaInMethodCallExpr() {
         CompilationUnit cu = parseSample("Lambda");
 
         com.github.javaparser.ast.body.ClassOrInterfaceDeclaration clazz = Navigator.demandClass(cu, "Agenda");
@@ -66,33 +64,33 @@ class LambdaExprContextResolutionTest extends AbstractResolutionTest {
 
         Context context = new LambdaExprContext(lambdaExpr, typeSolver);
 
-        Optional<Value> ref = context.solveSymbolAsValue("p");
+        Optional<Value> ref = context.solveSymbolAsValue("p", typeSolver);
         assertTrue(ref.isPresent());
         assertEquals("? super java.lang.String", ref.get().getType().describe());
     }
 
     @Test
-    void solveParameterOfLambdaInFieldDecl() {
+    public void solveParameterOfLambdaInFieldDecl() {
         CompilationUnit cu = parseSample("Lambda");
 
         com.github.javaparser.ast.body.ClassOrInterfaceDeclaration clazz = Navigator.demandClass(cu, "Agenda");
         VariableDeclarator field = Navigator.demandField(clazz, "functional");
         LambdaExpr lambdaExpr = (LambdaExpr) field.getInitializer().get();
 
-        Path src = Paths.get("src/test/resources");
+        File src = new File("src/test/resources");
         CombinedTypeSolver combinedTypeSolver = new CombinedTypeSolver();
         combinedTypeSolver.add(new ReflectionTypeSolver());
-        combinedTypeSolver.add(new JavaParserTypeSolver(adaptPath(src), new LeanParserConfiguration()));
+        combinedTypeSolver.add(new JavaParserTypeSolver(adaptPath(src)));
 
         Context context = new LambdaExprContext(lambdaExpr, combinedTypeSolver);
 
-        Optional<Value> ref = context.solveSymbolAsValue("p");
+        Optional<Value> ref = context.solveSymbolAsValue("p", typeSolver);
         assertTrue(ref.isPresent());
         assertEquals("java.lang.String", ref.get().getType().describe());
     }
 
     @Test
-    void solveParameterOfLambdaInVarDecl() {
+    public void solveParameterOfLambdaInVarDecl() {
         CompilationUnit cu = parseSample("Lambda");
 
         com.github.javaparser.ast.body.ClassOrInterfaceDeclaration clazz = Navigator.demandClass(cu, "Agenda");
@@ -100,14 +98,14 @@ class LambdaExprContextResolutionTest extends AbstractResolutionTest {
         VariableDeclarator varDecl = Navigator.demandVariableDeclaration(method, "a").get();
         LambdaExpr lambdaExpr = (LambdaExpr) varDecl.getInitializer().get();
 
-        Path src = adaptPath("src/test/resources");
+        File src = adaptPath(new File("src/test/resources"));
         CombinedTypeSolver combinedTypeSolver = new CombinedTypeSolver();
         combinedTypeSolver.add(new ReflectionTypeSolver());
-        combinedTypeSolver.add(new JavaParserTypeSolver(src, new LeanParserConfiguration()));
+        combinedTypeSolver.add(new JavaParserTypeSolver(src));
 
         Context context = new LambdaExprContext(lambdaExpr, combinedTypeSolver);
 
-        Optional<Value> ref = context.solveSymbolAsValue("p");
+        Optional<Value> ref = context.solveSymbolAsValue("p", typeSolver);
         assertTrue(ref.isPresent());
         assertEquals("java.lang.String", ref.get().getType().describe());
     }

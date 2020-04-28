@@ -32,10 +32,13 @@ import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
 import com.github.javaparser.metamodel.OptionalProperty;
 import com.github.javaparser.metamodel.WildcardTypeMetaModel;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import javax.annotation.Generated;
 import com.github.javaparser.TokenRange;
+import com.github.javaparser.resolution.types.ResolvedUnionType;
 import com.github.javaparser.resolution.types.ResolvedWildcard;
-import com.github.javaparser.ast.Generated;
 import java.util.function.Consumer;
 
 /**
@@ -46,7 +49,7 @@ import java.util.function.Consumer;
  *
  * @author Julio Vilmar Gesser
  */
-public class WildcardType extends Type implements NodeWithAnnotations<WildcardType> {
+public final class WildcardType extends Type implements NodeWithAnnotations<WildcardType> {
 
     @OptionalProperty
     private ReferenceType extendedType;
@@ -101,6 +104,22 @@ public class WildcardType extends Type implements NodeWithAnnotations<WildcardTy
     }
 
     /**
+     * @deprecated use getExtendedType instead.
+     */
+    @Deprecated
+    public Optional<ReferenceType> getExtendedTypes() {
+        return getExtendedType();
+    }
+
+    /**
+     * @deprecated use getSuperType instead.
+     */
+    @Deprecated
+    public Optional<ReferenceType> getSuperTypes() {
+        return getSuperType();
+    }
+
+    /**
      * Sets the extended type
      *
      * @param extendedType the extends, can be null
@@ -120,6 +139,18 @@ public class WildcardType extends Type implements NodeWithAnnotations<WildcardTy
     }
 
     /**
+     * Sets the extended type
+     *
+     * @param extendedType the extends, can be null
+     * @return this, the WildcardType
+     * @deprecated use setExtendedType instead,
+     */
+    @Deprecated
+    public WildcardType setExtendedTypes(final ReferenceType extendedType) {
+        return setExtendedType(extendedType);
+    }
+
+    /**
      * Sets the supertype
      *
      * @param superType the super, can be null
@@ -136,6 +167,18 @@ public class WildcardType extends Type implements NodeWithAnnotations<WildcardTy
         this.superType = superType;
         setAsParentNodeOf(superType);
         return this;
+    }
+
+    /**
+     * Sets the supertype
+     *
+     * @param superType the super, can be null
+     * @return this, the WildcardType
+     * @deprecated use setSuperType instead
+     */
+    @Deprecated
+    public WildcardType setSuperTypes(final ReferenceType superType) {
+        return setSuperType(superType);
     }
 
     @Override
@@ -169,6 +212,16 @@ public class WildcardType extends Type implements NodeWithAnnotations<WildcardTy
         getExtendedType().ifPresent(t -> str.append(" extends ").append(t.asString()));
         getSuperType().ifPresent(t -> str.append(" super ").append(t.asString()));
         return str.toString();
+    }
+
+    @Deprecated
+    public WildcardType removeExtendedTypes() {
+        return removeExtendedType();
+    }
+
+    @Deprecated
+    public WildcardType removeSuperTypes() {
+        return removeSuperType();
     }
 
     @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")

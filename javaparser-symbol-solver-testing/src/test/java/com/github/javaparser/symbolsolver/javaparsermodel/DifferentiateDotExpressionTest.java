@@ -1,5 +1,6 @@
 package com.github.javaparser.symbolsolver.javaparsermodel;
 
+import com.github.javaparser.ParseException;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.MethodCallExpr;
@@ -10,26 +11,27 @@ import com.github.javaparser.symbolsolver.resolution.AbstractResolutionTest;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.CombinedTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.JavaParserTypeSolver;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
-import com.github.javaparser.symbolsolver.utils.LeanParserConfiguration;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import org.junit.Before;
+import org.junit.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import java.io.File;
 
-class DifferentiateDotExpressionTest extends AbstractResolutionTest {
+import static org.junit.Assert.assertEquals;
+
+public class DifferentiateDotExpressionTest extends AbstractResolutionTest {
 
     private TypeSolver typeSolver;
 
-    @BeforeEach
-    void setup() {
+    @Before
+    public void setup() {
         CombinedTypeSolver combinedTypeSolver = new CombinedTypeSolver();
         combinedTypeSolver.add(new ReflectionTypeSolver());
-        combinedTypeSolver.add(new JavaParserTypeSolver(adaptPath("src/test/resources/differentiate_dot_expressions"), new LeanParserConfiguration()));
+        combinedTypeSolver.add(new JavaParserTypeSolver(adaptPath(new File("src/test/resources/differentiate_dot_expressions"))));
         typeSolver = combinedTypeSolver;
     }
 
     @Test
-    void methodCallsFromFieldObjects() {
+    public void methodCallsFromFieldObjects() {
         ClassOrInterfaceDeclaration clazz = ((JavaParserClassDeclaration) typeSolver.solveType("FieldDotExpressions")).getWrappedNode();
         MethodDeclaration mainMethod = Navigator.demandMethod(clazz, "main");
         JavaParserFacade javaParserFacade = JavaParserFacade.get(typeSolver);
@@ -44,7 +46,7 @@ class DifferentiateDotExpressionTest extends AbstractResolutionTest {
     }
 
     @Test
-    void staticMethodCallsFromInnerClasses() {
+    public void staticMethodCallsFromInnerClasses() {
         ClassOrInterfaceDeclaration clazz = ((JavaParserClassDeclaration) typeSolver.solveType("InnerClassDotExpressions")).getWrappedNode();
         MethodDeclaration mainMethod = Navigator.demandMethod(clazz, "main");
         JavaParserFacade javaParserFacade = JavaParserFacade.get(typeSolver);
@@ -59,7 +61,7 @@ class DifferentiateDotExpressionTest extends AbstractResolutionTest {
     }
 
     @Test
-    void staticFieldCallsFromInnerClasses() {
+    public void staticFieldCallsFromInnerClasses() {
         ClassOrInterfaceDeclaration clazz = ((JavaParserClassDeclaration) typeSolver.solveType("InnerStaticClassFieldDotExpressions")).getWrappedNode();
         MethodDeclaration mainMethod = Navigator.demandMethod(clazz, "main");
         JavaParserFacade javaParserFacade = JavaParserFacade.get(typeSolver);
@@ -70,7 +72,7 @@ class DifferentiateDotExpressionTest extends AbstractResolutionTest {
     }
 
     @Test
-    void packageStaticMethodCalls() {
+    public void packageStaticMethodCalls() {
         ClassOrInterfaceDeclaration clazz = ((JavaParserClassDeclaration) typeSolver.solveType("PackageDotExpressions")).getWrappedNode();
         MethodDeclaration mainMethod = Navigator.demandMethod(clazz, "main");
         JavaParserFacade javaParserFacade = JavaParserFacade.get(typeSolver);

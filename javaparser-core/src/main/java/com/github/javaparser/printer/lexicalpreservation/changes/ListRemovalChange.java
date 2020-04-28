@@ -25,8 +25,6 @@ public class ListRemovalChange implements Change {
                 throw new IllegalStateException("Expected NodeList, found " + currentRawValue.getClass().getCanonicalName());
             }
             NodeList<?> currentNodeList = (NodeList<?>)currentRawValue;
-            // fix #2187 set the parent node in the new list
-            nodeList.setParentNode(node);
             nodeList.addAll(currentNodeList);
             nodeList.remove(index);
             return nodeList;

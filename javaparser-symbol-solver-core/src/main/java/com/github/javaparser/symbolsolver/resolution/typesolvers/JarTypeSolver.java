@@ -24,7 +24,6 @@ import javassist.CtClass;
 import javassist.NotFoundException;
 
 import java.io.*;
-import java.nio.file.Path;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -32,8 +31,6 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 /**
- * Will let the symbol solver look inside a jar file while solving types.
- *
  * @author Federico Tomassetti
  */
 public class JarTypeSolver implements TypeSolver {
@@ -43,14 +40,6 @@ public class JarTypeSolver implements TypeSolver {
     private TypeSolver parent;
     private Map<String, ClasspathElement> classpathElements = new HashMap<>();
     private ClassPool classPool = new ClassPool(false);
-
-    public JarTypeSolver(Path pathToJar) throws IOException {
-        this(pathToJar.toFile());
-    }
-
-    public JarTypeSolver(File pathToJar) throws IOException {
-        this(pathToJar.getCanonicalPath());
-    }
 
     public JarTypeSolver(String pathToJar) throws IOException {
         addPathToJar(pathToJar);
@@ -75,10 +64,15 @@ public class JarTypeSolver implements TypeSolver {
 
         byte[] buffer = new byte[8 * 1024];
 
-        try (OutputStream output = new FileOutputStream(tempFile)) {
-            int bytesRead;
-            while ((bytesRead = inputStream.read(buffer)) != -1) {
-                output.write(buffer, 0, bytesRead);
+        try {
+            OutputStream output = new FileOutputStream(tempFile);
+            try {
+                int bytesRead;
+                while ((bytesRead = inputStream.read(buffer)) != -1) {
+                    output.write(buffer, 0, bytesRead);
+                }
+            } finally {
+                output.close();
             }
         } finally {
             inputStream.close();
@@ -98,13 +92,13 @@ public class JarTypeSolver implements TypeSolver {
             throw new RuntimeException(e);
         }
         JarFile jarFile = new JarFile(pathToJar);
-        JarEntry entry;
+        JarEntry entry = null;
         Enumeration<JarEntry> e = jarFile.entries();
         while (e.hasMoreElements()) {
             entry = e.nextElement();
             if (entry != null && !entry.isDirectory() && entry.getName().endsWith(".class")) {
                 String name = entryPathToClassName(entry.getName());
-                classpathElements.put(name, new ClasspathElement(jarFile, entry));
+                classpathElements.put(name, new ClasspathElement(jarFile, entry, name));
             }
         }
     }
@@ -156,10 +150,12 @@ public class JarTypeSolver implements TypeSolver {
     private class ClasspathElement {
         private JarFile jarFile;
         private JarEntry entry;
+        private String path;
 
-        ClasspathElement(JarFile jarFile, JarEntry entry) {
+        ClasspathElement(JarFile jarFile, JarEntry entry, String path) {
             this.jarFile = jarFile;
             this.entry = entry;
+            this.path = path;
         }
 
         CtClass toCtClass() throws IOException {
