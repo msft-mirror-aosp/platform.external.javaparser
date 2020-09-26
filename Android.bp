@@ -24,3 +24,19 @@ java_library_host {
         "javaparser-core/generated-sources/**/*.java",
     ],
 }
+
+java_library_host {
+    name: "javaparser-symbol-solver",
+
+    srcs: [
+        "javaparser-symbol-solver-core/src/main/java/**/*.java",
+        "javaparser-symbol-solver-logic/src/main/java/**/*.java",
+        "javaparser-symbol-solver-model/src/main/java/**/*.java",
+    ],
+
+    static_libs: [
+        "guava",
+        "javaparser",
+        "javassist",
+    ],
+}
