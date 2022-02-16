@@ -81,7 +81,4 @@ java_library_host {
         "javaparser",
         "javassist",
     ],
-    errorprone: {
-        javacflags: ["-Xep:UnicodeInCode:WARN"]
-    }
 }
