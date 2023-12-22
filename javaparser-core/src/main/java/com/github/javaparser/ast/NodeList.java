@@ -185,17 +185,15 @@ public class NodeList<N extends Node> implements List<N>, Iterable<N>, HasParent
     /**
      * Inserts the node before all other nodes.
      */
-    public NodeList<N> addFirst(N node) {
+    public void addFirst(N node) {
         add(0, node);
-        return this;
     }
 
     /**
      * Inserts the node after all other nodes. (This is simply an alias for add.)
      */
-    public NodeList<N> addLast(N node) {
+    public void addLast(N node) {
         add(node);
-        return this;
     }
 
     /**
