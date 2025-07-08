@@ -1,6 +1,31 @@
+/*
+ * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
+ *
+ * This file is part of JavaParser.
+ *
+ * JavaParser can be used either under the terms of
+ * a) the GNU Lesser General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ * b) the terms of the Apache License
+ *
+ * You should have received a copy of both licenses in LICENCE.LGPL and
+ * LICENCE.APACHE. Please refer to those files for details.
+ *
+ * JavaParser is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ */
 package com.github.javaparser.ast.modules;
 
+import static com.github.javaparser.StaticJavaParser.parseName;
+import static com.github.javaparser.utils.Utils.assertNotNull;
+
+import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.AllFieldsConstructor;
+import com.github.javaparser.ast.Generated;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.expr.Name;
@@ -9,17 +34,13 @@ import com.github.javaparser.ast.observer.ObservableProperty;
 import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
-import static com.github.javaparser.StaticJavaParser.parseName;
-import static com.github.javaparser.utils.Utils.assertNotNull;
-import com.github.javaparser.TokenRange;
-import java.util.function.Consumer;
-import java.util.Optional;
-import com.github.javaparser.metamodel.ModuleExportsDirectiveMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
-import com.github.javaparser.ast.Generated;
+import com.github.javaparser.metamodel.ModuleExportsDirectiveMetaModel;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
- * An exports directive in module-info.java. <code>exports R.S to T1.U1, T2.U2;</code>
+ * An exports directive in module-info.java. {@code exports R.S to T1.U1, T2.U2;}
  */
 public class ModuleExportsDirective extends ModuleDirective implements NodeWithName<ModuleExportsDirective> {
 
@@ -62,8 +83,9 @@ public class ModuleExportsDirective extends ModuleDirective implements NodeWithN
     @Override
     @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
     public boolean remove(Node node) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         for (int i = 0; i < moduleNames.size(); i++) {
             if (moduleNames.get(i) == node) {
                 moduleNames.remove(i);
@@ -82,11 +104,10 @@ public class ModuleExportsDirective extends ModuleDirective implements NodeWithN
     public ModuleExportsDirective setName(final Name name) {
         assertNotNull(name);
         if (name == this.name) {
-            return (ModuleExportsDirective) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.NAME, this.name, name);
-        if (this.name != null)
-            this.name.setParentNode(null);
+        if (this.name != null) this.name.setParentNode(null);
         this.name = name;
         setAsParentNodeOf(name);
         return this;
@@ -101,11 +122,10 @@ public class ModuleExportsDirective extends ModuleDirective implements NodeWithN
     public ModuleExportsDirective setModuleNames(final NodeList<Name> moduleNames) {
         assertNotNull(moduleNames);
         if (moduleNames == this.moduleNames) {
-            return (ModuleExportsDirective) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.MODULE_NAMES, this.moduleNames, moduleNames);
-        if (this.moduleNames != null)
-            this.moduleNames.setParentNode(null);
+        if (this.moduleNames != null) this.moduleNames.setParentNode(null);
         this.moduleNames = moduleNames;
         setAsParentNodeOf(moduleNames);
         return this;
@@ -120,8 +140,9 @@ public class ModuleExportsDirective extends ModuleDirective implements NodeWithN
     @Override
     @Generated("com.github.javaparser.generator.core.node.ReplaceMethodGenerator")
     public boolean replace(Node node, Node replacementNode) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         for (int i = 0; i < moduleNames.size(); i++) {
             if (moduleNames.get(i) == node) {
                 moduleNames.set(i, (Name) replacementNode);
@@ -181,6 +202,7 @@ public class ModuleExportsDirective extends ModuleDirective implements NodeWithN
         return Optional.of(this);
     }
 
+    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public void ifModuleExportsDirective(Consumer<ModuleExportsDirective> action) {
         action.accept(this);

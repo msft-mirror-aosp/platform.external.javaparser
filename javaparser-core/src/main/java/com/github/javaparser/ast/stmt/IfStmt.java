@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -20,28 +20,29 @@
  */
 package com.github.javaparser.ast.stmt;
 
+import static com.github.javaparser.utils.Utils.assertNotNull;
+
+import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.AllFieldsConstructor;
+import com.github.javaparser.ast.Generated;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.nodeTypes.NodeWithCondition;
 import com.github.javaparser.ast.observer.ObservableProperty;
+import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
-import java.util.Optional;
-import static com.github.javaparser.utils.Utils.assertNotNull;
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.metamodel.DerivedProperty;
 import com.github.javaparser.metamodel.IfStmtMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
-import com.github.javaparser.TokenRange;
 import com.github.javaparser.metamodel.OptionalProperty;
+import java.util.Optional;
 import java.util.function.Consumer;
-import com.github.javaparser.ast.Generated;
 
 /**
  * An if-then-else statement. The else is optional.
- * <br/>In <code>if(a==5) hurray() else boo();</code> the condition is a==5,
+ * <br>In {@code if(a==5) hurray() else boo();} the condition is a==5,
  * hurray() is the thenStmt, and boo() is the elseStmt.
  *
  * @author Julio Vilmar Gesser
@@ -107,11 +108,10 @@ public class IfStmt extends Statement implements NodeWithCondition<IfStmt> {
     public IfStmt setCondition(final Expression condition) {
         assertNotNull(condition);
         if (condition == this.condition) {
-            return (IfStmt) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.CONDITION, this.condition, condition);
-        if (this.condition != null)
-            this.condition.setParentNode(null);
+        if (this.condition != null) this.condition.setParentNode(null);
         this.condition = condition;
         setAsParentNodeOf(condition);
         return this;
@@ -126,11 +126,10 @@ public class IfStmt extends Statement implements NodeWithCondition<IfStmt> {
     @Generated("com.github.javaparser.generator.core.node.PropertyGenerator")
     public IfStmt setElseStmt(final Statement elseStmt) {
         if (elseStmt == this.elseStmt) {
-            return (IfStmt) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.ELSE_STMT, this.elseStmt, elseStmt);
-        if (this.elseStmt != null)
-            this.elseStmt.setParentNode(null);
+        if (this.elseStmt != null) this.elseStmt.setParentNode(null);
         this.elseStmt = elseStmt;
         setAsParentNodeOf(elseStmt);
         return this;
@@ -140,11 +139,10 @@ public class IfStmt extends Statement implements NodeWithCondition<IfStmt> {
     public IfStmt setThenStmt(final Statement thenStmt) {
         assertNotNull(thenStmt);
         if (thenStmt == this.thenStmt) {
-            return (IfStmt) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.THEN_STMT, this.thenStmt, thenStmt);
-        if (this.thenStmt != null)
-            this.thenStmt.setParentNode(null);
+        if (this.thenStmt != null) this.thenStmt.setParentNode(null);
         this.thenStmt = thenStmt;
         setAsParentNodeOf(thenStmt);
         return this;
@@ -153,8 +151,9 @@ public class IfStmt extends Statement implements NodeWithCondition<IfStmt> {
     @Override
     @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
     public boolean remove(Node node) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         if (elseStmt != null) {
             if (node == elseStmt) {
                 removeElseStmt();
@@ -216,8 +215,9 @@ public class IfStmt extends Statement implements NodeWithCondition<IfStmt> {
     @Override
     @Generated("com.github.javaparser.generator.core.node.ReplaceMethodGenerator")
     public boolean replace(Node node, Node replacementNode) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         if (node == condition) {
             setCondition((Expression) replacementNode);
             return true;
@@ -247,6 +247,7 @@ public class IfStmt extends Statement implements NodeWithCondition<IfStmt> {
         return this;
     }
 
+    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public void ifIfStmt(Consumer<IfStmt> action) {
         action.accept(this);

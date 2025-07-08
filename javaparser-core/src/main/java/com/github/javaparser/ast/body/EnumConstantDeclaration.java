@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -20,7 +20,12 @@
  */
 package com.github.javaparser.ast.body;
 
+import static com.github.javaparser.utils.Utils.assertNotNull;
+
+import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.AllFieldsConstructor;
+import com.github.javaparser.ast.Generated;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.Expression;
@@ -29,26 +34,26 @@ import com.github.javaparser.ast.nodeTypes.NodeWithArguments;
 import com.github.javaparser.ast.nodeTypes.NodeWithJavadoc;
 import com.github.javaparser.ast.nodeTypes.NodeWithSimpleName;
 import com.github.javaparser.ast.observer.ObservableProperty;
+import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
-import static com.github.javaparser.utils.Utils.assertNotNull;
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.metamodel.EnumConstantDeclarationMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
-import com.github.javaparser.TokenRange;
 import com.github.javaparser.resolution.Resolvable;
 import com.github.javaparser.resolution.declarations.ResolvedEnumConstantDeclaration;
-import java.util.function.Consumer;
 import java.util.Optional;
-import com.github.javaparser.ast.Generated;
+import java.util.function.Consumer;
 
 /**
- * One of the values an enum can take. A(1) and B(2) in this example: <code>enum X { A(1), B(2) }</code>
+ * One of the values an enum can take. A(1) and B(2) in this example: {@code enum X { A(1), B(2) }}
  *
  * @author Julio Vilmar Gesser
  */
-public class EnumConstantDeclaration extends BodyDeclaration<EnumConstantDeclaration> implements NodeWithJavadoc<EnumConstantDeclaration>, NodeWithSimpleName<EnumConstantDeclaration>, NodeWithArguments<EnumConstantDeclaration>, Resolvable<ResolvedEnumConstantDeclaration> {
+public class EnumConstantDeclaration extends BodyDeclaration<EnumConstantDeclaration>
+        implements NodeWithJavadoc<EnumConstantDeclaration>,
+                NodeWithSimpleName<EnumConstantDeclaration>,
+                NodeWithArguments<EnumConstantDeclaration>,
+                Resolvable<ResolvedEnumConstantDeclaration> {
 
     private SimpleName name;
 
@@ -65,7 +70,11 @@ public class EnumConstantDeclaration extends BodyDeclaration<EnumConstantDeclara
     }
 
     @AllFieldsConstructor
-    public EnumConstantDeclaration(NodeList<AnnotationExpr> annotations, SimpleName name, NodeList<Expression> arguments, NodeList<BodyDeclaration<?>> classBody) {
+    public EnumConstantDeclaration(
+            NodeList<AnnotationExpr> annotations,
+            SimpleName name,
+            NodeList<Expression> arguments,
+            NodeList<BodyDeclaration<?>> classBody) {
         this(null, annotations, name, arguments, classBody);
     }
 
@@ -73,7 +82,12 @@ public class EnumConstantDeclaration extends BodyDeclaration<EnumConstantDeclara
      * This constructor is used by the parser and is considered private.
      */
     @Generated("com.github.javaparser.generator.core.node.MainConstructorGenerator")
-    public EnumConstantDeclaration(TokenRange tokenRange, NodeList<AnnotationExpr> annotations, SimpleName name, NodeList<Expression> arguments, NodeList<BodyDeclaration<?>> classBody) {
+    public EnumConstantDeclaration(
+            TokenRange tokenRange,
+            NodeList<AnnotationExpr> annotations,
+            SimpleName name,
+            NodeList<Expression> arguments,
+            NodeList<BodyDeclaration<?>> classBody) {
         super(tokenRange, annotations);
         setName(name);
         setArguments(arguments);
@@ -112,11 +126,10 @@ public class EnumConstantDeclaration extends BodyDeclaration<EnumConstantDeclara
     public EnumConstantDeclaration setArguments(final NodeList<Expression> arguments) {
         assertNotNull(arguments);
         if (arguments == this.arguments) {
-            return (EnumConstantDeclaration) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.ARGUMENTS, this.arguments, arguments);
-        if (this.arguments != null)
-            this.arguments.setParentNode(null);
+        if (this.arguments != null) this.arguments.setParentNode(null);
         this.arguments = arguments;
         setAsParentNodeOf(arguments);
         return this;
@@ -126,11 +139,10 @@ public class EnumConstantDeclaration extends BodyDeclaration<EnumConstantDeclara
     public EnumConstantDeclaration setClassBody(final NodeList<BodyDeclaration<?>> classBody) {
         assertNotNull(classBody);
         if (classBody == this.classBody) {
-            return (EnumConstantDeclaration) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.CLASS_BODY, this.classBody, classBody);
-        if (this.classBody != null)
-            this.classBody.setParentNode(null);
+        if (this.classBody != null) this.classBody.setParentNode(null);
         this.classBody = classBody;
         setAsParentNodeOf(classBody);
         return this;
@@ -140,11 +152,10 @@ public class EnumConstantDeclaration extends BodyDeclaration<EnumConstantDeclara
     public EnumConstantDeclaration setName(final SimpleName name) {
         assertNotNull(name);
         if (name == this.name) {
-            return (EnumConstantDeclaration) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.NAME, this.name, name);
-        if (this.name != null)
-            this.name.setParentNode(null);
+        if (this.name != null) this.name.setParentNode(null);
         this.name = name;
         setAsParentNodeOf(name);
         return this;
@@ -153,8 +164,9 @@ public class EnumConstantDeclaration extends BodyDeclaration<EnumConstantDeclara
     @Override
     @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
     public boolean remove(Node node) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         for (int i = 0; i < arguments.size(); i++) {
             if (arguments.get(i) == node) {
                 arguments.remove(i);
@@ -185,8 +197,9 @@ public class EnumConstantDeclaration extends BodyDeclaration<EnumConstantDeclara
     @Override
     @Generated("com.github.javaparser.generator.core.node.ReplaceMethodGenerator")
     public boolean replace(Node node, Node replacementNode) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         for (int i = 0; i < arguments.size(); i++) {
             if (arguments.get(i) == node) {
                 arguments.set(i, (Expression) replacementNode);
@@ -218,6 +231,7 @@ public class EnumConstantDeclaration extends BodyDeclaration<EnumConstantDeclara
         return this;
     }
 
+    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public void ifEnumConstantDeclaration(Consumer<EnumConstantDeclaration> action) {
         action.accept(this);

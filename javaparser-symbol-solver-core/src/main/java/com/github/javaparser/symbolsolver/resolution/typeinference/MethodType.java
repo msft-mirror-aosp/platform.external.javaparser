@@ -1,9 +1,29 @@
+/*
+ * Copyright (C) 2015-2016 Federico Tomassetti
+ * Copyright (C) 2017-2024 The JavaParser Team.
+ *
+ * This file is part of JavaParser.
+ *
+ * JavaParser can be used either under the terms of
+ * a) the GNU Lesser General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ * b) the terms of the Apache License
+ *
+ * You should have received a copy of both licenses in LICENCE.LGPL and
+ * LICENCE.APACHE. Please refer to those files for details.
+ *
+ * JavaParser is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ */
+
 package com.github.javaparser.symbolsolver.resolution.typeinference;
 
 import com.github.javaparser.resolution.MethodUsage;
 import com.github.javaparser.resolution.declarations.ResolvedTypeParameterDeclaration;
 import com.github.javaparser.resolution.types.ResolvedType;
-
 import java.util.List;
 
 /**
@@ -24,13 +44,18 @@ public class MethodType {
     private List<ResolvedType> exceptionTypes;
 
     public static MethodType fromMethodUsage(MethodUsage methodUsage) {
-        return new MethodType(methodUsage.getDeclaration().getTypeParameters(), methodUsage.getParamTypes(),
-                methodUsage.returnType(), methodUsage.exceptionTypes());
+        return new MethodType(
+                methodUsage.getDeclaration().getTypeParameters(),
+                methodUsage.getParamTypes(),
+                methodUsage.returnType(),
+                methodUsage.exceptionTypes());
     }
 
-    public MethodType(List<ResolvedTypeParameterDeclaration> typeParameters, List<ResolvedType> formalArgumentTypes,
-                      ResolvedType returnType,
-                      List<ResolvedType> exceptionTypes) {
+    public MethodType(
+            List<ResolvedTypeParameterDeclaration> typeParameters,
+            List<ResolvedType> formalArgumentTypes,
+            ResolvedType returnType,
+            List<ResolvedType> exceptionTypes) {
         this.typeParameters = typeParameters;
         this.formalArgumentTypes = formalArgumentTypes;
         this.returnType = returnType;

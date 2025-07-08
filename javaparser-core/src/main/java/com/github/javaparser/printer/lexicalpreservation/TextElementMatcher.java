@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -18,7 +18,6 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  */
-
 package com.github.javaparser.printer.lexicalpreservation;
 
 public interface TextElementMatcher {
@@ -26,7 +25,7 @@ public interface TextElementMatcher {
     boolean match(TextElement textElement);
 
     /**
-     * This allows the combination of different TextElementMatcher instances.<br/>
+     * This allows the combination of different TextElementMatcher instances.<br>
      * If combined, all of the TextElementMatchers have to return true.
      *
      * @param textElementMatcher TextElementMatcher to combine with this one

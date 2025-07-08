@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -18,7 +18,6 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  */
-
 package com.github.javaparser.ast.nodeTypes;
 
 import com.github.javaparser.ast.Node;
@@ -27,7 +26,6 @@ import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.type.ArrayType;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.metamodel.DerivedProperty;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -36,6 +34,7 @@ import java.util.stream.Collectors;
  * A node which has a list of variables.
  */
 public interface NodeWithVariables<N extends Node> {
+
     NodeList<VariableDeclarator> getVariables();
 
     N setVariables(NodeList<VariableDeclarator> variables);
@@ -60,10 +59,10 @@ public interface NodeWithVariables<N extends Node> {
      * Returns the type that is shared between all variables.
      * This is a shortcut for when you are certain that all variables share one type.
      * What makes this difficult is arrays, and being able to set the type.
-     * <br/>For <code>int a;</code> this is int.
-     * <br/>For <code>int a,b,c,d;</code> this is also int.
-     * <br/>For <code>int a,b[],c;</code> this is an assertion error since b is an int[], not an int.
-     * <br/>For <code>int a,b;</code>, then doing setType(String) on b, this is an assertion error. It is also a situation that you don't really want.
+     * <br>For {@code int a;} this is int.
+     * <br>For {@code int a,b,c,d;} this is also int.
+     * <br>For {@code int a,b[],c;} this is an assertion error since b is an int[], not an int.
+     * <br>For {@code int a,b;}, then doing setType(String) on b, this is an assertion error. It is also a situation that you don't really want.
      */
     default Type getCommonType() {
         NodeList<VariableDeclarator> variables = getVariables();
@@ -81,10 +80,10 @@ public interface NodeWithVariables<N extends Node> {
 
     /**
      * Returns the element type.
-     * <br/>For <code>int a;</code> this is int.
-     * <br/>For <code>int a,b,c,d;</code> this is also int.
-     * <br/>For <code>int a,b[],c;</code> this is also int. Note: no mention of b being an array.
-     * <br/>For <code>int a,b;</code>, then doing setType(String) on b, then calling getElementType(). This is an assertion error. It is also a situation that you don't really want.
+     * <br>For {@code int a;} this is int.
+     * <br>For {@code int a,b,c,d;} this is also int.
+     * <br>For {@code int a,b[],c;} this is also int. Note: no mention of b being an array.
+     * <br>For {@code int a,b;}, then doing setType(String) on b, then calling getElementType(). This is an assertion error. It is also a situation that you don't really want.
      */
     default Type getElementType() {
         NodeList<VariableDeclarator> variables = getVariables();
@@ -117,19 +116,21 @@ public interface NodeWithVariables<N extends Node> {
      * Returns the type that maximum shared type between all variables.
      * The minimum common type does never include annotations on the array level.
      * <p>
-     * <br/>For <code>int a;</code> this is int.
-     * <br/>For <code>int a,b,c,d;</code> this is also int.
-     * <br/>For <code>int a,b[],c;</code> this is also int.
-     * <br/>For <code>int[] a[][],b[],c[][];</code> this is int[][].
+     * <br>For {@code int a;} this is int.
+     * <br>For {@code int a,b,c,d;} this is also int.
+     * <br>For {@code int a,b[],c;} this is also int.
+     * <br>For {@code int[] a[][],b[],c[][];} this is int[][].
      */
     @DerivedProperty
     default Optional<Type> getMaximumCommonType() {
-        return calculateMaximumCommonType(getVariables().stream().map(v -> v.getType()).collect(Collectors.toList()));
+        return calculateMaximumCommonType(
+                getVariables().stream().map(v -> v.getType()).collect(Collectors.toList()));
     }
 
     static Optional<Type> calculateMaximumCommonType(List<Type> types) {
         // we use a local class because we cannot use an helper static method in an interface
         class Helper {
+
             // Conceptually: given a type we start from the Element Type and get as many array levels as indicated
             // From the implementation point of view we start from the actual type and we remove how many array
             // levels as needed to get the target level of arrays
@@ -147,7 +148,6 @@ public interface NodeWithVariables<N extends Node> {
                 return Optional.of(type);
             }
         }
-
         Helper helper = new Helper();
         int level = 0;
         boolean keepGoing = true;
@@ -158,10 +158,13 @@ public interface NodeWithVariables<N extends Node> {
             // Now, given that equality on nodes consider the position the simplest way is to compare
             // the pretty-printed string got for a node. We just check all them are the same and if they
             // are we just just is not null
-            Object[] values = types.stream().map(v -> {
-                Optional<Type> t = helper.toArrayLevel(v, currentLevel);
-                return t.map(Node::toString).orElse(null);
-            }).distinct().toArray();
+            Object[] values = types.stream()
+                    .map(v -> {
+                        Optional<Type> t = helper.toArrayLevel(v, currentLevel);
+                        return t.map(Node::toString).orElse(null);
+                    })
+                    .distinct()
+                    .toArray();
             if (values.length == 1 && values[0] != null) {
                 level++;
             } else {
@@ -170,5 +173,4 @@ public interface NodeWithVariables<N extends Node> {
         }
         return helper.toArrayLevel(types.get(0), --level);
     }
-
 }

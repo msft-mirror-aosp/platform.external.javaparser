@@ -1,39 +1,44 @@
 /*
- * Copyright 2016 Federico Tomassetti
+ * Copyright (C) 2015-2016 Federico Tomassetti
+ * Copyright (C) 2017-2024 The JavaParser Team.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This file is part of JavaParser.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * JavaParser can be used either under the terms of
+ * a) the GNU Lesser General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ * b) the terms of the Apache License
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * You should have received a copy of both licenses in LICENCE.LGPL and
+ * LICENCE.APACHE. Please refer to those files for details.
+ *
+ * JavaParser is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  */
 
 package com.github.javaparser.symbolsolver.reflectionmodel;
 
+import static com.github.javaparser.symbolsolver.logic.AbstractTypeDeclaration.isRecordType;
+
 import com.github.javaparser.ast.AccessSpecifier;
-import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.resolution.Context;
 import com.github.javaparser.resolution.MethodUsage;
+import com.github.javaparser.resolution.TypeSolver;
 import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedParameterDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedTypeParameterDeclaration;
 import com.github.javaparser.resolution.types.ResolvedType;
-import com.github.javaparser.symbolsolver.core.resolution.Context;
 import com.github.javaparser.symbolsolver.core.resolution.TypeVariableResolutionCapability;
 import com.github.javaparser.symbolsolver.declarations.common.MethodDeclarationCommonLogic;
-import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
-
+import com.github.javaparser.utils.TypeUtils;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -69,9 +74,7 @@ public class ReflectionMethodDeclaration implements ResolvedMethodDeclaration, T
 
     @Override
     public String toString() {
-        return "ReflectionMethodDeclaration{" +
-                "method=" + method +
-                '}';
+        return "ReflectionMethodDeclaration{" + "method=" + method + '}';
     }
 
     @Override
@@ -86,9 +89,11 @@ public class ReflectionMethodDeclaration implements ResolvedMethodDeclaration, T
         }
         if (method.getDeclaringClass().isEnum()) {
             return new ReflectionEnumDeclaration(method.getDeclaringClass(), typeSolver);
-        } else {
-            return new ReflectionClassDeclaration(method.getDeclaringClass(), typeSolver);
         }
+        if (isRecordType(method.getDeclaringClass())) {
+            return new ReflectionRecordDeclaration(method.getDeclaringClass(), typeSolver);
+        }
+        return new ReflectionClassDeclaration(method.getDeclaringClass(), typeSolver);
     }
 
     @Override
@@ -107,13 +112,19 @@ public class ReflectionMethodDeclaration implements ResolvedMethodDeclaration, T
         if (method.isVarArgs()) {
             variadic = i == (method.getParameterCount() - 1);
         }
-        return new ReflectionParameterDeclaration(method.getParameterTypes()[i], method.getGenericParameterTypes()[i],
-                typeSolver, variadic, method.getParameters()[i].getName());
+        return new ReflectionParameterDeclaration(
+                method.getParameterTypes()[i],
+                method.getGenericParameterTypes()[i],
+                typeSolver,
+                variadic,
+                method.getParameters()[i].getName());
     }
 
     @Override
     public List<ResolvedTypeParameterDeclaration> getTypeParameters() {
-        return Arrays.stream(method.getTypeParameters()).map((refTp) -> new ReflectionTypeParameter(refTp, false, typeSolver)).collect(Collectors.toList());
+        return Arrays.stream(method.getTypeParameters())
+                .map((refTp) -> new ReflectionTypeParameter(refTp, false, typeSolver))
+                .collect(Collectors.toList());
     }
 
     public MethodUsage resolveTypeVariables(Context context, List<ResolvedType> parameterTypes) {
@@ -154,7 +165,7 @@ public class ReflectionMethodDeclaration implements ResolvedMethodDeclaration, T
     }
 
     @Override
-    public Optional<MethodDeclaration> toAst() {
-        return Optional.empty();
+    public String toDescriptor() {
+        return TypeUtils.getMethodDescriptor(method);
     }
 }

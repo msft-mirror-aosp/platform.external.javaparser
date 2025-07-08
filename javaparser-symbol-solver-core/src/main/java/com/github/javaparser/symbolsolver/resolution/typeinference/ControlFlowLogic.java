@@ -1,3 +1,24 @@
+/*
+ * Copyright (C) 2015-2016 Federico Tomassetti
+ * Copyright (C) 2017-2024 The JavaParser Team.
+ *
+ * This file is part of JavaParser.
+ *
+ * JavaParser can be used either under the terms of
+ * a) the GNU Lesser General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ * b) the terms of the Apache License
+ *
+ * You should have received a copy of both licenses in LICENCE.LGPL and
+ * LICENCE.APACHE. Please refer to those files for details.
+ *
+ * JavaParser is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ */
+
 package com.github.javaparser.symbolsolver.resolution.typeinference;
 
 import com.github.javaparser.ast.Node;
@@ -8,7 +29,6 @@ import com.github.javaparser.ast.expr.VariableDeclarationExpr;
 import com.github.javaparser.ast.stmt.*;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.GenericVisitorAdapter;
-
 import java.util.List;
 
 /**
@@ -29,9 +49,7 @@ public class ControlFlowLogic {
         return instance;
     }
 
-    private ControlFlowLogic() {
-
-    }
+    private ControlFlowLogic() {}
 
     /**
      * A break statement with no label attempts to transfer control to the innermost enclosing switch, while, do, or
@@ -59,7 +77,8 @@ public class ControlFlowLogic {
         Statement breakTarget = breakTarget(breakStmt);
         for (TryStmt tryStmt : containedTryStmts(breakTarget)) {
             if (contains(tryStmt.getTryBlock(), breakStmt)) {
-                if (!tryStmt.getFinallyBlock().isPresent() && !canCompleteNormally(tryStmt.getFinallyBlock().get())) {
+                if (!tryStmt.getFinallyBlock().isPresent()
+                        && !canCompleteNormally(tryStmt.getFinallyBlock().get())) {
                     return false;
                 }
             }
@@ -70,7 +89,8 @@ public class ControlFlowLogic {
     public boolean continueADoStatement(ContinueStmt continueStmt, DoStmt doStmt) {
         for (TryStmt tryStmt : containedTryStmts(continueStmt)) {
             if (contains(tryStmt.getTryBlock(), continueStmt)) {
-                if (!tryStmt.getFinallyBlock().isPresent() && !canCompleteNormally(tryStmt.getFinallyBlock().get())) {
+                if (!tryStmt.getFinallyBlock().isPresent()
+                        && !canCompleteNormally(tryStmt.getFinallyBlock().get())) {
                     return false;
                 }
             }
@@ -89,9 +109,8 @@ public class ControlFlowLogic {
     private <P extends Node> boolean parentIs(Node node, Class<P> parentClass) {
         if (node.getParentNode().isPresent()) {
             return parentClass.isInstance(node.getParentNode().get());
-        } else {
-            return false;
         }
+        return false;
     }
 
     // See JLS 14.21
@@ -99,7 +118,7 @@ public class ControlFlowLogic {
         if (!isReachable(statement)) {
             return false;
         }
-        GenericVisitor<Boolean, Void> visitor = new GenericVisitorAdapter<Boolean, Void>(){
+        GenericVisitor<Boolean, Void> visitor = new GenericVisitorAdapter<Boolean, Void>() {
             @Override
             public Boolean visit(BlockStmt n, Void arg) {
                 // An empty block that is not a switch block can complete normally iff it is reachable
@@ -130,7 +149,13 @@ public class ControlFlowLogic {
 
             @Override
             public Boolean visit(LocalClassDeclarationStmt n, Void arg) {
-                // A local class declaration statement can complete normally iff it is reachable.
+                // A local class declaration statement can complete normally if it is reachable.
+                return isReachable(n);
+            }
+
+            @Override
+            public Boolean visit(LocalRecordDeclarationStmt n, Void arg) {
+                // A local record declaration statement can complete normally if it is reachable.
                 return isReachable(n);
             }
 
@@ -139,11 +164,10 @@ public class ControlFlowLogic {
                 if (n.getElseStmt().isPresent()) {
                     // An if-then-else statement can complete normally iff the then-statement can
                     // complete normally or the else-statement can complete normally.
-                    return canCompleteNormally(n.getThenStmt()) || canCompleteNormally(n.getElseStmt().get());
-                } else {
-                    // An if-then statement can complete normally iff it is reachable.
-                    return isReachable(n);
+                    return canCompleteNormally(n.getThenStmt())
+                            || canCompleteNormally(n.getElseStmt().get());
                 }
+                return isReachable(n);
             }
 
             @Override
@@ -184,7 +208,7 @@ public class ControlFlowLogic {
 
     public boolean isReachable(Statement statement) {
 
-        GenericVisitor<Boolean, Void> visitor = new GenericVisitorAdapter<Boolean, Void>(){
+        GenericVisitor<Boolean, Void> visitor = new GenericVisitorAdapter<Boolean, Void>() {
             @Override
             public Boolean visit(BlockStmt n, Void arg) {
                 // The block that is the body of a constructor, method, instance initializer, or static initializer is
@@ -207,6 +231,11 @@ public class ControlFlowLogic {
             public Boolean visit(LocalClassDeclarationStmt n, Void arg) {
                 return super.visit(n, arg);
             }
+
+            @Override
+            public Boolean visit(LocalRecordDeclarationStmt n, Void arg) {
+                return super.visit(n, arg);
+            }
         };
         return statement.accept(visitor, null);
 
@@ -214,77 +243,91 @@ public class ControlFlowLogic {
         //
         //
         //        A switch statement can complete normally iff at least one of the following is
-        //true:
-        //– The switch block is empty or contains only switch labels.
-        //– The last statement in the switch block can complete normally.
-        //– There is at least one switch label after the last switch block statement group. – The switch block does not contain a default label.
-        //– There is a reachable break statement that exits the switch statement.
+        // true:
+        // – The switch block is empty or contains only switch labels.
+        // – The last statement in the switch block can complete normally.
+        // – There is at least one switch label after the last switch block statement group. – The switch block does not
+        // contain a default label.
+        // – There is a reachable break statement that exits the switch statement.
         //        BLOCKS AND STATEMENTS Unreachable Statements 14.21
         //
-        //A switch block is reachable iff its switch statement is reachable.
+        // A switch block is reachable iff its switch statement is reachable.
         //
         //        A statement in a switch block is reachable iff its switch statement is reachable
-        //and at least one of the following is true:
-        //– It bears a case or default label.
-        //– There is a statement preceding it in the switch block and that preceding statement can complete normally.
+        // and at least one of the following is true:
+        // – It bears a case or default label.
+        // – There is a statement preceding it in the switch block and that preceding statement can complete normally.
         //
-        //A while statement can complete normally iff at least one of the following is true:
-        //– Thewhilestatementisreachableandtheconditionexpressionisnotaconstant
-        //expression (§15.28) with value true.
-        //– There is a reachable break statement that exits the while statement.
-        //        The contained statement is reachable iff the while statement is reachable and the condition expression is not a constant expression whose value is false.
+        // A while statement can complete normally iff at least one of the following is true:
+        // – Thewhilestatementisreachableandtheconditionexpressionisnotaconstant
+        // expression (§15.28) with value true.
+        // – There is a reachable break statement that exits the while statement.
+        //        The contained statement is reachable iff the while statement is reachable and the condition expression
+        // is not a constant expression whose value is false.
         //
         //        A do statement can complete normally iff at least one of the following is true:
-        //– The contained statement can complete normally and the condition expression
-        //is not a constant expression (§15.28) with value true.
-        //– The do statement contains a reachable continue statement with no label, and the do statement is the innermost while, do, or for statement that contains that continue statement, and the continue statement continues that do statement, and the condition expression is not a constant expression with value true.
-        //– The do statement contains a reachable continue statement with a label L, and the do statement has label L, and the continue statement continues that do statement, and the condition expression is not a constant expression with value true.
-        //– There is a reachable break statement that exits the do statement.
+        // – The contained statement can complete normally and the condition expression
+        // is not a constant expression (§15.28) with value true.
+        // – The do statement contains a reachable continue statement with no label, and the do statement is the
+        // innermost while, do, or for statement that contains that continue statement, and the continue statement
+        // continues that do statement, and the condition expression is not a constant expression with value true.
+        // – The do statement contains a reachable continue statement with a label L, and the do statement has label L,
+        // and the continue statement continues that do statement, and the condition expression is not a constant
+        // expression with value true.
+        // – There is a reachable break statement that exits the do statement.
         //        The contained statement is reachable iff the do statement is reachable.
         //
         //        A basic for statement can complete normally iff at least one of the following
-        //is true:
-        //– The for statement is reachable, there is a condition expression, and the
-        //condition expression is not a constant expression (§15.28) with value true.
-        //– There is a reachable break statement that exits the for statement.
-        //        The contained statement is reachable iff the for statement is reachable and the condition expression is not a constant expression whose value is false.
+        // is true:
+        // – The for statement is reachable, there is a condition expression, and the
+        // condition expression is not a constant expression (§15.28) with value true.
+        // – There is a reachable break statement that exits the for statement.
+        //        The contained statement is reachable iff the for statement is reachable and the condition expression
+        // is not a constant expression whose value is false.
         //
-        //• An enhanced for statement can complete normally iff it is reachable.
+        // • An enhanced for statement can complete normally iff it is reachable.
         //
-        //• A break, continue, return, or throw statement cannot complete normally.
+        // • A break, continue, return, or throw statement cannot complete normally.
         //
-        //• A synchronized statement can complete normally iff the contained statement can complete normally.
+        // • A synchronized statement can complete normally iff the contained statement can complete normally.
         //        The contained statement is reachable iff the synchronized statement is reachable.
         //
-        //• A try statement can complete normally iff both of the following are true:
-        //– The try block can complete normally or any catch block can complete
-        //normally.
-        //– Ifthetrystatementhasafinallyblock,thenthefinallyblockcancomplete normally.
+        // • A try statement can complete normally iff both of the following are true:
+        // – The try block can complete normally or any catch block can complete
+        // normally.
+        // – Ifthetrystatementhasafinallyblock,thenthefinallyblockcancomplete normally.
         //
-        //• The try block is reachable iff the try statement is reachable.
+        // • The try block is reachable iff the try statement is reachable.
         //
-        //• A catch block C is reachable iff both of the following are true:
-        //– Either the type of C's parameter is an unchecked exception type or Exception or a superclass of Exception, or some expression or throw statement in the try block is reachable and can throw a checked exception whose type is assignable to the type of C's parameter. (An expression is reachable iff the innermost statement containing it is reachable.)
-        //See §15.6 for normal and abrupt completion of expressions.
-        //– There is no earlier catch block A in the try statement such that the type of C's
-        //parameter is the same as or a subclass of the type of A's parameter.
-        //• The Block of a catch block is reachable iff the catch block is reachable.
-        //• If a finally block is present, it is reachable iff the try statement is reachable.
+        // • A catch block C is reachable iff both of the following are true:
+        // – Either the type of C's parameter is an unchecked exception type or Exception or a superclass of Exception,
+        // or some expression or throw statement in the try block is reachable and can throw a checked exception whose
+        // type is assignable to the type of C's parameter. (An expression is reachable iff the innermost statement
+        // containing it is reachable.)
+        // See §15.6 for normal and abrupt completion of expressions.
+        // – There is no earlier catch block A in the try statement such that the type of C's
+        // parameter is the same as or a subclass of the type of A's parameter.
+        // • The Block of a catch block is reachable iff the catch block is reachable.
+        // • If a finally block is present, it is reachable iff the try statement is reachable.
         //        One might expect the if statement to be handled in the following manner:
-        //• An if-then statement can complete normally iff at least one of the following is true:
-        //– The if-then statement is reachable and the condition expression is not a constant expression whose value is true.
-        //– The then-statement can complete normally.
+        // • An if-then statement can complete normally iff at least one of the following is true:
+        // – The if-then statement is reachable and the condition expression is not a constant expression whose value is
+        // true.
+        // – The then-statement can complete normally.
         //        The then-statement is reachable iff the if-then statement is reachable and the
-        //condition expression is not a constant expression whose value is false.
-        //• An if-then-else statement can complete normally iff the then-statement can complete normally or the else-statement can complete normally.
+        // condition expression is not a constant expression whose value is false.
+        // • An if-then-else statement can complete normally iff the then-statement can complete normally or the
+        // else-statement can complete normally.
         //        BLOCKS AND STATEMENTS Unreachable Statements 14.21
-        //The then-statement is reachable iff the if-then-else statement is reachable and the condition expression is not a constant expression whose value is false.
-        //        The else-statement is reachable iff the if-then-else statement is reachable and the condition expression is not a constant expression whose value is true.
-        //        This approach would be consistent with the treatment of other control structures. However, in order to allow the if statement to be used conveniently for "conditional compilation" purposes, the actual rules differ.
+        // The then-statement is reachable iff the if-then-else statement is reachable and the condition expression is
+        // not a constant expression whose value is false.
+        //        The else-statement is reachable iff the if-then-else statement is reachable and the condition
+        // expression is not a constant expression whose value is true.
+        //        This approach would be consistent with the treatment of other control structures. However, in order to
+        // allow the if statement to be used conveniently for "conditional compilation" purposes, the actual rules
+        // differ.
 
         // FIXME
-        //throw new UnsupportedOperationException();
+        // throw new UnsupportedOperationException();
     }
-
-
 }

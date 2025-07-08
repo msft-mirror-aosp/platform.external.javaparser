@@ -1,8 +1,8 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
- * This file is part of 
+ * This file is part of JavaParser.
  *
  * JavaParser can be used either under the terms of
  * a) the GNU Lesser General Public License as published by
@@ -21,12 +21,12 @@
 
 package com.github.javaparser.ast.visitor;
 
-import com.github.javaparser.ast.CompilationUnit;
-import org.junit.jupiter.api.Test;
-
 import static com.github.javaparser.StaticJavaParser.parse;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.github.javaparser.ast.CompilationUnit;
+import org.junit.jupiter.api.Test;
 
 class NoCommentEqualsVisitorTest {
 

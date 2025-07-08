@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -20,29 +20,39 @@
  */
 package com.github.javaparser.ast.expr;
 
+import static com.github.javaparser.utils.Utils.hasUnaryMinusAsParent;
+
+import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.AllFieldsConstructor;
-import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.Generated;
 import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
 import com.github.javaparser.metamodel.LongLiteralExprMetaModel;
-import com.github.javaparser.TokenRange;
-import java.util.function.Consumer;
+import java.math.BigInteger;
+import java.util.Objects;
 import java.util.Optional;
-import com.github.javaparser.ast.Generated;
+import java.util.function.Consumer;
 
 /**
  * All ways to specify a long literal.
- * <br/><code>8934l</code>
- * <br/><code>0x01L</code>
- * <br/><code>022l</code>
- * <br/><code>0B10101010L</code>
- * <br/><code>99999999L</code>
+ *
+ * <ul>
+ * <li>{@code 8934l}</li>
+ * <li>{@code 0x01L}</li>
+ * <li>{@code 022l}</li>
+ * <li>{@code 0B10101010L}</li>
+ * <li>{@code 99999999L}</li>
+ * </ul>
  *
  * @author Julio Vilmar Gesser
  */
 public class LongLiteralExpr extends LiteralStringValueExpr {
+
+    public static final String MAX_63_BIT_UNSIGNED_VALUE_AS_STRING = "9223372036854775808L";
+
+    public static final BigInteger MAX_63_BIT_UNSIGNED_VALUE_AS_BIG_INTEGER = new BigInteger("9223372036854775808");
 
     public LongLiteralExpr() {
         this(null, "0");
@@ -62,6 +72,11 @@ public class LongLiteralExpr extends LiteralStringValueExpr {
         customInitialization();
     }
 
+    /**
+     * @deprecated This function is deprecated in favor of {@link #LongLiteralExpr(String)}. Please refer to the {@link
+     * #asNumber()} function for valid formats and how to construct literals holding negative values.
+     */
+    @Deprecated
     public LongLiteralExpr(final long value) {
         this(null, String.valueOf(value));
     }
@@ -78,17 +93,13 @@ public class LongLiteralExpr extends LiteralStringValueExpr {
         v.visit(this, arg);
     }
 
-    @Override
-    @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
-    public boolean remove(Node node) {
-        if (node == null)
-            return false;
-        return super.remove(node);
-    }
-
     /**
      * @return the literal value as an long while respecting different number representations
+     * @deprecated This function has issues with corner cases, such as 9223372036854775808L, so please use {@link
+     * LongLiteralExpr#asNumber()}. It will be made private or merged with {@link LongLiteralExpr#asNumber()} in future
+     * releases
      */
+    @Deprecated
     public long asLong() {
         String result = value.replaceAll("_", "");
         char lastChar = result.charAt(result.length() - 1);
@@ -107,6 +118,33 @@ public class LongLiteralExpr extends LiteralStringValueExpr {
         return Long.parseLong(result);
     }
 
+    /**
+     * This function returns a representation of the literal value as a number. This will return a long, except for the
+     * case when the literal has the value {@code 9223372036854775808L}. This special literal is only allowed in
+     * the expression {@code -9223372036854775808L} which represents <code>Long.MIN_VALUE</code>). However
+     * 9223372036854775808 (2^63) is out of range of long, which is -(2^63) to (2^63)-1 and thus a BigInteger must be
+     * returned.
+     *
+     * <p>Note, that this function will NOT return a negative number if the literal was specified in decimal, since
+     * according to the language specification (chapter 3.10.1) an expression such as {@code -1L} is represented by
+     * a unary * expression with a minus operator and the literal {@code 1L}. It is however possible to represent
+     * negative * numbers in a literal directly,  i.e. by using the binary or hexadecimal representation. For example
+     * {@code 0xffff_ffff_ffff_ffffL} represents the value <code>-1L</code>.
+     *
+     * @return the literal value as a number while respecting different number representations
+     */
+    public Number asNumber() {
+        if (Objects.equals(value, MAX_63_BIT_UNSIGNED_VALUE_AS_STRING) && hasUnaryMinusAsParent(this)) {
+            return MAX_63_BIT_UNSIGNED_VALUE_AS_BIG_INTEGER;
+        }
+        return asLong();
+    }
+
+    /**
+     * @deprecated This function is deprecated in favor of {@link #setValue(String)}. Please refer to the {@link
+     * #asNumber()} function for valid formats and how to construct literals holding negative values.
+     */
+    @Deprecated
     public LongLiteralExpr setLong(long value) {
         this.value = String.valueOf(value);
         return this;
@@ -125,14 +163,6 @@ public class LongLiteralExpr extends LiteralStringValueExpr {
     }
 
     @Override
-    @Generated("com.github.javaparser.generator.core.node.ReplaceMethodGenerator")
-    public boolean replace(Node node, Node replacementNode) {
-        if (node == null)
-            return false;
-        return super.replace(node, replacementNode);
-    }
-
-    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public boolean isLongLiteralExpr() {
         return true;
@@ -144,6 +174,7 @@ public class LongLiteralExpr extends LiteralStringValueExpr {
         return this;
     }
 
+    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public void ifLongLiteralExpr(Consumer<LongLiteralExpr> action) {
         action.accept(this);

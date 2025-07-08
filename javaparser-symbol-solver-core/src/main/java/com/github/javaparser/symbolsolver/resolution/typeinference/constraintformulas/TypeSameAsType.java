@@ -1,14 +1,33 @@
+/*
+ * Copyright (C) 2015-2016 Federico Tomassetti
+ * Copyright (C) 2017-2024 The JavaParser Team.
+ *
+ * This file is part of JavaParser.
+ *
+ * JavaParser can be used either under the terms of
+ * a) the GNU Lesser General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ * b) the terms of the Apache License
+ *
+ * You should have received a copy of both licenses in LICENCE.LGPL and
+ * LICENCE.APACHE. Please refer to those files for details.
+ *
+ * JavaParser is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ */
+
 package com.github.javaparser.symbolsolver.resolution.typeinference.constraintformulas;
+
+import static com.github.javaparser.symbolsolver.resolution.typeinference.TypeHelper.isProperType;
 
 import com.github.javaparser.resolution.types.ResolvedType;
 import com.github.javaparser.symbolsolver.resolution.typeinference.BoundSet;
 import com.github.javaparser.symbolsolver.resolution.typeinference.ConstraintFormula;
 import com.github.javaparser.symbolsolver.resolution.typeinference.bounds.SameAsBound;
-
 import java.util.List;
-
-import static com.github.javaparser.symbolsolver.resolution.typeinference.TypeHelper.isInferenceVariable;
-import static com.github.javaparser.symbolsolver.resolution.typeinference.TypeHelper.isProperType;
 
 /**
  * A type S is the same as a type T (§4.3.4), or a type argument S is the same as type argument T
@@ -36,9 +55,8 @@ public class TypeSameAsType extends ConstraintFormula {
             if (isProperType(S) && isProperType(T)) {
                 if (S.equals(T)) {
                     return ReductionResult.trueResult();
-                } else {
-                    return ReductionResult.falseResult();
                 }
+                return ReductionResult.falseResult();
             }
 
             // - Otherwise, if S or T is the null type, the constraint reduces to false.
@@ -47,26 +65,32 @@ public class TypeSameAsType extends ConstraintFormula {
                 return ReductionResult.falseResult();
             }
 
-            // - Otherwise, if S is an inference variable, α, and T is not a primitive type, the constraint reduces to the
+            // - Otherwise, if S is an inference variable, α, and T is not a primitive type, the constraint reduces to
+            // the
             //   bound α = T.
 
-            if (isInferenceVariable(S) && !T.isPrimitive()) {
+            if (S.isInferenceVariable() && !T.isPrimitive()) {
                 return ReductionResult.oneBound(new SameAsBound(S, T));
             }
 
-            // - Otherwise, if T is an inference variable, α, and S is not a primitive type, the constraint reduces to the
+            // - Otherwise, if T is an inference variable, α, and S is not a primitive type, the constraint reduces to
+            // the
             //   bound S = α.
 
-            if (isInferenceVariable(T) && !S.isPrimitive()) {
+            if (T.isInferenceVariable() && !S.isPrimitive()) {
                 return ReductionResult.oneBound(new SameAsBound(S, T));
             }
 
             // - Otherwise, if S and T are class or interface types with the same erasure, where S has
-            //   type arguments B1, ..., Bn and T has type arguments A1, ..., An, the constraint reduces to the following
+            //   type arguments B1, ..., Bn and T has type arguments A1, ..., An, the constraint reduces to the
+            // following
             //   new constraints: for all i (1 ≤ i ≤ n), ‹Bi = Ai›.
 
-            if (S.isReferenceType() && T.isReferenceType()
-                    && S.asReferenceType().toRawType().equals(T.asReferenceType().toRawType())) {
+            if (S.isReferenceType()
+                    && T.isReferenceType()
+                    && S.asReferenceType()
+                            .toRawType()
+                            .equals(T.asReferenceType().toRawType())) {
                 ReductionResult res = ReductionResult.empty();
                 List<ResolvedType> Bs = S.asReferenceType().typeParametersValues();
                 List<ResolvedType> As = T.asReferenceType().typeParametersValues();
@@ -80,8 +104,7 @@ public class TypeSameAsType extends ConstraintFormula {
 
             if (S.isArray() && T.isArray()) {
                 return ReductionResult.oneConstraint(new TypeSameAsType(
-                        S.asArrayType().getComponentType(),
-                        T.asArrayType().getComponentType()));
+                        S.asArrayType().getComponentType(), T.asArrayType().getComponentType()));
             }
 
             // - Otherwise, the constraint reduces to false.
@@ -108,7 +131,6 @@ public class TypeSameAsType extends ConstraintFormula {
         //
         // - Otherwise, the constraint reduces to false.
 
-
         throw new UnsupportedOperationException();
     }
 
@@ -132,9 +154,6 @@ public class TypeSameAsType extends ConstraintFormula {
 
     @Override
     public String toString() {
-        return "TypeSameAsType{" +
-                "S=" + S +
-                ", T=" + T +
-                '}';
+        return "TypeSameAsType{" + "S=" + S + ", T=" + T + '}';
     }
 }

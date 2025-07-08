@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -20,23 +20,24 @@
  */
 package com.github.javaparser.ast.stmt;
 
+import static com.github.javaparser.utils.Utils.assertNotNull;
+
+import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.AllFieldsConstructor;
+import com.github.javaparser.ast.Generated;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.observer.ObservableProperty;
+import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
-import static com.github.javaparser.utils.Utils.assertNotNull;
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.visitor.CloneVisitor;
-import com.github.javaparser.metamodel.LabeledStmtMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
-import com.github.javaparser.TokenRange;
-import java.util.function.Consumer;
+import com.github.javaparser.metamodel.LabeledStmtMetaModel;
 import java.util.Optional;
-import com.github.javaparser.ast.Generated;
+import java.util.function.Consumer;
 
 /**
- * A statement that is labeled, like <code>label123: println("continuing");</code>
+ * A statement that is labeled, like {@code label123: println("continuing");}
  *
  * @author Julio Vilmar Gesser
  */
@@ -91,11 +92,10 @@ public class LabeledStmt extends Statement {
     public LabeledStmt setStatement(final Statement statement) {
         assertNotNull(statement);
         if (statement == this.statement) {
-            return (LabeledStmt) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.STATEMENT, this.statement, statement);
-        if (this.statement != null)
-            this.statement.setParentNode(null);
+        if (this.statement != null) this.statement.setParentNode(null);
         this.statement = statement;
         setAsParentNodeOf(statement);
         return this;
@@ -110,22 +110,13 @@ public class LabeledStmt extends Statement {
     public LabeledStmt setLabel(final SimpleName label) {
         assertNotNull(label);
         if (label == this.label) {
-            return (LabeledStmt) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.LABEL, this.label, label);
-        if (this.label != null)
-            this.label.setParentNode(null);
+        if (this.label != null) this.label.setParentNode(null);
         this.label = label;
         setAsParentNodeOf(label);
         return this;
-    }
-
-    @Override
-    @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
-    public boolean remove(Node node) {
-        if (node == null)
-            return false;
-        return super.remove(node);
     }
 
     @Override
@@ -143,8 +134,9 @@ public class LabeledStmt extends Statement {
     @Override
     @Generated("com.github.javaparser.generator.core.node.ReplaceMethodGenerator")
     public boolean replace(Node node, Node replacementNode) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         if (node == label) {
             setLabel((SimpleName) replacementNode);
             return true;
@@ -168,6 +160,7 @@ public class LabeledStmt extends Statement {
         return this;
     }
 
+    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public void ifLabeledStmt(Consumer<LabeledStmt> action) {
         action.accept(this);

@@ -1,3 +1,24 @@
+/*
+ * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
+ *
+ * This file is part of JavaParser.
+ *
+ * JavaParser can be used either under the terms of
+ * a) the GNU Lesser General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ * b) the terms of the Apache License
+ *
+ * You should have received a copy of both licenses in LICENCE.LGPL and
+ * LICENCE.APACHE. Please refer to those files for details.
+ *
+ * JavaParser is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ */
+
 package com.github.javaparser;
 
 import com.github.javaparser.ast.ArrayCreationLevel;
@@ -32,6 +53,8 @@ abstract class GeneratedJavaParserBase {
     abstract JavaToken token();
 
     abstract Token getNextToken();
+
+    abstract Token getToken(final int index);
 
     ////
 
@@ -183,11 +206,45 @@ abstract class GeneratedJavaParserBase {
         problems.add(new Problem(makeMessageForParseException(p), tokenRange, p));
         return tokenRange;
     }
+    /* Called from within a catch block to skip forward to a known token,
+        and report the occurred exception as a problem. */
+    TokenRange recoverStatement(int recoveryTokenType, int lBraceType, int rBraceType, ParseException p) {
+        JavaToken begin = null;
+        if (p.currentToken != null) {
+            begin = token();
+        }
+        int level = 0;
+        Token t;
+        do {
+            Token nextToken = getToken(1);
+            if (nextToken != null && nextToken.kind == rBraceType && level == 0) {
+                TokenRange tokenRange = range(begin, token());
+                problems.add(new Problem(makeMessageForParseException(p), tokenRange, p));
+                return tokenRange;
+            }
+            t = getNextToken();
+            if (t.kind == lBraceType) {
+                level++;
+            } else if (t.kind == rBraceType) {
+                level--;
+            }
+        } while (!(t.kind == recoveryTokenType && level == 0) && t.kind != EOF);
+
+        JavaToken end = token();
+
+        TokenRange tokenRange = null;
+        if (begin != null && end != null) {
+            tokenRange = range(begin, end);
+        }
+
+        problems.add(new Problem(makeMessageForParseException(p), tokenRange, p));
+        return tokenRange;
+    }
 
     /**
-     * Quickly create a new NodeList
+     * Quickly create a new, empty, NodeList
      */
-    <T extends Node> NodeList<T> emptyList() {
+    <T extends Node> NodeList<T> emptyNodeList() {
         return new NodeList<>();
     }
 
@@ -271,6 +328,7 @@ abstract class GeneratedJavaParserBase {
             CastExpr castExpr = (CastExpr) ret;
             Expression inner = generateLambda(castExpr.getExpression(), lambdaBody);
             castExpr.setExpression(inner);
+            propagateRangeGrowthOnRight(castExpr, inner);
         } else {
             addProblem("Failed to parse lambda expression! Please create an issue at https://github.com/javaparser/javaparser/issues");
         }
@@ -296,7 +354,7 @@ abstract class GeneratedJavaParserBase {
         Pair<Type, List<ArrayType.ArrayBracketPair>> partialParts = unwrapArrayTypes(partialType);
         Type elementType = partialParts.a;
         List<ArrayType.ArrayBracketPair> leftMostBrackets = partialParts.b;
-        return wrapInArrayTypes(elementType, leftMostBrackets, additionalBrackets).clone();
+        return wrapInArrayTypes(elementType, additionalBrackets, leftMostBrackets).clone();
     }
 
     /**
@@ -355,18 +413,38 @@ abstract class GeneratedJavaParserBase {
     }
 
     /**
-     * Converts a NameExpr or a FieldAccessExpr scope to a Name. 
+     * Converts a NameExpr or a FieldAccessExpr scope to a Name.
      */
     Name scopeToName(Expression scope) {
         if (scope.isNameExpr()) {
             SimpleName simpleName = scope.asNameExpr().getName();
-            return new Name(simpleName.getTokenRange().get(), null, simpleName.getIdentifier());
+            return new Name(simpleName.getTokenRange().orElse(null), null, simpleName.getIdentifier());
         }
         if (scope.isFieldAccessExpr()) {
             FieldAccessExpr fieldAccessExpr = scope.asFieldAccessExpr();
-            return new Name(fieldAccessExpr.getTokenRange().get(), scopeToName(fieldAccessExpr.getScope()), fieldAccessExpr.getName().getIdentifier());
+            return new Name(fieldAccessExpr.getTokenRange().orElse(null), scopeToName(fieldAccessExpr.getScope()), fieldAccessExpr.getName().getIdentifier());
 
         }
         throw new IllegalStateException("Unexpected expression type: " + scope.getClass().getSimpleName());
+    }
+
+    String unquote(String s) {
+        return s.substring(1, s.length() - 1);
+    }
+
+    String unTripleQuote(String s) {
+        int start = 3;
+        // Skip over the first end of line too:
+        if (s.charAt(start) == '\r') {
+            start++;
+        }
+        if (s.charAt(start) == '\n') {
+            start++;
+        }
+        return s.substring(start, s.length() - 3);
+    }
+
+    void setYieldSupported() {
+        getTokenSource().setYieldSupported();
     }
 }

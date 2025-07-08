@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -18,14 +18,14 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  */
-
 package com.github.javaparser.javadoc.description;
 
 /**
  * An element of a description: either an inline tag or a piece of text.
  * <p>
- * So for example <code>a text</code> or <code>{@link String}</code> could be valid description elements.
+ * So for example {@code a text} or <code>{@link String}</code> could be valid description elements.
  */
 public interface JavadocDescriptionElement {
+
     String toText();
 }

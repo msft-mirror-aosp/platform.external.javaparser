@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -20,7 +20,12 @@
  */
 package com.github.javaparser.ast.expr;
 
+import static com.github.javaparser.utils.Utils.assertNotNull;
+
+import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.AllFieldsConstructor;
+import com.github.javaparser.ast.Generated;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.nodeTypes.NodeWithArguments;
 import com.github.javaparser.ast.nodeTypes.NodeWithOptionalScope;
@@ -29,29 +34,31 @@ import com.github.javaparser.ast.nodeTypes.NodeWithTypeArguments;
 import com.github.javaparser.ast.observer.ObservableProperty;
 import com.github.javaparser.ast.stmt.ExplicitConstructorInvocationStmt;
 import com.github.javaparser.ast.type.Type;
+import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
-import java.util.Optional;
-import static com.github.javaparser.utils.Utils.assertNotNull;
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.visitor.CloneVisitor;
-import com.github.javaparser.metamodel.MethodCallExprMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
-import com.github.javaparser.TokenRange;
+import com.github.javaparser.metamodel.MethodCallExprMetaModel;
 import com.github.javaparser.metamodel.OptionalProperty;
 import com.github.javaparser.resolution.Resolvable;
 import com.github.javaparser.resolution.UnsolvedSymbolException;
 import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
+import com.github.javaparser.resolution.types.ResolvedType;
+import java.util.Optional;
 import java.util.function.Consumer;
-import com.github.javaparser.ast.Generated;
 
 /**
- * A method call on an object or a class. <br/><code>circle.circumference()</code> <br/>In <code>a.&lt;String&gt;bb(15);</code> a
+ * A method call on an object or a class. <br>{@code circle.circumference()} <br>In {@code a.<String>bb(15);}, a
  * is the scope, String is a type argument, bb is the name and 15 is an argument.
  *
  * @author Julio Vilmar Gesser
  */
-public class MethodCallExpr extends Expression implements NodeWithTypeArguments<MethodCallExpr>, NodeWithArguments<MethodCallExpr>, NodeWithSimpleName<MethodCallExpr>, NodeWithOptionalScope<MethodCallExpr>, Resolvable<ResolvedMethodDeclaration> {
+public class MethodCallExpr extends Expression
+        implements NodeWithTypeArguments<MethodCallExpr>,
+                NodeWithArguments<MethodCallExpr>,
+                NodeWithSimpleName<MethodCallExpr>,
+                NodeWithOptionalScope<MethodCallExpr>,
+                Resolvable<ResolvedMethodDeclaration> {
 
     @OptionalProperty
     private Expression scope;
@@ -83,7 +90,11 @@ public class MethodCallExpr extends Expression implements NodeWithTypeArguments<
         this(null, scope, null, new SimpleName(name), arguments);
     }
 
-    public MethodCallExpr(final Expression scope, final NodeList<Type> typeArguments, final String name, final NodeList<Expression> arguments) {
+    public MethodCallExpr(
+            final Expression scope,
+            final NodeList<Type> typeArguments,
+            final String name,
+            final NodeList<Expression> arguments) {
         this(null, scope, typeArguments, new SimpleName(name), arguments);
     }
 
@@ -92,7 +103,11 @@ public class MethodCallExpr extends Expression implements NodeWithTypeArguments<
     }
 
     @AllFieldsConstructor
-    public MethodCallExpr(final Expression scope, final NodeList<Type> typeArguments, final SimpleName name, final NodeList<Expression> arguments) {
+    public MethodCallExpr(
+            final Expression scope,
+            final NodeList<Type> typeArguments,
+            final SimpleName name,
+            final NodeList<Expression> arguments) {
         this(null, scope, typeArguments, name, arguments);
     }
 
@@ -100,7 +115,12 @@ public class MethodCallExpr extends Expression implements NodeWithTypeArguments<
      * This constructor is used by the parser and is considered private.
      */
     @Generated("com.github.javaparser.generator.core.node.MainConstructorGenerator")
-    public MethodCallExpr(TokenRange tokenRange, Expression scope, NodeList<Type> typeArguments, SimpleName name, NodeList<Expression> arguments) {
+    public MethodCallExpr(
+            TokenRange tokenRange,
+            Expression scope,
+            NodeList<Type> typeArguments,
+            SimpleName name,
+            NodeList<Expression> arguments) {
         super(tokenRange);
         setScope(scope);
         setTypeArguments(typeArguments);
@@ -140,11 +160,10 @@ public class MethodCallExpr extends Expression implements NodeWithTypeArguments<
     public MethodCallExpr setArguments(final NodeList<Expression> arguments) {
         assertNotNull(arguments);
         if (arguments == this.arguments) {
-            return (MethodCallExpr) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.ARGUMENTS, this.arguments, arguments);
-        if (this.arguments != null)
-            this.arguments.setParentNode(null);
+        if (this.arguments != null) this.arguments.setParentNode(null);
         this.arguments = arguments;
         setAsParentNodeOf(arguments);
         return this;
@@ -154,11 +173,10 @@ public class MethodCallExpr extends Expression implements NodeWithTypeArguments<
     public MethodCallExpr setName(final SimpleName name) {
         assertNotNull(name);
         if (name == this.name) {
-            return (MethodCallExpr) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.NAME, this.name, name);
-        if (this.name != null)
-            this.name.setParentNode(null);
+        if (this.name != null) this.name.setParentNode(null);
         this.name = name;
         setAsParentNodeOf(name);
         return this;
@@ -167,11 +185,10 @@ public class MethodCallExpr extends Expression implements NodeWithTypeArguments<
     @Generated("com.github.javaparser.generator.core.node.PropertyGenerator")
     public MethodCallExpr setScope(final Expression scope) {
         if (scope == this.scope) {
-            return (MethodCallExpr) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.SCOPE, this.scope, scope);
-        if (this.scope != null)
-            this.scope.setParentNode(null);
+        if (this.scope != null) this.scope.setParentNode(null);
         this.scope = scope;
         setAsParentNodeOf(scope);
         return this;
@@ -191,11 +208,10 @@ public class MethodCallExpr extends Expression implements NodeWithTypeArguments<
     @Generated("com.github.javaparser.generator.core.node.PropertyGenerator")
     public MethodCallExpr setTypeArguments(final NodeList<Type> typeArguments) {
         if (typeArguments == this.typeArguments) {
-            return (MethodCallExpr) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.TYPE_ARGUMENTS, this.typeArguments, typeArguments);
-        if (this.typeArguments != null)
-            this.typeArguments.setParentNode(null);
+        if (this.typeArguments != null) this.typeArguments.setParentNode(null);
         this.typeArguments = typeArguments;
         setAsParentNodeOf(typeArguments);
         return this;
@@ -204,8 +220,9 @@ public class MethodCallExpr extends Expression implements NodeWithTypeArguments<
     @Override
     @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
     public boolean remove(Node node) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         for (int i = 0; i < arguments.size(); i++) {
             if (arguments.get(i) == node) {
                 arguments.remove(i);
@@ -249,8 +266,9 @@ public class MethodCallExpr extends Expression implements NodeWithTypeArguments<
     @Override
     @Generated("com.github.javaparser.generator.core.node.ReplaceMethodGenerator")
     public boolean replace(Node node, Node replacementNode) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         for (int i = 0; i < arguments.size(); i++) {
             if (arguments.get(i) == node) {
                 arguments.set(i, (Expression) replacementNode);
@@ -290,6 +308,7 @@ public class MethodCallExpr extends Expression implements NodeWithTypeArguments<
         return this;
     }
 
+    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public void ifMethodCallExpr(Consumer<MethodCallExpr> action) {
         action.accept(this);
@@ -317,5 +336,66 @@ public class MethodCallExpr extends Expression implements NodeWithTypeArguments<
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public Optional<MethodCallExpr> toMethodCallExpr() {
         return Optional.of(this);
+    }
+
+    /*
+     * A method invocation expression is a poly expression if all of the following are true:
+     * 1. The invocation appears in an assignment context or an invocation context (§5.2, §5.3).
+     * 2. If the invocation is qualified (that is, any form of MethodInvocation except for the first), then
+     *    the invocation elides TypeArguments to the left of the Identifier.
+     * 3. The method to be invoked, as determined by the following subsections, is generic (§8.4.4) and has a
+     *    return type that mentions at least one of the method's type parameters.
+     * Otherwise, the method invocation expression is a standalone expression.
+     */
+    @Override
+    public boolean isPolyExpression() {
+        // A method invocation expression is a poly expression if all of the following are true:
+        //
+        // 1. The invocation appears in an assignment context or an invocation context (§5.2, §5.3).
+        if (!(appearsInAssignmentContext() || appearsInInvocationContext())) {
+            return false;
+        }
+        // 2. If the invocation is qualified (that is, any form of MethodInvocation except for the form [MethodName (
+        // [ArgumentList] )]), then the invocation elides TypeArguments to the left of the Identifier.
+        if (isQualified() && !elidesTypeArguments()) {
+            return false;
+        }
+        // 3. The method to be invoked, as determined by the following subsections, is generic (§8.4.4) and has a
+        // return type that mentions at least one of the method's type parameters.
+        // A method is generic if it declares one or more type variables (§4.4).
+        if (isGenericMethod()
+                && hasParameterwithSameTypeThanResultType(resolve().getReturnType())) {
+            // it's a poly expression
+            return true;
+        }
+        // Otherwise, the method invocation expression is a standalone expression.
+        return false;
+    }
+
+    /*
+     *  A method is generic if it declares one or more type variables (§4.4).
+     *  Not sure it's enough to verify that the type arguments list is empty or not.
+     */
+    private boolean isGenericMethod() {
+        return getTypeArguments().isPresent() && !getTypeArguments().get().isEmpty();
+    }
+
+    /*
+     *  return true if at least one of the method's type parameters has the same type as the specified type .
+     */
+    private boolean hasParameterwithSameTypeThanResultType(ResolvedType resolvedReturnType) {
+        return getTypeArguments().isPresent()
+                && getTypeArguments().get().stream()
+                        .anyMatch(argType -> argType.resolve().isAssignableBy(resolvedReturnType));
+    }
+
+    /*
+     * Returns true if the expression is an invocation context.
+     * https://docs.oracle.com/javase/specs/jls/se8/html/jls-5.html#jls-5.3
+     * 5.3. Invocation Contexts
+     */
+    @Override
+    protected boolean isInvocationContext() {
+        return true;
     }
 }

@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -20,10 +20,11 @@
  */
 package com.github.javaparser.ast.expr;
 
-import com.github.javaparser.ast.AllFieldsConstructor;
-import com.github.javaparser.ast.Modifier;
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.NodeList;
+import static com.github.javaparser.ast.NodeList.nodeList;
+import static com.github.javaparser.utils.Utils.assertNotNull;
+
+import com.github.javaparser.TokenRange;
+import com.github.javaparser.ast.*;
 import com.github.javaparser.ast.body.VariableDeclarator;
 import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 import com.github.javaparser.ast.nodeTypes.NodeWithVariables;
@@ -37,26 +38,25 @@ import com.github.javaparser.metamodel.JavaParserMetaModel;
 import com.github.javaparser.metamodel.NonEmptyProperty;
 import com.github.javaparser.metamodel.VariableDeclarationExprMetaModel;
 import java.util.Arrays;
-import java.util.stream.Collectors;
-import static com.github.javaparser.ast.NodeList.nodeList;
-import static com.github.javaparser.utils.Utils.assertNotNull;
-import com.github.javaparser.TokenRange;
-import java.util.function.Consumer;
 import java.util.Optional;
-import com.github.javaparser.ast.Generated;
+import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 /**
  * A declaration of variables.
  * It is an expression, so it can be put in places like the initializer of a for loop,
  * or the resources part of the try statement.
- * <br/><code>final int x=3, y=55</code>
+ * <br>{@code final int x=3, y=55}
  *
- * <br/>All annotations preceding the type will be set on this object, not on the type.
+ * <br>All annotations preceding the type will be set on this object, not on the type.
  * JavaParser doesn't know if it they are applicable to the method or the type.
  *
  * @author Julio Vilmar Gesser
  */
-public class VariableDeclarationExpr extends Expression implements NodeWithFinalModifier<VariableDeclarationExpr>, NodeWithAnnotations<VariableDeclarationExpr>, NodeWithVariables<VariableDeclarationExpr> {
+public class VariableDeclarationExpr extends Expression
+        implements NodeWithFinalModifier<VariableDeclarationExpr>,
+                NodeWithAnnotations<VariableDeclarationExpr>,
+                NodeWithVariables<VariableDeclarationExpr> {
 
     private NodeList<Modifier> modifiers;
 
@@ -78,11 +78,19 @@ public class VariableDeclarationExpr extends Expression implements NodeWithFinal
     }
 
     public VariableDeclarationExpr(final Type type, String variableName, Modifier... modifiers) {
-        this(null, Arrays.stream(modifiers).collect(Collectors.toCollection(() -> new NodeList<>())), new NodeList<>(), nodeList(new VariableDeclarator(type, variableName)));
+        this(
+                null,
+                Arrays.stream(modifiers).collect(Collectors.toCollection(() -> new NodeList<>())),
+                new NodeList<>(),
+                nodeList(new VariableDeclarator(type, variableName)));
     }
 
     public VariableDeclarationExpr(VariableDeclarator var, Modifier... modifiers) {
-        this(null, Arrays.stream(modifiers).collect(Collectors.toCollection(() -> new NodeList<>())), new NodeList<>(), nodeList(var));
+        this(
+                null,
+                Arrays.stream(modifiers).collect(Collectors.toCollection(() -> new NodeList<>())),
+                new NodeList<>(),
+                nodeList(var));
     }
 
     public VariableDeclarationExpr(final NodeList<VariableDeclarator> variables) {
@@ -94,7 +102,10 @@ public class VariableDeclarationExpr extends Expression implements NodeWithFinal
     }
 
     @AllFieldsConstructor
-    public VariableDeclarationExpr(final NodeList<Modifier> modifiers, final NodeList<AnnotationExpr> annotations, final NodeList<VariableDeclarator> variables) {
+    public VariableDeclarationExpr(
+            final NodeList<Modifier> modifiers,
+            final NodeList<AnnotationExpr> annotations,
+            final NodeList<VariableDeclarator> variables) {
         this(null, modifiers, annotations, variables);
     }
 
@@ -102,7 +113,11 @@ public class VariableDeclarationExpr extends Expression implements NodeWithFinal
      * This constructor is used by the parser and is considered private.
      */
     @Generated("com.github.javaparser.generator.core.node.MainConstructorGenerator")
-    public VariableDeclarationExpr(TokenRange tokenRange, NodeList<Modifier> modifiers, NodeList<AnnotationExpr> annotations, NodeList<VariableDeclarator> variables) {
+    public VariableDeclarationExpr(
+            TokenRange tokenRange,
+            NodeList<Modifier> modifiers,
+            NodeList<AnnotationExpr> annotations,
+            NodeList<VariableDeclarator> variables) {
         super(tokenRange);
         setModifiers(modifiers);
         setAnnotations(annotations);
@@ -147,11 +162,10 @@ public class VariableDeclarationExpr extends Expression implements NodeWithFinal
     public VariableDeclarationExpr setAnnotations(final NodeList<AnnotationExpr> annotations) {
         assertNotNull(annotations);
         if (annotations == this.annotations) {
-            return (VariableDeclarationExpr) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.ANNOTATIONS, this.annotations, annotations);
-        if (this.annotations != null)
-            this.annotations.setParentNode(null);
+        if (this.annotations != null) this.annotations.setParentNode(null);
         this.annotations = annotations;
         setAsParentNodeOf(annotations);
         return this;
@@ -161,11 +175,10 @@ public class VariableDeclarationExpr extends Expression implements NodeWithFinal
     public VariableDeclarationExpr setModifiers(final NodeList<Modifier> modifiers) {
         assertNotNull(modifiers);
         if (modifiers == this.modifiers) {
-            return (VariableDeclarationExpr) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.MODIFIERS, this.modifiers, modifiers);
-        if (this.modifiers != null)
-            this.modifiers.setParentNode(null);
+        if (this.modifiers != null) this.modifiers.setParentNode(null);
         this.modifiers = modifiers;
         setAsParentNodeOf(modifiers);
         return this;
@@ -175,11 +188,10 @@ public class VariableDeclarationExpr extends Expression implements NodeWithFinal
     public VariableDeclarationExpr setVariables(final NodeList<VariableDeclarator> variables) {
         assertNotNull(variables);
         if (variables == this.variables) {
-            return (VariableDeclarationExpr) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.VARIABLES, this.variables, variables);
-        if (this.variables != null)
-            this.variables.setParentNode(null);
+        if (this.variables != null) this.variables.setParentNode(null);
         this.variables = variables;
         setAsParentNodeOf(variables);
         return this;
@@ -188,8 +200,9 @@ public class VariableDeclarationExpr extends Expression implements NodeWithFinal
     @Override
     @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
     public boolean remove(Node node) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         for (int i = 0; i < annotations.size(); i++) {
             if (annotations.get(i) == node) {
                 annotations.remove(i);
@@ -226,8 +239,9 @@ public class VariableDeclarationExpr extends Expression implements NodeWithFinal
     @Override
     @Generated("com.github.javaparser.generator.core.node.ReplaceMethodGenerator")
     public boolean replace(Node node, Node replacementNode) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         for (int i = 0; i < annotations.size(); i++) {
             if (annotations.get(i) == node) {
                 annotations.set(i, (AnnotationExpr) replacementNode);
@@ -261,6 +275,7 @@ public class VariableDeclarationExpr extends Expression implements NodeWithFinal
         return this;
     }
 
+    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public void ifVariableDeclarationExpr(Consumer<VariableDeclarationExpr> action) {
         action.accept(this);

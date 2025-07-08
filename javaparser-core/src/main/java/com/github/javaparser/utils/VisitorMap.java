@@ -1,10 +1,29 @@
+/*
+ * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
+ *
+ * This file is part of JavaParser.
+ *
+ * JavaParser can be used either under the terms of
+ * a) the GNU Lesser General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ * b) the terms of the Apache License
+ *
+ * You should have received a copy of both licenses in LICENCE.LGPL and
+ * LICENCE.APACHE. Please refer to those files for details.
+ *
+ * JavaParser is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ */
 package com.github.javaparser.utils;
 
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.Visitable;
 import com.github.javaparser.ast.visitor.VoidVisitor;
-
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,8 +35,11 @@ import java.util.stream.Collectors;
  * by using another equals and hashcode visitor for those methods.
  */
 public class VisitorMap<N extends Node, V> implements Map<N, V> {
+
     private final Map<EqualsHashcodeOverridingFacade, V> innerMap = new HashMap<>();
+
     private final GenericVisitor<Integer, Void> hashcodeVisitor;
+
     private final GenericVisitor<Boolean, Visitable> equalsVisitor;
 
     /**
@@ -27,7 +49,7 @@ public class VisitorMap<N extends Node, V> implements Map<N, V> {
         this.hashcodeVisitor = hashcodeVisitor;
         this.equalsVisitor = equalsVisitor;
     }
-    
+
     @Override
     public int size() {
         return innerMap.size();
@@ -59,6 +81,7 @@ public class VisitorMap<N extends Node, V> implements Map<N, V> {
     }
 
     private class EqualsHashcodeOverridingFacade implements Visitable {
+
         private final N overridden;
 
         EqualsHashcodeOverridingFacade(N overridden) {
@@ -106,9 +129,7 @@ public class VisitorMap<N extends Node, V> implements Map<N, V> {
 
     @Override
     public Set<N> keySet() {
-        return innerMap.keySet().stream()
-                .map(k -> k.overridden)
-                .collect(Collectors.toSet());
+        return innerMap.keySet().stream().map(k -> k.overridden).collect(Collectors.toSet());
     }
 
     @Override

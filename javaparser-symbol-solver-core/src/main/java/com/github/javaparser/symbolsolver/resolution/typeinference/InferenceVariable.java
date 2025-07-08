@@ -1,8 +1,28 @@
+/*
+ * Copyright (C) 2015-2016 Federico Tomassetti
+ * Copyright (C) 2017-2024 The JavaParser Team.
+ *
+ * This file is part of JavaParser.
+ *
+ * JavaParser can be used either under the terms of
+ * a) the GNU Lesser General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ * b) the terms of the Apache License
+ *
+ * You should have received a copy of both licenses in LICENCE.LGPL and
+ * LICENCE.APACHE. Please refer to those files for details.
+ *
+ * JavaParser is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ */
+
 package com.github.javaparser.symbolsolver.resolution.typeinference;
 
 import com.github.javaparser.resolution.declarations.ResolvedTypeParameterDeclaration;
 import com.github.javaparser.resolution.types.ResolvedType;
-
 import java.util.LinkedList;
 import java.util.List;
 
@@ -20,7 +40,8 @@ public class InferenceVariable implements ResolvedType {
     private String name;
     private ResolvedTypeParameterDeclaration typeParameterDeclaration;
 
-    public static List<InferenceVariable> instantiate(List<ResolvedTypeParameterDeclaration> typeParameterDeclarations) {
+    public static List<InferenceVariable> instantiate(
+            List<ResolvedTypeParameterDeclaration> typeParameterDeclarations) {
         List<InferenceVariable> inferenceVariables = new LinkedList<>();
         for (ResolvedTypeParameterDeclaration tp : typeParameterDeclarations) {
             inferenceVariables.add(InferenceVariable.unnamed(tp));
@@ -38,6 +59,11 @@ public class InferenceVariable implements ResolvedType {
     }
 
     @Override
+    public boolean isInferenceVariable() {
+        return true;
+    }
+
+    @Override
     public String describe() {
         return name;
     }
@@ -50,7 +76,8 @@ public class InferenceVariable implements ResolvedType {
         InferenceVariable that = (InferenceVariable) o;
 
         if (!name.equals(that.name)) return false;
-        return typeParameterDeclaration != null ? typeParameterDeclaration.equals(that.typeParameterDeclaration)
+        return typeParameterDeclaration != null
+                ? typeParameterDeclaration.equals(that.typeParameterDeclaration)
                 : that.typeParameterDeclaration == null;
     }
 
@@ -80,10 +107,9 @@ public class InferenceVariable implements ResolvedType {
 
     @Override
     public String toString() {
-        return "InferenceVariable{" +
-                "name='" + name + '\'' +
-                ", typeParameterDeclaration=" + typeParameterDeclaration +
-                '}';
+        return "InferenceVariable{" + "name='"
+                + name + '\'' + ", typeParameterDeclaration="
+                + typeParameterDeclaration + '}';
     }
 
     @Override

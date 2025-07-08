@@ -1,8 +1,8 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
- * This file is part of 
+ * This file is part of JavaParser.
  *
  * JavaParser can be used either under the terms of
  * a) the GNU Lesser General Public License as published by
@@ -21,13 +21,13 @@
 
 package com.github.javaparser.printer;
 
+import static com.github.javaparser.StaticJavaParser.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.expr.ClassExpr;
+import com.github.javaparser.utils.LineSeparator;
 import org.junit.jupiter.api.Test;
-
-import static com.github.javaparser.StaticJavaParser.*;
-import static com.github.javaparser.utils.Utils.EOL;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class ConcreteSyntaxModelTest {
 
@@ -56,42 +56,41 @@ class ConcreteSyntaxModelTest {
     @Test
     void printSimplestClass() {
         Node node = parse("class A {}");
-        assertEquals("class A {" + EOL +
-                "}" + EOL, print(node));
+        assertEquals("class A {" + LineSeparator.SYSTEM + "}" + LineSeparator.SYSTEM, print(node));
     }
 
     @Test
     void printAClassWithField() {
         Node node = parse("class A { int a; }");
-        assertEquals("class A {" + EOL
-                + EOL +
-                "    int a;" + EOL +
-                "}" + EOL, print(node));
+        assertEquals(
+                "class A {" + LineSeparator.SYSTEM
+                        + LineSeparator.SYSTEM + "    int a;"
+                        + LineSeparator.SYSTEM + "}"
+                        + LineSeparator.SYSTEM,
+                print(node));
     }
 
     @Test
     void printParameters() {
         Node node = parseBodyDeclaration("int x(int y, int z) {}");
-        assertEquals("int x(int y, int z) {" + EOL + "}", print(node));
+        assertEquals("int x(int y, int z) {" + LineSeparator.SYSTEM + "}", print(node));
     }
 
     @Test
     void printReceiverParameter() {
         Node node = parseBodyDeclaration("int x(X A.B.this, int y, int z) {}");
-        assertEquals("int x(X A.B.this, int y, int z) {" + EOL + "}", print(node));
+        assertEquals("int x(X A.B.this, int y, int z) {" + LineSeparator.SYSTEM + "}", print(node));
     }
 
     @Test
     void printAnEmptyInterface() {
         Node node = parse("interface A {}");
-        assertEquals("interface A {" + EOL +
-                "}" + EOL, print(node));
+        assertEquals("interface A {" + LineSeparator.SYSTEM + "}" + LineSeparator.SYSTEM, print(node));
     }
 
     @Test
     void printAnEmptyInterfaceWithModifier() {
         Node node = parse("public interface A {}");
-        assertEquals("public interface A {" + EOL +
-                "}" + EOL, print(node));
+        assertEquals("public interface A {" + LineSeparator.SYSTEM + "}" + LineSeparator.SYSTEM, print(node));
     }
 }

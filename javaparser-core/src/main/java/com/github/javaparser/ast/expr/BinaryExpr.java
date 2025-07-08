@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -20,33 +20,33 @@
  */
 package com.github.javaparser.ast.expr;
 
+import static com.github.javaparser.utils.Utils.assertNotNull;
+
+import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.AllFieldsConstructor;
+import com.github.javaparser.ast.Generated;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.observer.ObservableProperty;
+import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
-import static com.github.javaparser.utils.Utils.assertNotNull;
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.metamodel.BinaryExprMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
-import com.github.javaparser.printer.Printable;
-import com.github.javaparser.TokenRange;
-import java.util.function.Consumer;
+import com.github.javaparser.printer.Stringable;
 import java.util.Optional;
-import com.github.javaparser.ast.Generated;
+import java.util.function.Consumer;
 
 /**
  * An expression with an expression on the left, an expression on the right, and an operator in the middle.
- * It supports the operators that are found the the BinaryExpr.Operator enum.
- * <br/><code>a && b</code>
- * <br/><code>155 * 33</code>
+ * It supports the operators that are found the BinaryExpr.Operator enum.
+ * <br>{@code a && b}
+ * <br>{@code 155 * 33}
  *
  * @author Julio Vilmar Gesser
  */
 public class BinaryExpr extends Expression {
 
-    public enum Operator implements Printable {
-
+    public enum Operator implements Stringable {
         OR("||"),
         AND("&&"),
         BINARY_OR("|"),
@@ -78,7 +78,7 @@ public class BinaryExpr extends Expression {
         }
 
         public Optional<AssignExpr.Operator> toAssignOperator() {
-            switch(this) {
+            switch (this) {
                 case BINARY_OR:
                     return Optional.of(AssignExpr.Operator.BINARY_OR);
                 case BINARY_AND:
@@ -165,11 +165,10 @@ public class BinaryExpr extends Expression {
     public BinaryExpr setLeft(final Expression left) {
         assertNotNull(left);
         if (left == this.left) {
-            return (BinaryExpr) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.LEFT, this.left, left);
-        if (this.left != null)
-            this.left.setParentNode(null);
+        if (this.left != null) this.left.setParentNode(null);
         this.left = left;
         setAsParentNodeOf(left);
         return this;
@@ -179,7 +178,7 @@ public class BinaryExpr extends Expression {
     public BinaryExpr setOperator(final Operator operator) {
         assertNotNull(operator);
         if (operator == this.operator) {
-            return (BinaryExpr) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.OPERATOR, this.operator, operator);
         this.operator = operator;
@@ -190,22 +189,13 @@ public class BinaryExpr extends Expression {
     public BinaryExpr setRight(final Expression right) {
         assertNotNull(right);
         if (right == this.right) {
-            return (BinaryExpr) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.RIGHT, this.right, right);
-        if (this.right != null)
-            this.right.setParentNode(null);
+        if (this.right != null) this.right.setParentNode(null);
         this.right = right;
         setAsParentNodeOf(right);
         return this;
-    }
-
-    @Override
-    @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
-    public boolean remove(Node node) {
-        if (node == null)
-            return false;
-        return super.remove(node);
     }
 
     @Override
@@ -223,8 +213,9 @@ public class BinaryExpr extends Expression {
     @Override
     @Generated("com.github.javaparser.generator.core.node.ReplaceMethodGenerator")
     public boolean replace(Node node, Node replacementNode) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         if (node == left) {
             setLeft((Expression) replacementNode);
             return true;
@@ -248,6 +239,7 @@ public class BinaryExpr extends Expression {
         return this;
     }
 
+    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public void ifBinaryExpr(Consumer<BinaryExpr> action) {
         action.accept(this);

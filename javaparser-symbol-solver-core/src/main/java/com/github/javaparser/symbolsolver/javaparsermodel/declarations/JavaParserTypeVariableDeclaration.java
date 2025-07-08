@@ -1,37 +1,40 @@
 /*
- * Copyright 2016 Federico Tomassetti
+ * Copyright (C) 2015-2016 Federico Tomassetti
+ * Copyright (C) 2017-2024 The JavaParser Team.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This file is part of JavaParser.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * JavaParser can be used either under the terms of
+ * a) the GNU Lesser General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ * b) the terms of the Apache License
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * You should have received a copy of both licenses in LICENCE.LGPL and
+ * LICENCE.APACHE. Please refer to those files for details.
+ *
+ * JavaParser is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  */
 
 package com.github.javaparser.symbolsolver.javaparsermodel.declarations;
 
 import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.TypeParameter;
+import com.github.javaparser.resolution.Context;
+import com.github.javaparser.resolution.TypeSolver;
+import com.github.javaparser.resolution.UnsolvedSymbolException;
 import com.github.javaparser.resolution.declarations.*;
+import com.github.javaparser.resolution.model.SymbolReference;
+import com.github.javaparser.resolution.model.typesystem.ReferenceTypeImpl;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.github.javaparser.resolution.types.ResolvedType;
-import com.github.javaparser.symbolsolver.core.resolution.Context;
+import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
 import com.github.javaparser.symbolsolver.logic.AbstractTypeDeclaration;
-import com.github.javaparser.symbolsolver.model.resolution.SymbolReference;
-import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
-import com.github.javaparser.symbolsolver.model.typesystem.ReferenceTypeImpl;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @author Federico Tomassetti
@@ -48,7 +51,7 @@ public class JavaParserTypeVariableDeclaration extends AbstractTypeDeclaration {
 
     @Override
     public boolean isAssignableBy(ResolvedReferenceTypeDeclaration other) {
-        return isAssignableBy(new ReferenceTypeImpl(other, typeSolver));
+        return isAssignableBy(new ReferenceTypeImpl(other));
     }
 
     @Override
@@ -72,9 +75,7 @@ public class JavaParserTypeVariableDeclaration extends AbstractTypeDeclaration {
 
     @Override
     public String toString() {
-        return "JavaParserTypeVariableDeclaration{" +
-                wrappedNode.getName() +
-                '}';
+        return "JavaParserTypeVariableDeclaration{" + wrappedNode.getName() + '}';
     }
 
     public SymbolReference<ResolvedMethodDeclaration> solveMethod(String name, List<ResolvedType> parameterTypes) {
@@ -88,10 +89,10 @@ public class JavaParserTypeVariableDeclaration extends AbstractTypeDeclaration {
     @Override
     public boolean isAssignableBy(ResolvedType type) {
         if (type.isTypeVariable()) {
-            throw new UnsupportedOperationException("Is this type variable declaration assignable by " + type.describe());
-        } else {
-            throw new UnsupportedOperationException("Is this type variable declaration assignable by " + type);
+            throw new UnsupportedOperationException(
+                    "Is this type variable declaration assignable by " + type.describe());
         }
+        throw new UnsupportedOperationException("Is this type variable declaration assignable by " + type);
     }
 
     @Override
@@ -116,7 +117,25 @@ public class JavaParserTypeVariableDeclaration extends AbstractTypeDeclaration {
 
     @Override
     public List<ResolvedReferenceType> getAncestors(boolean acceptIncompleteList) {
-        throw new UnsupportedOperationException();
+        if (wrappedNode.getTypeBound().isEmpty()) {
+            // Every type variable declared as a type parameter has a bound.
+            // If no bound is declared for a type variable, Object is assumed.
+            // https://docs.oracle.com/javase/specs/jls/se8/html/jls-4.html#jls-4.4
+            return Collections.singletonList(new ReferenceTypeImpl(typeSolver.getSolvedJavaLangObject()));
+        }
+        List<ResolvedReferenceType> ancestors = new ArrayList<>();
+        for (ClassOrInterfaceType type : wrappedNode.getTypeBound()) {
+            try {
+                ResolvedType resolvedType = JavaParserFacade.get(typeSolver).convertToUsage(type);
+                ancestors.add(resolvedType.asReferenceType());
+            } catch (UnsolvedSymbolException e) {
+                if (!acceptIncompleteList) {
+                    // Only throw if an incomplete ancestor list is unacceptable.
+                    throw e;
+                }
+            }
+        }
+        return ancestors;
     }
 
     @Override
@@ -127,16 +146,6 @@ public class JavaParserTypeVariableDeclaration extends AbstractTypeDeclaration {
     @Override
     public String getName() {
         return wrappedNode.getName().getId();
-    }
-
-    @Override
-    public boolean isField() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean isParameter() {
-        throw new UnsupportedOperationException();
     }
 
     @Override
@@ -164,6 +173,7 @@ public class JavaParserTypeVariableDeclaration extends AbstractTypeDeclaration {
         return Collections.emptyList();
     }
 
+    @Override
     public ResolvedTypeParameterDeclaration asTypeParameter() {
         return new JavaParserTypeParameter(this.wrappedNode, typeSolver);
     }
@@ -185,5 +195,10 @@ public class JavaParserTypeVariableDeclaration extends AbstractTypeDeclaration {
     @Override
     public List<ResolvedConstructorDeclaration> getConstructors() {
         return Collections.emptyList();
+    }
+
+    @Override
+    public Optional<Node> toAst() {
+        return Optional.of(wrappedNode);
     }
 }

@@ -1,24 +1,45 @@
+/*
+ * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
+ *
+ * This file is part of JavaParser.
+ *
+ * JavaParser can be used either under the terms of
+ * a) the GNU Lesser General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ * b) the terms of the Apache License
+ *
+ * You should have received a copy of both licenses in LICENCE.LGPL and
+ * LICENCE.APACHE. Please refer to those files for details.
+ *
+ * JavaParser is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ */
 package com.github.javaparser.utils;
+
+import static com.github.javaparser.utils.Utils.capitalize;
+import static com.github.javaparser.utils.Utils.decapitalize;
 
 import java.io.File;
 import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static com.github.javaparser.utils.Utils.capitalize;
-import static com.github.javaparser.utils.Utils.decapitalize;
-
 /**
  * Utilities that can be useful when generating code.
  */
 public final class CodeGenerationUtils {
-    private CodeGenerationUtils() {
-    }
+
+    private CodeGenerationUtils() {}
 
     public static String getterName(Class<?> type, String name) {
-        if (name.startsWith("is")) {
+        if (name.startsWith("is") && boolean.class.equals(type)) {
             return name;
-        } else if (type.equals(Boolean.class)) {
+        }
+        if (Boolean.TYPE.equals(type)) {
             return "is" + capitalize(name);
         }
         return "get" + capitalize(name);
@@ -27,9 +48,11 @@ public final class CodeGenerationUtils {
     public static String getterToPropertyName(String getterName) {
         if (getterName.startsWith("is")) {
             return decapitalize(getterName.substring("is".length()));
-        } else if (getterName.startsWith("get")) {
+        }
+        if (getterName.startsWith("get")) {
             return decapitalize(getterName.substring("get".length()));
-        } else if (getterName.startsWith("has")) {
+        }
+        if (getterName.startsWith("has")) {
             return decapitalize(getterName.substring("has".length()));
         }
         throw new IllegalArgumentException("Unexpected getterName '" + getterName + "'");
@@ -45,9 +68,8 @@ public final class CodeGenerationUtils {
     public static String optionalOf(String text, boolean isOptional) {
         if (isOptional) {
             return f("Optional.of(%s)", text);
-        } else {
-            return "Optional.empty()";
         }
+        return "Optional.empty()";
     }
 
     /**
@@ -109,7 +131,8 @@ public final class CodeGenerationUtils {
      */
     public static Path classLoaderRoot(Class<?> c) {
         try {
-            return Paths.get(c.getProtectionDomain().getCodeSource().getLocation().toURI());
+            return Paths.get(
+                    c.getProtectionDomain().getCodeSource().getLocation().toURI());
         } catch (URISyntaxException e) {
             throw new AssertionError("Bug in JavaParser, please report.", e);
         }

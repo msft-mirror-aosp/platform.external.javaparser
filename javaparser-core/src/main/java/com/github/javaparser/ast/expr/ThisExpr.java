@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -20,27 +20,27 @@
  */
 package com.github.javaparser.ast.expr;
 
+import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.AllFieldsConstructor;
+import com.github.javaparser.ast.Generated;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.observer.ObservableProperty;
+import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
-import java.util.Optional;
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.visitor.CloneVisitor;
+import com.github.javaparser.metamodel.JavaParserMetaModel;
 import com.github.javaparser.metamodel.OptionalProperty;
 import com.github.javaparser.metamodel.ThisExprMetaModel;
-import com.github.javaparser.metamodel.JavaParserMetaModel;
-import com.github.javaparser.TokenRange;
 import com.github.javaparser.resolution.Resolvable;
 import com.github.javaparser.resolution.declarations.ResolvedTypeDeclaration;
+import java.util.Optional;
 import java.util.function.Consumer;
-import com.github.javaparser.ast.Generated;
 
 /**
- * An occurrence of the "this" keyword. <br/>
- * <code>World.this.greet()</code> is a MethodCallExpr of method name greet,
- * and scope "World.this" which is a ThisExpr with typeName "World". <br/>
- * <code>this.name</code> is a FieldAccessExpr of field greet, and a ThisExpr as its scope.
+ * An occurrence of the "this" keyword. <br>
+ * {@code World.this.greet()} is a MethodCallExpr of method name greet,
+ * and scope "World.this" which is a ThisExpr with typeName "World". <br>
+ * {@code this.name} is a FieldAccessExpr of field greet, and a ThisExpr as its scope.
  * This ThisExpr has no typeName.
  *
  * @author Julio Vilmar Gesser
@@ -91,11 +91,10 @@ public class ThisExpr extends Expression implements Resolvable<ResolvedTypeDecla
     @Generated("com.github.javaparser.generator.core.node.PropertyGenerator")
     public ThisExpr setTypeName(final Name typeName) {
         if (typeName == this.typeName) {
-            return (ThisExpr) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.TYPE_NAME, this.typeName, typeName);
-        if (this.typeName != null)
-            this.typeName.setParentNode(null);
+        if (this.typeName != null) this.typeName.setParentNode(null);
         this.typeName = typeName;
         setAsParentNodeOf(typeName);
         return this;
@@ -104,8 +103,9 @@ public class ThisExpr extends Expression implements Resolvable<ResolvedTypeDecla
     @Override
     @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
     public boolean remove(Node node) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         if (typeName != null) {
             if (node == typeName) {
                 removeTypeName();
@@ -135,8 +135,9 @@ public class ThisExpr extends Expression implements Resolvable<ResolvedTypeDecla
     @Override
     @Generated("com.github.javaparser.generator.core.node.ReplaceMethodGenerator")
     public boolean replace(Node node, Node replacementNode) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         if (typeName != null) {
             if (node == typeName) {
                 setTypeName((Name) replacementNode);
@@ -158,6 +159,7 @@ public class ThisExpr extends Expression implements Resolvable<ResolvedTypeDecla
         return this;
     }
 
+    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public void ifThisExpr(Consumer<ThisExpr> action) {
         action.accept(this);

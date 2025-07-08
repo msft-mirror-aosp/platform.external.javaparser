@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -20,8 +20,11 @@
  */
 package com.github.javaparser.ast.stmt;
 
+import static com.github.javaparser.utils.Utils.assertNotNull;
+
 import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.AllFieldsConstructor;
+import com.github.javaparser.ast.Generated;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
@@ -36,16 +39,14 @@ import com.github.javaparser.metamodel.JavaParserMetaModel;
 import com.github.javaparser.metamodel.OptionalProperty;
 import java.util.Optional;
 import java.util.function.Consumer;
-import static com.github.javaparser.utils.Utils.assertNotNull;
-import com.github.javaparser.ast.Generated;
 
 /**
  * <h1>The classic for statement</h1>
  * Examples:
  * <ol>
- * <li><code>for(int a=3, b=5; a<99; a++, b++) hello();</code></li>
- * <li><code>for(a=3, b=5; a<99; a++) { hello(); }</code> </li>
- * <li><code>for(a(),b();;) hello();</code> </li>
+ * <li>{@code for(int a=3, b=5; a<99; a++, b++) hello();}</li>
+ * <li>{@code for(a=3, b=5; a<99; a++) { hello(); }} </li>
+ * <li>{@code for(a(),b();;) hello();} </li>
  * </ol>
  * <ul>
  * <li><i>initialization</i> is a list of expressions.
@@ -82,7 +83,11 @@ public class ForStmt extends Statement implements NodeWithBody<ForStmt> {
     }
 
     @AllFieldsConstructor
-    public ForStmt(final NodeList<Expression> initialization, final Expression compare, final NodeList<Expression> update, final Statement body) {
+    public ForStmt(
+            final NodeList<Expression> initialization,
+            final Expression compare,
+            final NodeList<Expression> update,
+            final Statement body) {
         this(null, initialization, compare, update, body);
     }
 
@@ -90,7 +95,12 @@ public class ForStmt extends Statement implements NodeWithBody<ForStmt> {
      * This constructor is used by the parser and is considered private.
      */
     @Generated("com.github.javaparser.generator.core.node.MainConstructorGenerator")
-    public ForStmt(TokenRange tokenRange, NodeList<Expression> initialization, Expression compare, NodeList<Expression> update, Statement body) {
+    public ForStmt(
+            TokenRange tokenRange,
+            NodeList<Expression> initialization,
+            Expression compare,
+            NodeList<Expression> update,
+            Statement body) {
         super(tokenRange);
         setInitialization(initialization);
         setCompare(compare);
@@ -135,11 +145,10 @@ public class ForStmt extends Statement implements NodeWithBody<ForStmt> {
     public ForStmt setBody(final Statement body) {
         assertNotNull(body);
         if (body == this.body) {
-            return (ForStmt) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.BODY, this.body, body);
-        if (this.body != null)
-            this.body.setParentNode(null);
+        if (this.body != null) this.body.setParentNode(null);
         this.body = body;
         setAsParentNodeOf(body);
         return this;
@@ -154,11 +163,10 @@ public class ForStmt extends Statement implements NodeWithBody<ForStmt> {
     @Generated("com.github.javaparser.generator.core.node.PropertyGenerator")
     public ForStmt setCompare(final Expression compare) {
         if (compare == this.compare) {
-            return (ForStmt) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.COMPARE, this.compare, compare);
-        if (this.compare != null)
-            this.compare.setParentNode(null);
+        if (this.compare != null) this.compare.setParentNode(null);
         this.compare = compare;
         setAsParentNodeOf(compare);
         return this;
@@ -168,11 +176,10 @@ public class ForStmt extends Statement implements NodeWithBody<ForStmt> {
     public ForStmt setInitialization(final NodeList<Expression> initialization) {
         assertNotNull(initialization);
         if (initialization == this.initialization) {
-            return (ForStmt) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.INITIALIZATION, this.initialization, initialization);
-        if (this.initialization != null)
-            this.initialization.setParentNode(null);
+        if (this.initialization != null) this.initialization.setParentNode(null);
         this.initialization = initialization;
         setAsParentNodeOf(initialization);
         return this;
@@ -182,11 +189,10 @@ public class ForStmt extends Statement implements NodeWithBody<ForStmt> {
     public ForStmt setUpdate(final NodeList<Expression> update) {
         assertNotNull(update);
         if (update == this.update) {
-            return (ForStmt) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.UPDATE, this.update, update);
-        if (this.update != null)
-            this.update.setParentNode(null);
+        if (this.update != null) this.update.setParentNode(null);
         this.update = update;
         setAsParentNodeOf(update);
         return this;
@@ -195,8 +201,9 @@ public class ForStmt extends Statement implements NodeWithBody<ForStmt> {
     @Override
     @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
     public boolean remove(Node node) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         if (compare != null) {
             if (node == compare) {
                 removeCompare();
@@ -238,8 +245,9 @@ public class ForStmt extends Statement implements NodeWithBody<ForStmt> {
     @Override
     @Generated("com.github.javaparser.generator.core.node.ReplaceMethodGenerator")
     public boolean replace(Node node, Node replacementNode) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         if (node == body) {
             setBody((Statement) replacementNode);
             return true;
@@ -277,6 +285,7 @@ public class ForStmt extends Statement implements NodeWithBody<ForStmt> {
         return this;
     }
 
+    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public void ifForStmt(Consumer<ForStmt> action) {
         action.accept(this);

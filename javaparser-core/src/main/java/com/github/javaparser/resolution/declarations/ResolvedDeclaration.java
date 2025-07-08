@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -18,7 +18,6 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  */
-
 package com.github.javaparser.resolution.declarations;
 
 /**
@@ -26,7 +25,7 @@ package com.github.javaparser.resolution.declarations;
  *
  * @author Federico Tomassetti
  */
-public interface ResolvedDeclaration {
+public interface ResolvedDeclaration extends AssociableToAST {
 
     /**
      * Anonymous classes do not have a name, for example.
@@ -54,7 +53,17 @@ public interface ResolvedDeclaration {
         return false;
     }
 
+    /**
+     * Does this declaration represents an enum constant?
+     */
     default boolean isEnumConstant() {
+        return false;
+    }
+
+    /**
+     * Does this declaration represents a pattern declaration?
+     */
+    default boolean isTypePattern() {
         return false;
     }
 
@@ -74,6 +83,7 @@ public interface ResolvedDeclaration {
 
     /**
      * Does this declaration represents a method?
+     * // FIXME: This is never overridden.
      */
     default boolean isMethod() {
         return false;
@@ -102,12 +112,23 @@ public interface ResolvedDeclaration {
 
     /**
      * Return this as a MethodDeclaration or throw an UnsupportedOperationException
+     * // FIXME: This is never overridden.
      */
     default ResolvedMethodDeclaration asMethod() {
         throw new UnsupportedOperationException(String.format("%s is not a MethodDeclaration", this));
     }
 
+    /**
+     * Return this as a EnumConstantDeclaration or throw an UnsupportedOperationException
+     */
     default ResolvedEnumConstantDeclaration asEnumConstant() {
         throw new UnsupportedOperationException(String.format("%s is not an EnumConstantDeclaration", this));
+    }
+
+    /**
+     * Return this as a PatternDeclaration or throw an UnsupportedOperationException
+     */
+    default ResolvedTypePatternDeclaration asTypePattern() {
+        throw new UnsupportedOperationException(String.format("%s is not a Pattern", this));
     }
 }

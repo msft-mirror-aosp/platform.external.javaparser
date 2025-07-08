@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -20,7 +20,12 @@
  */
 package com.github.javaparser.ast.body;
 
+import static com.github.javaparser.utils.Utils.assertNonEmpty;
+import static com.github.javaparser.utils.Utils.assertNotNull;
+
+import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.AllFieldsConstructor;
+import com.github.javaparser.ast.Generated;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.NameExpr;
@@ -39,24 +44,23 @@ import com.github.javaparser.metamodel.JavaParserMetaModel;
 import com.github.javaparser.metamodel.NonEmptyProperty;
 import com.github.javaparser.metamodel.OptionalProperty;
 import com.github.javaparser.metamodel.VariableDeclaratorMetaModel;
+import com.github.javaparser.resolution.Resolvable;
+import com.github.javaparser.resolution.declarations.ResolvedValueDeclaration;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import static com.github.javaparser.utils.Utils.assertNonEmpty;
-import static com.github.javaparser.utils.Utils.assertNotNull;
-import com.github.javaparser.TokenRange;
-import com.github.javaparser.resolution.Resolvable;
-import com.github.javaparser.resolution.declarations.ResolvedValueDeclaration;
-import com.github.javaparser.ast.Generated;
 
 /**
- * The declaration of a variable.<br/>In <code>int x = 14, y = 3;</code> "int x = 14"  and "int y = 3"  are
+ * The declaration of a variable.<br>In {@code int x = 14, y = 3;} "int x = 14"  and "int y = 3"  are
  * VariableDeclarators.
- * <p/>The type is on all of the variable declarators because, thanks to array brackets, each variable can have a different type.
+ * <p>The type is on all of the variable declarators because, thanks to array brackets, each variable can have a different type.
  *
  * @author Julio Vilmar Gesser
  */
-public class VariableDeclarator extends Node implements NodeWithType<VariableDeclarator, Type>, NodeWithSimpleName<VariableDeclarator>, Resolvable<ResolvedValueDeclaration> {
+public class VariableDeclarator extends Node
+        implements NodeWithType<VariableDeclarator, Type>,
+                NodeWithSimpleName<VariableDeclarator>,
+                Resolvable<ResolvedValueDeclaration> {
 
     private SimpleName name;
 
@@ -87,7 +91,7 @@ public class VariableDeclarator extends Node implements NodeWithType<VariableDec
      *
      * @param name The identifier for this variable. IE. The variables name.
      * @param initializer What this variable should be initialized to. An {@link com.github.javaparser.ast.expr.AssignExpr}
-     * is unnecessary as the <code>=</code> operator is already added.
+     * is unnecessary as the {@code =} operator is already added.
      */
     @AllFieldsConstructor
     public VariableDeclarator(Type type, SimpleName name, Expression initializer) {
@@ -113,11 +117,13 @@ public class VariableDeclarator extends Node implements NodeWithType<VariableDec
         register(new AstObserverAdapter() {
 
             @Override
-            public void propertyChange(Node observedNode, ObservableProperty property, Object oldValue, Object newValue) {
+            public void propertyChange(
+                    Node observedNode, ObservableProperty property, Object oldValue, Object newValue) {
                 if (property == ObservableProperty.TYPE) {
                     VariableDeclarator vd = VariableDeclarator.this;
                     if (vd.getParentNode().isPresent() && vd.getParentNode().get() instanceof NodeWithVariables) {
-                        NodeWithVariables<?> nodeWithVariables = (NodeWithVariables<?>) vd.getParentNode().get();
+                        NodeWithVariables<?> nodeWithVariables =
+                                (NodeWithVariables<?>) vd.getParentNode().get();
                         // We calculate the value the property will assume after the change will be completed
                         Optional<Type> currentMaxCommonType = nodeWithVariables.getMaximumCommonType();
                         List<Type> types = new LinkedList<>();
@@ -130,7 +136,11 @@ public class VariableDeclarator extends Node implements NodeWithType<VariableDec
                             }
                         }
                         Optional<Type> newMaxCommonType = NodeWithVariables.calculateMaximumCommonType(types);
-                        ((Node) nodeWithVariables).notifyPropertyChange(ObservableProperty.MAXIMUM_COMMON_TYPE, currentMaxCommonType.orElse(null), newMaxCommonType.orElse(null));
+                        ((Node) nodeWithVariables)
+                                .notifyPropertyChange(
+                                        ObservableProperty.MAXIMUM_COMMON_TYPE,
+                                        currentMaxCommonType.orElse(null),
+                                        newMaxCommonType.orElse(null));
                     }
                 }
             }
@@ -163,11 +173,10 @@ public class VariableDeclarator extends Node implements NodeWithType<VariableDec
     public VariableDeclarator setName(final SimpleName name) {
         assertNotNull(name);
         if (name == this.name) {
-            return (VariableDeclarator) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.NAME, this.name, name);
-        if (this.name != null)
-            this.name.setParentNode(null);
+        if (this.name != null) this.name.setParentNode(null);
         this.name = name;
         setAsParentNodeOf(name);
         return this;
@@ -182,11 +191,10 @@ public class VariableDeclarator extends Node implements NodeWithType<VariableDec
     @Generated("com.github.javaparser.generator.core.node.PropertyGenerator")
     public VariableDeclarator setInitializer(final Expression initializer) {
         if (initializer == this.initializer) {
-            return (VariableDeclarator) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.INITIALIZER, this.initializer, initializer);
-        if (this.initializer != null)
-            this.initializer.setParentNode(null);
+        if (this.initializer != null) this.initializer.setParentNode(null);
         this.initializer = initializer;
         setAsParentNodeOf(initializer);
         return this;
@@ -211,11 +219,10 @@ public class VariableDeclarator extends Node implements NodeWithType<VariableDec
     public VariableDeclarator setType(final Type type) {
         assertNotNull(type);
         if (type == this.type) {
-            return (VariableDeclarator) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.TYPE, this.type, type);
-        if (this.type != null)
-            this.type.setParentNode(null);
+        if (this.type != null) this.type.setParentNode(null);
         this.type = type;
         setAsParentNodeOf(type);
         return this;
@@ -224,8 +231,9 @@ public class VariableDeclarator extends Node implements NodeWithType<VariableDec
     @Override
     @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
     public boolean remove(Node node) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         if (initializer != null) {
             if (node == initializer) {
                 removeInitializer();
@@ -255,8 +263,9 @@ public class VariableDeclarator extends Node implements NodeWithType<VariableDec
     @Override
     @Generated("com.github.javaparser.generator.core.node.ReplaceMethodGenerator")
     public boolean replace(Node node, Node replacementNode) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         if (initializer != null) {
             if (node == initializer) {
                 setInitializer((Expression) replacementNode);

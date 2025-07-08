@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -20,6 +20,8 @@
  */
 package com.github.javaparser.ast.stmt;
 
+import static com.github.javaparser.utils.Utils.assertNotNull;
+
 import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.AllFieldsConstructor;
 import com.github.javaparser.ast.Generated;
@@ -38,11 +40,10 @@ import com.github.javaparser.metamodel.ForEachStmtMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
 import java.util.Optional;
 import java.util.function.Consumer;
-import static com.github.javaparser.utils.Utils.assertNotNull;
 
 /**
  * A for-each statement.
- * <br/><code>for(Object o: objects) { ... }</code>
+ * <br>{@code for(Object o: objects) { ... }}
  * It was introduced in Java 5.
  *
  * @author Julio Vilmar Gesser
@@ -111,11 +112,10 @@ public class ForEachStmt extends Statement implements NodeWithBody<ForEachStmt> 
     public ForEachStmt setBody(final Statement body) {
         assertNotNull(body);
         if (body == this.body) {
-            return (ForEachStmt) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.BODY, this.body, body);
-        if (this.body != null)
-            this.body.setParentNode(null);
+        if (this.body != null) this.body.setParentNode(null);
         this.body = body;
         setAsParentNodeOf(body);
         return this;
@@ -125,11 +125,10 @@ public class ForEachStmt extends Statement implements NodeWithBody<ForEachStmt> 
     public ForEachStmt setIterable(final Expression iterable) {
         assertNotNull(iterable);
         if (iterable == this.iterable) {
-            return (ForEachStmt) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.ITERABLE, this.iterable, iterable);
-        if (this.iterable != null)
-            this.iterable.setParentNode(null);
+        if (this.iterable != null) this.iterable.setParentNode(null);
         this.iterable = iterable;
         setAsParentNodeOf(iterable);
         return this;
@@ -139,11 +138,10 @@ public class ForEachStmt extends Statement implements NodeWithBody<ForEachStmt> 
     public ForEachStmt setVariable(final VariableDeclarationExpr variable) {
         assertNotNull(variable);
         if (variable == this.variable) {
-            return (ForEachStmt) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.VARIABLE, this.variable, variable);
-        if (this.variable != null)
-            this.variable.setParentNode(null);
+        if (this.variable != null) this.variable.setParentNode(null);
         this.variable = variable;
         setAsParentNodeOf(variable);
         return this;
@@ -175,15 +173,8 @@ public class ForEachStmt extends Statement implements NodeWithBody<ForEachStmt> 
      * @return {@code true} if this foreach statement's variable is {@code final}, and {@code false} otherwise.
      */
     public boolean hasFinalVariable() {
-        return getVariable().getModifiers().isNonEmpty() && getVariable().getModifiers().get(0).getKeyword() == Modifier.Keyword.FINAL;
-    }
-
-    @Override
-    @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
-    public boolean remove(Node node) {
-        if (node == null)
-            return false;
-        return super.remove(node);
+        return getVariable().getModifiers().isNonEmpty()
+                && getVariable().getModifiers().get(0).getKeyword() == Modifier.Keyword.FINAL;
     }
 
     @Override
@@ -195,8 +186,9 @@ public class ForEachStmt extends Statement implements NodeWithBody<ForEachStmt> 
     @Override
     @Generated("com.github.javaparser.generator.core.node.ReplaceMethodGenerator")
     public boolean replace(Node node, Node replacementNode) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         if (node == body) {
             setBody((Statement) replacementNode);
             return true;
@@ -230,6 +222,7 @@ public class ForEachStmt extends Statement implements NodeWithBody<ForEachStmt> 
         return Optional.of(this);
     }
 
+    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public void ifForEachStmt(Consumer<ForEachStmt> action) {
         action.accept(this);
