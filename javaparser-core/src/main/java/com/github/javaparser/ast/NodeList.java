@@ -225,29 +225,33 @@ public class NodeList<N extends Node>
         return this;
     }
 
-    /**
-     * @return the first node, or empty if the list is empty.
-     */
-    public Optional<N> getFirst() {
-        if (isEmpty()) {
-            return Optional.empty();
-        }
-        return Optional.of(get(0));
-    }
-
-    /**
-     * @return the last node, or empty if the list is empty.
-     */
-    public Optional<N> getLast() {
-        if (isEmpty()) {
-            return Optional.empty();
-        }
-        return Optional.of(get(size() - 1));
-    }
-
     @Override
     public Optional<Node> getParentNode() {
         return Optional.ofNullable(parentNode);
+    }
+
+    /**
+     * @return the first node, or throw if the list is empty.
+     *
+     * @throws NoSuchElementException
+     */
+    public N getFirst() {
+        if (isEmpty()) {
+            throw new NoSuchElementException();
+        }
+        return get(0);
+    }
+
+    /**
+     * @return the last node, or throw if the list is empty.
+     *
+     * @throws NoSuchElementException
+     */
+    public N getLast() {
+        if (isEmpty()) {
+            throw new NoSuchElementException();
+        }
+        return get(size() - 1);
     }
 
     /**
