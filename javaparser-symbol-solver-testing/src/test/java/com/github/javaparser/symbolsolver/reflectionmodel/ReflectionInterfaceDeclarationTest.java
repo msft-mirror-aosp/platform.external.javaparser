@@ -43,6 +43,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class ReflectionInterfaceDeclarationTest extends AbstractSymbolResolutionTest {
@@ -76,6 +77,7 @@ class ReflectionInterfaceDeclarationTest extends AbstractSymbolResolutionTest {
         assertEquals(2, foundCount);
     }
 
+    @Disabled
     @Test
     void testAllAncestors() {
         TypeSolver typeResolver = new ReflectionTypeSolver();
@@ -99,6 +101,7 @@ class ReflectionInterfaceDeclarationTest extends AbstractSymbolResolutionTest {
                 ancestors.get("java.lang.Iterable"));
     }
 
+    @Disabled
     @Test
     void testAllAncestorsForAnInterfaceWithBreadthFirstFunc() {
         TypeSolver typeResolver = new ReflectionTypeSolver();

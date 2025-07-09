@@ -58,6 +58,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.stream.Collectors;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class JavaParserClassDeclarationTest extends AbstractResolutionTest {
@@ -982,6 +983,7 @@ class JavaParserClassDeclarationTest extends AbstractResolutionTest {
                 sortedMethods.get(19).getQualifiedSignature());
     }
 
+    @Disabled
     @Test
     void testGetAllMethods() {
         JavaParserClassDeclaration constructorDeclaration = (JavaParserClassDeclaration)

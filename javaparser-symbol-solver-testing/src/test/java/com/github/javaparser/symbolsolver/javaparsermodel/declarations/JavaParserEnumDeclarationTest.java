@@ -992,6 +992,10 @@ class JavaParserEnumDeclarationTest extends AbstractTypeDeclarationTest
         if (TestJdk.getCurrentHostJdk().getMajorVersion() >= 14) {
             expected.remove("java.lang.Object.registerNatives()");
         }
+        // Another temporary workaround to allow tests to pass on JDK21
+        if (TestJdk.getCurrentHostJdk().getMajorVersion() >= 21) {
+            expected.add("java.lang.Object.wait0(long)");
+        }
 
         assertThat(signatures, containsInAnyOrder(expected.toArray()));
     }

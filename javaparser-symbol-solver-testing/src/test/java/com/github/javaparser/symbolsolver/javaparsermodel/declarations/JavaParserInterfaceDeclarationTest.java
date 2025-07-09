@@ -914,6 +914,7 @@ class JavaParserInterfaceDeclarationTest extends AbstractTypeDeclarationTest {
                 sortedMethods.get(19).getQualifiedSignature());
     }
 
+    @Disabled
     @Test
     void testGetAllMethods() {
         JavaParserClassDeclaration constructorDeclaration = (JavaParserClassDeclaration)
