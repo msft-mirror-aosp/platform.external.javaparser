@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -18,32 +18,31 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  */
-
 package com.github.javaparser.ast.nodeTypes;
+
+import static com.github.javaparser.ast.NodeList.nodeList;
 
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.type.Type;
 import com.github.javaparser.metamodel.DerivedProperty;
-
 import java.util.Optional;
-
-import static com.github.javaparser.ast.NodeList.nodeList;
 
 /**
  * A node that can have type arguments.
  * <p>
  * <pre>
- *     new X();        --> typeArguments == Optional is empty
- *     new X&lt;>();      --> typeArguments = [], diamondOperator = true
- *     new X&lt;C,D>();   --> typeArguments = [C,D], diamondOperator = false
+ *     new X();        --&gt; typeArguments == Optional is empty
+ *     new X&lt;&gt;();      --&gt; typeArguments = [], diamondOperator = true
+ *     new X&lt;C,D&gt;();   --&gt; typeArguments = [C,D], diamondOperator = false
  * </pre>
  * Only ObjectCreationExpr uses the diamond operator.
  * On other nodes it is treated the same as the first case.
  */
 public interface NodeWithTypeArguments<N extends Node> {
+
     /**
-     * @return the types that can be found in the type arguments: &lt;String, Integer&gt;.
+     * @return the types that can be found in the type arguments: {@code  <String, Integer>}.
      */
     Optional<NodeList<Type>> getTypeArguments();
 
@@ -55,7 +54,7 @@ public interface NodeWithTypeArguments<N extends Node> {
     N setTypeArguments(NodeList<Type> typeArguments);
 
     /**
-     * @return whether the type arguments look like &lt;>.
+     * @return whether the type arguments look like {@code <>}.
      */
     @DerivedProperty
     default boolean isUsingDiamondOperator() {
@@ -63,7 +62,7 @@ public interface NodeWithTypeArguments<N extends Node> {
     }
 
     /**
-     * Sets the type arguments to &lt>.
+     * Sets the type arguments to {@code <>}.
      */
     @SuppressWarnings("unchecked")
     default N setDiamondOperator() {
@@ -71,7 +70,7 @@ public interface NodeWithTypeArguments<N extends Node> {
     }
 
     /**
-     * Removes all type arguments, including the surrounding &lt;>.
+     * Removes all type arguments, including the surrounding {@code <>}.
      */
     @SuppressWarnings("unchecked")
     default N removeTypeArguments() {

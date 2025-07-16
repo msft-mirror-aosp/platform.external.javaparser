@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -20,29 +20,29 @@
  */
 package com.github.javaparser.ast;
 
+import static com.github.javaparser.utils.Utils.assertNotNull;
+
+import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.Name;
 import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
 import com.github.javaparser.ast.nodeTypes.NodeWithName;
 import com.github.javaparser.ast.observer.ObservableProperty;
+import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
-import static com.github.javaparser.utils.Utils.assertNotNull;
-import com.github.javaparser.ast.visitor.CloneVisitor;
-import com.github.javaparser.metamodel.PackageDeclarationMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
-import com.github.javaparser.TokenRange;
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.Generated;
+import com.github.javaparser.metamodel.PackageDeclarationMetaModel;
 
 /**
  * A package declaration.
- * <br/><code>package com.github.javaparser.ast;</code>
- * <br/><code>@Wonderful package anything.can.be.annotated.nowadays;</code>
+ * <br>{@code package com.github.javaparser.ast;}
+ * <br>{@code @Wonderful package anything.can.be.annotated.nowadays;}
  *
  * @author Julio Vilmar Gesser
  */
-public class PackageDeclaration extends Node implements NodeWithAnnotations<PackageDeclaration>, NodeWithName<PackageDeclaration> {
+public class PackageDeclaration extends Node
+        implements NodeWithAnnotations<PackageDeclaration>, NodeWithName<PackageDeclaration> {
 
     private NodeList<AnnotationExpr> annotations = new NodeList<>();
 
@@ -86,9 +86,9 @@ public class PackageDeclaration extends Node implements NodeWithAnnotations<Pack
 
     /**
      * Retrieves the list of annotations declared before the package
-     * declaration. Return <code>null</code> if there are no annotations.
+     * declaration. Return {@code null} if there are no annotations.
      *
-     * @return list of annotations or <code>null</code>
+     * @return list of annotations or {@code null}
      */
     @Generated("com.github.javaparser.generator.core.node.PropertyGenerator")
     public NodeList<AnnotationExpr> getAnnotations() {
@@ -112,11 +112,10 @@ public class PackageDeclaration extends Node implements NodeWithAnnotations<Pack
     public PackageDeclaration setAnnotations(final NodeList<AnnotationExpr> annotations) {
         assertNotNull(annotations);
         if (annotations == this.annotations) {
-            return (PackageDeclaration) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.ANNOTATIONS, this.annotations, annotations);
-        if (this.annotations != null)
-            this.annotations.setParentNode(null);
+        if (this.annotations != null) this.annotations.setParentNode(null);
         this.annotations = annotations;
         setAsParentNodeOf(annotations);
         return this;
@@ -131,11 +130,10 @@ public class PackageDeclaration extends Node implements NodeWithAnnotations<Pack
     public PackageDeclaration setName(final Name name) {
         assertNotNull(name);
         if (name == this.name) {
-            return (PackageDeclaration) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.NAME, this.name, name);
-        if (this.name != null)
-            this.name.setParentNode(null);
+        if (this.name != null) this.name.setParentNode(null);
         this.name = name;
         setAsParentNodeOf(name);
         return this;
@@ -144,8 +142,9 @@ public class PackageDeclaration extends Node implements NodeWithAnnotations<Pack
     @Override
     @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
     public boolean remove(Node node) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         for (int i = 0; i < annotations.size(); i++) {
             if (annotations.get(i) == node) {
                 annotations.remove(i);
@@ -170,8 +169,9 @@ public class PackageDeclaration extends Node implements NodeWithAnnotations<Pack
     @Override
     @Generated("com.github.javaparser.generator.core.node.ReplaceMethodGenerator")
     public boolean replace(Node node, Node replacementNode) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         for (int i = 0; i < annotations.size(); i++) {
             if (annotations.get(i) == node) {
                 annotations.set(i, (AnnotationExpr) replacementNode);

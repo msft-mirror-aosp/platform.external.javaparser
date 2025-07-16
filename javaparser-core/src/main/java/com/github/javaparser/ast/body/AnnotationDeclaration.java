@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -20,9 +20,10 @@
  */
 package com.github.javaparser.ast.body;
 
+import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.AllFieldsConstructor;
+import com.github.javaparser.ast.Generated;
 import com.github.javaparser.ast.Modifier;
-import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.SimpleName;
@@ -33,19 +34,18 @@ import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.github.javaparser.metamodel.AnnotationDeclarationMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
-import com.github.javaparser.TokenRange;
 import com.github.javaparser.resolution.Resolvable;
 import com.github.javaparser.resolution.declarations.ResolvedAnnotationDeclaration;
-import java.util.function.Consumer;
 import java.util.Optional;
-import com.github.javaparser.ast.Generated;
+import java.util.function.Consumer;
 
 /**
- * An annotation type declaration.<br/><code>@interface X { ... }</code>
+ * An annotation type declaration.<br>{@code @interface X { ... }}
  *
  * @author Julio Vilmar Gesser
  */
-public class AnnotationDeclaration extends TypeDeclaration<AnnotationDeclaration> implements NodeWithAbstractModifier<AnnotationDeclaration>, Resolvable<ResolvedAnnotationDeclaration> {
+public class AnnotationDeclaration extends TypeDeclaration<AnnotationDeclaration>
+        implements NodeWithAbstractModifier<AnnotationDeclaration>, Resolvable<ResolvedAnnotationDeclaration> {
 
     public AnnotationDeclaration() {
         this(null, new NodeList<>(), new NodeList<>(), new SimpleName(), new NodeList<>());
@@ -56,7 +56,11 @@ public class AnnotationDeclaration extends TypeDeclaration<AnnotationDeclaration
     }
 
     @AllFieldsConstructor
-    public AnnotationDeclaration(NodeList<Modifier> modifiers, NodeList<AnnotationExpr> annotations, SimpleName name, NodeList<BodyDeclaration<?>> members) {
+    public AnnotationDeclaration(
+            NodeList<Modifier> modifiers,
+            NodeList<AnnotationExpr> annotations,
+            SimpleName name,
+            NodeList<BodyDeclaration<?>> members) {
         this(null, modifiers, annotations, name, members);
     }
 
@@ -64,7 +68,12 @@ public class AnnotationDeclaration extends TypeDeclaration<AnnotationDeclaration
      * This constructor is used by the parser and is considered private.
      */
     @Generated("com.github.javaparser.generator.core.node.MainConstructorGenerator")
-    public AnnotationDeclaration(TokenRange tokenRange, NodeList<Modifier> modifiers, NodeList<AnnotationExpr> annotations, SimpleName name, NodeList<BodyDeclaration<?>> members) {
+    public AnnotationDeclaration(
+            TokenRange tokenRange,
+            NodeList<Modifier> modifiers,
+            NodeList<AnnotationExpr> annotations,
+            SimpleName name,
+            NodeList<BodyDeclaration<?>> members) {
         super(tokenRange, modifiers, annotations, name, members);
         customInitialization();
     }
@@ -82,14 +91,6 @@ public class AnnotationDeclaration extends TypeDeclaration<AnnotationDeclaration
     }
 
     @Override
-    @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
-    public boolean remove(Node node) {
-        if (node == null)
-            return false;
-        return super.remove(node);
-    }
-
-    @Override
     @Generated("com.github.javaparser.generator.core.node.CloneGenerator")
     public AnnotationDeclaration clone() {
         return (AnnotationDeclaration) accept(new CloneVisitor(), null);
@@ -99,14 +100,6 @@ public class AnnotationDeclaration extends TypeDeclaration<AnnotationDeclaration
     @Generated("com.github.javaparser.generator.core.node.GetMetaModelGenerator")
     public AnnotationDeclarationMetaModel getMetaModel() {
         return JavaParserMetaModel.annotationDeclarationMetaModel;
-    }
-
-    @Override
-    @Generated("com.github.javaparser.generator.core.node.ReplaceMethodGenerator")
-    public boolean replace(Node node, Node replacementNode) {
-        if (node == null)
-            return false;
-        return super.replace(node, replacementNode);
     }
 
     @Override
@@ -121,6 +114,7 @@ public class AnnotationDeclaration extends TypeDeclaration<AnnotationDeclaration
         return this;
     }
 
+    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public void ifAnnotationDeclaration(Consumer<AnnotationDeclaration> action) {
         action.accept(this);

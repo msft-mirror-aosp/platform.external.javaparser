@@ -1,19 +1,30 @@
+/*
+ * Copyright (C) 2013-2024 The JavaParser Team.
+ *
+ * This file is part of JavaParser.
+ *
+ * JavaParser can be used either under the terms of
+ * a) the GNU Lesser General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ * b) the terms of the Apache License
+ *
+ * You should have received a copy of both licenses in LICENCE.LGPL and
+ * LICENCE.APACHE. Please refer to those files for details.
+ *
+ * JavaParser is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ */
+
 package com.github.javaparser;
 
 /**
- * Some information that was available when this library was built by Maven.
+ * Core information about this library.
  */
 public class JavaParserBuild {
-    public static final String PROJECT_VERSION = "3.14.6-SNAPSHOT";
+    public static final String PROJECT_VERSION = "3.27.1-SNAPSHOT";
     public static final String PROJECT_NAME = "javaparser-core";
-    public static final String PROJECT_BUILD_FINAL_NAME = "javaparser-core-3.14.6-SNAPSHOT";
-    public static final String MAVEN_VERSION = "3.5.3";
-    public static final String MAVEN_BUILD_VERSION = "Apache Maven 3.5.3";
-    public static final String MAVEN_BUILD_TIMESTAMP = "2019-07-31T17:41:28Z";
-    public static final String JAVA_VENDOR ="Google Inc.";
-    public static final String JAVA_VENDOR_URL ="https://goto.google.com/java-platform";
-    public static final String JAVA_VERSION ="1.8.0_181-google-v7";
-    public static final String OS_ARCH ="amd64";
-    public static final String OS_NAME ="Linux";
-    public static final String OS_VERSION ="4.19.37-5rodete2-amd64";
+    public static final String PROJECT_BUILD_FINAL_NAME = "javaparser-core-3.27.1-SNAPSHOT";
 }

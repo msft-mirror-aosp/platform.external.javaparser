@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -20,26 +20,27 @@
  */
 package com.github.javaparser.ast.type;
 
+import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.AllFieldsConstructor;
+import com.github.javaparser.ast.Generated;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
+import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.visitor.CloneVisitor;
-import com.github.javaparser.metamodel.VoidTypeMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
-import com.github.javaparser.TokenRange;
+import com.github.javaparser.metamodel.VoidTypeMetaModel;
+import com.github.javaparser.resolution.Context;
+import com.github.javaparser.resolution.types.ResolvedType;
 import com.github.javaparser.resolution.types.ResolvedVoidType;
-import java.util.function.Consumer;
 import java.util.Optional;
-import com.github.javaparser.ast.Generated;
+import java.util.function.Consumer;
 
 /**
  * The return type of a {@link com.github.javaparser.ast.body.MethodDeclaration}
  * when it returns void.
- * <br/><code><b>void</b> helloWorld() { ... }</code>
+ * <br><code><b>void</b> helloWorld() { ... }</code>
  *
  * @author Julio Vilmar Gesser
  */
@@ -77,16 +78,13 @@ public class VoidType extends Type implements NodeWithAnnotations<VoidType> {
     }
 
     @Override
-    @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
-    public boolean remove(Node node) {
-        if (node == null)
-            return false;
-        return super.remove(node);
+    public String asString() {
+        return "void";
     }
 
     @Override
-    public String asString() {
-        return "void";
+    public String toDescriptor() {
+        return "V";
     }
 
     @Override
@@ -102,14 +100,6 @@ public class VoidType extends Type implements NodeWithAnnotations<VoidType> {
     }
 
     @Override
-    @Generated("com.github.javaparser.generator.core.node.ReplaceMethodGenerator")
-    public boolean replace(Node node, Node replacementNode) {
-        if (node == null)
-            return false;
-        return super.replace(node, replacementNode);
-    }
-
-    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public boolean isVoidType() {
         return true;
@@ -121,6 +111,7 @@ public class VoidType extends Type implements NodeWithAnnotations<VoidType> {
         return this;
     }
 
+    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public void ifVoidType(Consumer<VoidType> action) {
         action.accept(this);
@@ -135,5 +126,10 @@ public class VoidType extends Type implements NodeWithAnnotations<VoidType> {
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public Optional<VoidType> toVoidType() {
         return Optional.of(this);
+    }
+
+    @Override
+    public ResolvedType convertToUsage(Context context) {
+        return ResolvedVoidType.INSTANCE;
     }
 }

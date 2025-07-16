@@ -1,20 +1,27 @@
 /*
- * Copyright 2016 Federico Tomassetti
+ * Copyright (C) 2015-2016 Federico Tomassetti
+ * Copyright (C) 2017-2024 The JavaParser Team.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This file is part of JavaParser.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * JavaParser can be used either under the terms of
+ * a) the GNU Lesser General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ * b) the terms of the Apache License
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * You should have received a copy of both licenses in LICENCE.LGPL and
+ * LICENCE.APACHE. Please refer to those files for details.
+ *
+ * JavaParser is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  */
 
 package com.github.javaparser.symbolsolver.resolution;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
@@ -27,19 +34,17 @@ import com.github.javaparser.ast.expr.ThisExpr;
 import com.github.javaparser.ast.stmt.ExpressionStmt;
 import com.github.javaparser.ast.stmt.ReturnStmt;
 import com.github.javaparser.resolution.MethodUsage;
+import com.github.javaparser.resolution.Navigator;
+import com.github.javaparser.resolution.Solver;
+import com.github.javaparser.resolution.TypeSolver;
+import com.github.javaparser.resolution.model.Value;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.github.javaparser.resolution.types.ResolvedType;
-import com.github.javaparser.symbolsolver.javaparser.Navigator;
 import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
-import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
-import com.github.javaparser.symbolsolver.model.resolution.Value;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
-import org.junit.jupiter.api.Test;
-
 import java.util.List;
 import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.junit.jupiter.api.Test;
 
 /**
  * Tests related to resolved Generics types.
@@ -52,7 +57,7 @@ class GenericsResolutionTest extends AbstractResolutionTest {
         ClassOrInterfaceDeclaration clazz = Navigator.demandClass(cu, "Generics");
         VariableDeclarator fieldS = Navigator.demandField(clazz, "s");
 
-        SymbolSolver symbolSolver = new SymbolSolver(new ReflectionTypeSolver());
+        Solver symbolSolver = new SymbolSolver(new ReflectionTypeSolver());
         Optional<Value> symbolReference = symbolSolver.solveSymbolAsValue("s", fieldS);
 
         assertEquals(true, symbolReference.isPresent());
@@ -60,7 +65,9 @@ class GenericsResolutionTest extends AbstractResolutionTest {
 
         ResolvedType type = symbolReference.get().getType();
         assertEquals(1, type.asReferenceType().typeParametersValues().size());
-        assertEquals("java.lang.String", type.asReferenceType().typeParametersValues().get(0).describe());
+        assertEquals(
+                "java.lang.String",
+                type.asReferenceType().typeParametersValues().get(0).describe());
     }
 
     @Test
@@ -69,7 +76,7 @@ class GenericsResolutionTest extends AbstractResolutionTest {
         ClassOrInterfaceDeclaration clazz = Navigator.demandClass(cu, "Generics");
         VariableDeclarator fieldS = Navigator.demandField(clazz, "g");
 
-        SymbolSolver symbolSolver = new SymbolSolver(new ReflectionTypeSolver());
+        Solver symbolSolver = new SymbolSolver(new ReflectionTypeSolver());
         Optional<Value> symbolReference = symbolSolver.solveSymbolAsValue("g", fieldS);
 
         assertEquals(true, symbolReference.isPresent());
@@ -77,7 +84,9 @@ class GenericsResolutionTest extends AbstractResolutionTest {
 
         ResolvedType type = symbolReference.get().getType();
         assertEquals(1, type.asReferenceType().typeParametersValues().size());
-        assertEquals("me.tomassetti.symbolsolver.javaparser.Generics", type.asReferenceType().typeParametersValues().get(0).describe());
+        assertEquals(
+                "me.tomassetti.symbolsolver.javaparser.Generics",
+                type.asReferenceType().typeParametersValues().get(0).describe());
     }
 
     @Test
@@ -86,7 +95,7 @@ class GenericsResolutionTest extends AbstractResolutionTest {
         ClassOrInterfaceDeclaration clazz = Navigator.demandClass(cu, "Generics");
         VariableDeclarator fieldS = Navigator.demandField(clazz, "i");
 
-        SymbolSolver symbolSolver = new SymbolSolver(new ReflectionTypeSolver());
+        Solver symbolSolver = new SymbolSolver(new ReflectionTypeSolver());
         Optional<Value> symbolReference = symbolSolver.solveSymbolAsValue("i", fieldS);
 
         assertEquals(true, symbolReference.isPresent());
@@ -94,7 +103,9 @@ class GenericsResolutionTest extends AbstractResolutionTest {
 
         ResolvedType type = symbolReference.get().getType();
         assertEquals(1, type.asReferenceType().typeParametersValues().size());
-        assertEquals("java.lang.Integer", type.asReferenceType().typeParametersValues().get(0).describe());
+        assertEquals(
+                "java.lang.Integer",
+                type.asReferenceType().typeParametersValues().get(0).describe());
     }
 
     @Test
@@ -103,7 +114,7 @@ class GenericsResolutionTest extends AbstractResolutionTest {
         ClassOrInterfaceDeclaration clazz = Navigator.demandClass(cu, "SomeCollection");
         VariableDeclarator field = Navigator.demandField(clazz, "a");
 
-        SymbolSolver symbolSolver = new SymbolSolver(new ReflectionTypeSolver());
+        Solver symbolSolver = new SymbolSolver(new ReflectionTypeSolver());
         Optional<Value> symbolReference = symbolSolver.solveSymbolAsValue("a", field);
 
         assertEquals(true, symbolReference.isPresent());
@@ -120,7 +131,7 @@ class GenericsResolutionTest extends AbstractResolutionTest {
         ClassOrInterfaceDeclaration clazz = Navigator.demandClass(cu, "SomeCollection");
         VariableDeclarator field = Navigator.demandField(clazz, "as");
 
-        SymbolSolver symbolSolver = new SymbolSolver(new ReflectionTypeSolver());
+        Solver symbolSolver = new SymbolSolver(new ReflectionTypeSolver());
         Optional<Value> symbolReference = symbolSolver.solveSymbolAsValue("as", field);
 
         assertEquals(true, symbolReference.isPresent());
@@ -142,7 +153,8 @@ class GenericsResolutionTest extends AbstractResolutionTest {
 
         MethodDeclaration method = Navigator.demandMethod(clazz, "foo1");
 
-        ExpressionStmt stmt = (ExpressionStmt) method.getBody().get().getStatements().get(0);
+        ExpressionStmt stmt =
+                (ExpressionStmt) method.getBody().get().getStatements().get(0);
         Expression expression = stmt.getExpression();
         ResolvedType type = JavaParserFacade.get(new ReflectionTypeSolver()).getType(expression);
 
@@ -150,7 +162,7 @@ class GenericsResolutionTest extends AbstractResolutionTest {
         assertEquals("java.lang.String", type.describe());
     }
 
-    //PRIMA UN TEST CHE DICA CHE IL TIPO DEL CAMPO AS e' LIST<A> NON LIST<E>
+    // PRIMA UN TEST CHE DICA CHE IL TIPO DEL CAMPO AS e' LIST<A> NON LIST<E>
     @Test
     void resolveUsageOfGenericFieldIntermediateCase() {
         CompilationUnit cu = parseSample("Generics");
@@ -174,7 +186,8 @@ class GenericsResolutionTest extends AbstractResolutionTest {
 
         MethodDeclaration method = Navigator.demandMethod(clazz, "foo2");
 
-        ExpressionStmt stmt = (ExpressionStmt) method.getBody().get().getStatements().get(0);
+        ExpressionStmt stmt =
+                (ExpressionStmt) method.getBody().get().getStatements().get(0);
         Expression expression = stmt.getExpression();
         ResolvedType type = JavaParserFacade.get(new ReflectionTypeSolver()).getType(expression);
 
@@ -182,7 +195,9 @@ class GenericsResolutionTest extends AbstractResolutionTest {
         assertEquals("java.util.List<java.lang.String>", type.describe());
         assertEquals(1, type.asReferenceType().typeParametersValues().size());
         assertEquals(false, type.asReferenceType().typeParametersValues().get(0).isTypeVariable());
-        assertEquals("java.lang.String", type.asReferenceType().typeParametersValues().get(0).describe());
+        assertEquals(
+                "java.lang.String",
+                type.asReferenceType().typeParametersValues().get(0).describe());
     }
 
     @Test
@@ -192,9 +207,24 @@ class GenericsResolutionTest extends AbstractResolutionTest {
         MethodDeclaration method = Navigator.demandMethod(clazz, "caller");
         MethodCallExpr expression = Navigator.findMethodCall(method, "callee").get();
 
-        MethodUsage methodUsage = JavaParserFacade.get(new ReflectionTypeSolver()).solveMethodAsUsage(expression);
+        MethodUsage methodUsage =
+                JavaParserFacade.get(new ReflectionTypeSolver()).solveMethodAsUsage(expression);
 
         assertEquals("callee", methodUsage.getName());
+    }
+
+    @Test
+    void resolveUsageOfMethodOfGenericClassWithGenericReturnType() {
+        CompilationUnit cu = parseSample("Generics");
+        ClassOrInterfaceDeclaration clazz = Navigator.demandClass(cu, "GenericMethodCalls.Derived");
+        MethodDeclaration method = Navigator.demandMethod(clazz, "caller");
+        MethodCallExpr expression = Navigator.findMethodCall(method, "get").get();
+
+        MethodUsage methodUsage =
+                JavaParserFacade.get(new ReflectionTypeSolver()).solveMethodAsUsage(expression);
+
+        assertEquals("get", methodUsage.getName());
+        assertEquals("java.lang.String", methodUsage.returnType().describe());
     }
 
     @Test
@@ -204,7 +234,8 @@ class GenericsResolutionTest extends AbstractResolutionTest {
         MethodDeclaration method = Navigator.demandMethod(clazz, "unbounded");
         MethodCallExpr expression = Navigator.findMethodCall(method, "toString").get();
 
-        MethodUsage methodUsage = JavaParserFacade.get(new ReflectionTypeSolver()).solveMethodAsUsage(expression);
+        MethodUsage methodUsage =
+                JavaParserFacade.get(new ReflectionTypeSolver()).solveMethodAsUsage(expression);
 
         assertEquals("toString", methodUsage.getName());
         assertEquals("java.lang.Object", methodUsage.declaringType().getQualifiedName());
@@ -217,10 +248,26 @@ class GenericsResolutionTest extends AbstractResolutionTest {
         MethodDeclaration method = Navigator.demandMethod(clazz, "bounded");
         MethodCallExpr expression = Navigator.findMethodCall(method, "bar").get();
 
-        MethodUsage methodUsage = JavaParserFacade.get(new ReflectionTypeSolver()).solveMethodAsUsage(expression);
+        MethodUsage methodUsage =
+                JavaParserFacade.get(new ReflectionTypeSolver()).solveMethodAsUsage(expression);
 
         assertEquals("bar", methodUsage.getName());
         assertEquals("GenericsWildcard.Foo", methodUsage.declaringType().getQualifiedName());
+    }
+
+    @Test
+    void resolveUsageOfMethodOfGenericClassWithBoxing() {
+        CompilationUnit cu = parseSample("Generics");
+        ClassOrInterfaceDeclaration clazz = Navigator.demandClass(cu, "GenericMethodBoxing");
+        MethodDeclaration method = Navigator.demandMethod(clazz, "bar");
+        MethodCallExpr expression = Navigator.findMethodCall(method, "foo").get();
+
+        MethodUsage methodUsage =
+                JavaParserFacade.get(new ReflectionTypeSolver()).solveMethodAsUsage(expression);
+
+        assertEquals("foo", methodUsage.getName());
+        assertEquals("GenericMethodBoxing", methodUsage.declaringType().getName());
+        assertEquals("java.lang.Long", methodUsage.returnType().describe());
     }
 
     @Test
@@ -228,7 +275,8 @@ class GenericsResolutionTest extends AbstractResolutionTest {
         CompilationUnit cu = parseSample("ElementOfList");
         ClassOrInterfaceDeclaration clazz = Navigator.demandClass(cu, "ElementOfList");
         MethodDeclaration method = Navigator.demandMethod(clazz, "foo");
-        VariableDeclarator variableDeclarator = Navigator.demandVariableDeclaration(method, "a").get();
+        VariableDeclarator variableDeclarator =
+                Navigator.demandVariableDeclaration(method, "a").get();
         Expression expression = variableDeclarator.getInitializer().get();
 
         ResolvedType type = JavaParserFacade.get(new ReflectionTypeSolver()).getType(expression);
@@ -242,7 +290,8 @@ class GenericsResolutionTest extends AbstractResolutionTest {
         CompilationUnit cu = parseSample("ElementOfList");
         ClassOrInterfaceDeclaration clazz = Navigator.demandClass(cu, "ElementOfList");
         MethodDeclaration method = Navigator.demandMethod(clazz, "annotations");
-        VariableDeclarator variableDeclarator = Navigator.demandVariableDeclaration(method, "a").get();
+        VariableDeclarator variableDeclarator =
+                Navigator.demandVariableDeclaration(method, "a").get();
         Expression expression = variableDeclarator.getInitializer().get();
 
         ResolvedType type = JavaParserFacade.get(new ReflectionTypeSolver()).getType(expression);
@@ -263,7 +312,8 @@ class GenericsResolutionTest extends AbstractResolutionTest {
         JavaParserFacade javaParserFacade = JavaParserFacade.get(typeSolver);
 
         ResolvedType voidVisitorAdapterOfA = javaParserFacade.getType(thisRef);
-        List<ResolvedReferenceType> allAncestors = voidVisitorAdapterOfA.asReferenceType().getAllAncestors();
+        List<ResolvedReferenceType> allAncestors =
+                voidVisitorAdapterOfA.asReferenceType().getAllAncestors();
         assertEquals(2, allAncestors.size());
     }
 
@@ -291,7 +341,7 @@ class GenericsResolutionTest extends AbstractResolutionTest {
         Expression scope = call.getScope().get();
         ResolvedType type = JavaParserFacade.get(typeSolver).getType(scope);
 
-        //System.out.println(typeUsage);
+        // System.out.println(typeUsage);
 
         assertEquals(false, type.isTypeVariable());
         assertEquals("java.lang.Class<N>", type.describe());
@@ -302,9 +352,10 @@ class GenericsResolutionTest extends AbstractResolutionTest {
         CompilationUnit cu = parseSample("ClassCast");
         ClassOrInterfaceDeclaration clazz = Navigator.demandClass(cu, "ClassCast");
         MethodDeclaration method = Navigator.demandMethod(clazz, "getNodesByType");
-        ReturnStmt returnStmt = Navigator.findReturnStmt(method);
+        ReturnStmt returnStmt = Navigator.demandReturnStmt(method);
 
-        ResolvedType type = JavaParserFacade.get(new ReflectionTypeSolver()).getType(returnStmt.getExpression().get());
+        ResolvedType type = JavaParserFacade.get(new ReflectionTypeSolver())
+                .getType(returnStmt.getExpression().get());
 
         assertEquals(true, type.isTypeVariable());
         assertEquals("N", type.describe());
@@ -315,7 +366,7 @@ class GenericsResolutionTest extends AbstractResolutionTest {
         CompilationUnit cu = parseSample("TypeParamOnReturnType");
         ClassOrInterfaceDeclaration clazz = Navigator.demandClass(cu, "TypeParamOnReturnType");
         MethodDeclaration method = Navigator.demandMethod(clazz, "nodeEquals");
-        ThisExpr thisExpr = Navigator.findNodeOfGivenClass(method, ThisExpr.class);
+        ThisExpr thisExpr = Navigator.demandNodeOfGivenClass(method, ThisExpr.class);
 
         ResolvedType type = JavaParserFacade.get(new ReflectionTypeSolver()).getType(thisExpr);
 
@@ -355,9 +406,10 @@ class GenericsResolutionTest extends AbstractResolutionTest {
         CompilationUnit cu = parseSample("TypeParamOnReturnType");
         ClassOrInterfaceDeclaration clazz = Navigator.demandClass(cu, "TypeParamOnReturnType");
         MethodDeclaration method = Navigator.demandMethod(clazz, "nodeEquals");
-        ReturnStmt returnStmt = Navigator.findReturnStmt(method);
+        ReturnStmt returnStmt = Navigator.demandReturnStmt(method);
 
-        ResolvedType type = JavaParserFacade.get(new ReflectionTypeSolver()).getType(returnStmt.getExpression().get());
+        ResolvedType type = JavaParserFacade.get(new ReflectionTypeSolver())
+                .getType(returnStmt.getExpression().get());
 
         assertEquals(false, type.isTypeVariable());
         assertEquals("boolean", type.describe());
@@ -383,7 +435,7 @@ class GenericsResolutionTest extends AbstractResolutionTest {
         Context context = JavaParserFactory.getContext(call, typeSolver);
 
         ReferenceTypeUsage typeOfScope = javaParserFacade.getType(call.getScope()).asReferenceType();
-        me.tomassetti.symbolsolver.model.declarations.TypeDeclaration typeDeclaration = typeOfScope.getTypeDeclaration();
+        me.tomassetti.symbolsolver.model.declarations.TypeDeclaration typeDeclaration = typeOfScope.getTypeDeclaration().orElseThrow(() -> new RuntimeException("TypeDeclaration unexpectedly empty."));
         List<TypeUsage> typeParametersValues = typeOfScope.typeParametersValues();
 
         List<MethodUsage> methods = new ArrayList<>();
@@ -422,7 +474,7 @@ class GenericsResolutionTest extends AbstractResolutionTest {
         CompilationUnit cu = parseSample("GenericCollectionWithExtension");
         ClassOrInterfaceDeclaration clazz = Navigator.demandClass(cu, "Foo");
         MethodDeclaration method = Navigator.demandMethod(clazz, "bar");
-        ReturnStmt returnStmt = Navigator.findReturnStmt(method);
+        ReturnStmt returnStmt = Navigator.demandReturnStmt(method);
 
         TypeSolver typeSolver = new ReflectionTypeSolver();
         Expression returnStmtExpr = returnStmt.getExpression().get();
@@ -454,7 +506,7 @@ class GenericsResolutionTest extends AbstractResolutionTest {
         CompilationUnit cu = parseSample("GenericCollection");
         ClassOrInterfaceDeclaration clazz = Navigator.demandClass(cu, "Foo");
         MethodDeclaration method = Navigator.demandMethod(clazz, "bar");
-        ReturnStmt returnStmt = Navigator.findReturnStmt(method);
+        ReturnStmt returnStmt = Navigator.demandReturnStmt(method);
 
         TypeSolver typeSolver = new ReflectionTypeSolver();
         Expression returnStmtExpr = returnStmt.getExpression().get();

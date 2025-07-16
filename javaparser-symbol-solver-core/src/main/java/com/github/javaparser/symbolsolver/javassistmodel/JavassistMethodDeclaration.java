@@ -1,42 +1,41 @@
 /*
- * Copyright 2016 Federico Tomassetti
+ * Copyright (C) 2015-2016 Federico Tomassetti
+ * Copyright (C) 2017-2024 The JavaParser Team.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This file is part of JavaParser.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * JavaParser can be used either under the terms of
+ * a) the GNU Lesser General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ * b) the terms of the Apache License
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * You should have received a copy of both licenses in LICENCE.LGPL and
+ * LICENCE.APACHE. Please refer to those files for details.
+ *
+ * JavaParser is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  */
 
 package com.github.javaparser.symbolsolver.javassistmodel;
 
 import com.github.javaparser.ast.AccessSpecifier;
 import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.resolution.Context;
 import com.github.javaparser.resolution.MethodUsage;
+import com.github.javaparser.resolution.TypeSolver;
 import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedParameterDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedTypeParameterDeclaration;
 import com.github.javaparser.resolution.types.ResolvedType;
-import com.github.javaparser.symbolsolver.core.resolution.Context;
 import com.github.javaparser.symbolsolver.core.resolution.TypeVariableResolutionCapability;
 import com.github.javaparser.symbolsolver.declarations.common.MethodDeclarationCommonLogic;
-import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
-import javassist.CtMethod;
-import javassist.NotFoundException;
-import javassist.bytecode.BadBytecode;
-import javassist.bytecode.SignatureAttribute;
-
 import java.lang.reflect.Modifier;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.List;
+import javassist.CtMethod;
 
 /**
  * @author Federico Tomassetti
@@ -44,10 +43,12 @@ import java.util.stream.Collectors;
 public class JavassistMethodDeclaration implements ResolvedMethodDeclaration, TypeVariableResolutionCapability {
     private CtMethod ctMethod;
     private TypeSolver typeSolver;
+    private final JavassistMethodLikeDeclarationAdapter methodLikeAdaper;
 
     public JavassistMethodDeclaration(CtMethod ctMethod, TypeSolver typeSolver) {
         this.ctMethod = ctMethod;
         this.typeSolver = typeSolver;
+        this.methodLikeAdaper = new JavassistMethodLikeDeclarationAdapter(ctMethod, typeSolver, this);
     }
 
     @Override
@@ -62,9 +63,7 @@ public class JavassistMethodDeclaration implements ResolvedMethodDeclaration, Ty
 
     @Override
     public String toString() {
-        return "JavassistMethodDeclaration{" +
-                "ctMethod=" + ctMethod +
-                '}';
+        return "JavassistMethodDeclaration{" + "ctMethod=" + ctMethod + '}';
     }
 
     @Override
@@ -89,62 +88,29 @@ public class JavassistMethodDeclaration implements ResolvedMethodDeclaration, Ty
 
     @Override
     public ResolvedReferenceTypeDeclaration declaringType() {
-        if (ctMethod.getDeclaringClass().isInterface()) {
-            return new JavassistInterfaceDeclaration(ctMethod.getDeclaringClass(), typeSolver);
-        } else if (ctMethod.getDeclaringClass().isEnum()) {
-            return new JavassistEnumDeclaration(ctMethod.getDeclaringClass(), typeSolver);
-        } else {
-            return new JavassistClassDeclaration(ctMethod.getDeclaringClass(), typeSolver);
-        }
+        return JavassistFactory.toTypeDeclaration(ctMethod.getDeclaringClass(), typeSolver);
     }
 
     @Override
     public ResolvedType getReturnType() {
-        try {
-            if (ctMethod.getGenericSignature() != null) {
-                javassist.bytecode.SignatureAttribute.Type genericSignatureType = SignatureAttribute.toMethodSignature(ctMethod.getGenericSignature()).getReturnType();
-                return JavassistUtils.signatureTypeToType(genericSignatureType, typeSolver, this);
-            } else {
-                return JavassistFactory.typeUsageFor(ctMethod.getReturnType(), typeSolver);
-            }
-        } catch (NotFoundException | BadBytecode e) {
-            throw new RuntimeException(e);
-        }
+        return methodLikeAdaper.getReturnType();
     }
-
 
     @Override
     public int getNumberOfParams() {
-        try {
-            return ctMethod.getParameterTypes().length;
-        } catch (NotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        return methodLikeAdaper.getNumberOfParams();
     }
 
     @Override
     public ResolvedParameterDeclaration getParam(int i) {
-        try {
-            boolean variadic = false;
-            if ((ctMethod.getModifiers() & javassist.Modifier.VARARGS) > 0) {
-                variadic = i == (ctMethod.getParameterTypes().length - 1);
-            }
-            Optional<String> paramName = JavassistUtils.extractParameterName(ctMethod, i);
-            String signature = ctMethod.getGenericSignature() == null ? ctMethod.getSignature() : ctMethod.getGenericSignature();
-            SignatureAttribute.MethodSignature methodSignature = SignatureAttribute.toMethodSignature(signature);
-            SignatureAttribute.Type signatureType = methodSignature.getParameterTypes()[i];
-            return new JavassistParameterDeclaration(JavassistUtils.signatureTypeToType(signatureType,
-                    typeSolver, this), typeSolver, variadic, paramName.orElse(null));
-
-        } catch (NotFoundException | BadBytecode e) {
-            throw new RuntimeException(e);
-        }
+        return methodLikeAdaper.getParam(i);
     }
 
     public MethodUsage getUsage(Node node) {
         throw new UnsupportedOperationException();
     }
 
+    @Override
     public MethodUsage resolveTypeVariables(Context context, List<ResolvedType> parameterTypes) {
         return new MethodDeclarationCommonLogic(this, typeSolver).resolveTypeVariables(context, parameterTypes);
     }
@@ -156,15 +122,7 @@ public class JavassistMethodDeclaration implements ResolvedMethodDeclaration, Ty
 
     @Override
     public List<ResolvedTypeParameterDeclaration> getTypeParameters() {
-        try {
-            if (ctMethod.getGenericSignature() == null) {
-                return new ArrayList<>();
-            }
-            SignatureAttribute.MethodSignature methodSignature = SignatureAttribute.toMethodSignature(ctMethod.getGenericSignature());
-            return Arrays.stream(methodSignature.getTypeParameters()).map((jasTp) -> new JavassistTypeParameter(jasTp, this, typeSolver)).collect(Collectors.toList());
-        } catch (BadBytecode badBytecode) {
-            throw new RuntimeException(badBytecode);
-        }
+        return methodLikeAdaper.getTypeParameters();
     }
 
     @Override
@@ -174,28 +132,16 @@ public class JavassistMethodDeclaration implements ResolvedMethodDeclaration, Ty
 
     @Override
     public int getNumberOfSpecifiedExceptions() {
-        try {
-            return ctMethod.getExceptionTypes().length;
-        } catch (NotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        return methodLikeAdaper.getNumberOfSpecifiedExceptions();
     }
 
     @Override
     public ResolvedType getSpecifiedException(int index) {
-        if (index < 0 || index >= getNumberOfSpecifiedExceptions()) {
-            throw new IllegalArgumentException(String.format("No exception with index %d. Number of exceptions: %d",
-                    index, getNumberOfSpecifiedExceptions()));
-        }
-        try {
-            return JavassistFactory.typeUsageFor(ctMethod.getExceptionTypes()[index], typeSolver);
-        } catch (NotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        return methodLikeAdaper.getSpecifiedException(index);
     }
 
     @Override
-    public Optional<MethodDeclaration> toAst() {
-        return Optional.empty();
+    public String toDescriptor() {
+        return ctMethod.getMethodInfo().getDescriptor();
     }
 }

@@ -1,6 +1,30 @@
+/*
+ * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
+ *
+ * This file is part of JavaParser.
+ *
+ * JavaParser can be used either under the terms of
+ * a) the GNU Lesser General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ * b) the terms of the Apache License
+ *
+ * You should have received a copy of both licenses in LICENCE.LGPL and
+ * LICENCE.APACHE. Please refer to those files for details.
+ *
+ * JavaParser is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ */
 package com.github.javaparser.ast.modules;
 
+import static com.github.javaparser.utils.Utils.assertNotNull;
+
+import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.AllFieldsConstructor;
+import com.github.javaparser.ast.Generated;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.expr.Name;
@@ -9,16 +33,13 @@ import com.github.javaparser.ast.observer.ObservableProperty;
 import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
-import static com.github.javaparser.utils.Utils.assertNotNull;
-import com.github.javaparser.TokenRange;
-import java.util.function.Consumer;
-import java.util.Optional;
-import com.github.javaparser.metamodel.ModuleProvidesDirectiveMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
-import com.github.javaparser.ast.Generated;
+import com.github.javaparser.metamodel.ModuleProvidesDirectiveMetaModel;
+import java.util.Optional;
+import java.util.function.Consumer;
 
 /**
- * A provides directive in module-info.java. <code>provides X.Y with Z1.Z2, Z3.Z4;</code>
+ * A provides directive in module-info.java. {@code provides X.Y with Z1.Z2, Z3.Z4;}
  */
 public class ModuleProvidesDirective extends ModuleDirective implements NodeWithName<ModuleProvidesDirective> {
 
@@ -61,8 +82,9 @@ public class ModuleProvidesDirective extends ModuleDirective implements NodeWith
     @Override
     @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
     public boolean remove(Node node) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         for (int i = 0; i < with.size(); i++) {
             if (with.get(i) == node) {
                 with.remove(i);
@@ -110,11 +132,10 @@ public class ModuleProvidesDirective extends ModuleDirective implements NodeWith
     public ModuleProvidesDirective setName(final Name name) {
         assertNotNull(name);
         if (name == this.name) {
-            return (ModuleProvidesDirective) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.NAME, this.name, name);
-        if (this.name != null)
-            this.name.setParentNode(null);
+        if (this.name != null) this.name.setParentNode(null);
         this.name = name;
         setAsParentNodeOf(name);
         return this;
@@ -124,11 +145,10 @@ public class ModuleProvidesDirective extends ModuleDirective implements NodeWith
     public ModuleProvidesDirective setWith(final NodeList<Name> with) {
         assertNotNull(with);
         if (with == this.with) {
-            return (ModuleProvidesDirective) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.WITH, this.with, with);
-        if (this.with != null)
-            this.with.setParentNode(null);
+        if (this.with != null) this.with.setParentNode(null);
         this.with = with;
         setAsParentNodeOf(with);
         return this;
@@ -142,8 +162,9 @@ public class ModuleProvidesDirective extends ModuleDirective implements NodeWith
     @Override
     @Generated("com.github.javaparser.generator.core.node.ReplaceMethodGenerator")
     public boolean replace(Node node, Node replacementNode) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         if (node == name) {
             setName((Name) replacementNode);
             return true;
@@ -175,6 +196,7 @@ public class ModuleProvidesDirective extends ModuleDirective implements NodeWith
         return Optional.of(this);
     }
 
+    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public void ifModuleProvidesDirective(Consumer<ModuleProvidesDirective> action) {
         action.accept(this);

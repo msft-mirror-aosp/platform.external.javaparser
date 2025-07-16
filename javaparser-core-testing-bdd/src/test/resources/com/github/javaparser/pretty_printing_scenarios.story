@@ -48,9 +48,9 @@ Then it is printed as:
 class A {
 
     public void helloWorld(String greeting, String name) {
-    // sdfsdfsdf
-    // sdfds
-    /*
+        //sdfsdfsdf
+        //sdfds
+        /*
                             dgfdgfdgfdgfdgfd
          */
     }
@@ -72,7 +72,7 @@ public class StepImplementation {
 
     @Step("A step")
     public void contextStep() {
-    // Foo bar
+        // Foo bar
     }
 }
 
@@ -92,7 +92,7 @@ public class StepImplementation {
 
     public void contextStep() {
         for (int i = 0; i < 5; i++) {
-        // foo bar
+            // foo bar
         }
     }
 }
@@ -117,7 +117,7 @@ public class StepImplementation {
         for (int i = 0; i < 5; i++) {
             // foo bar
             System.out.println();
-        // another foo bar
+            // another foo bar
         }
     }
 }
@@ -193,14 +193,14 @@ package a.b.c;
 Scenario: we can parse blocks
 Given the block:
 {
-    a=2;
-    b=3;
+    a=2+1;
+    b=3+1;
 }
 When the block is parsed by the Java parser
 Then it is printed as:
 {
-    a = 2;
-    b = 3;
+    a = 2 + 1;
+    b = 3 + 1;
 }
 
 Scenario: we can parse statements
@@ -461,7 +461,7 @@ public class Abc<@C A, @C X extends @C String & @C Serializable> {
 
     @C
     public void a(@C int o) {
-    /*		try {
+        /*		try {
 			throw new IOException();
 		} catch (@C NullPointerException | @C IOException e) {
 		}

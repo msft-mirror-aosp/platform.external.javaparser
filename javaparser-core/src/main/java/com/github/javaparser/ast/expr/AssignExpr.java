@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -20,35 +20,35 @@
  */
 package com.github.javaparser.ast.expr;
 
+import static com.github.javaparser.utils.Utils.assertNotNull;
+
+import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.AllFieldsConstructor;
+import com.github.javaparser.ast.Generated;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.observer.ObservableProperty;
+import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
-import static com.github.javaparser.utils.Utils.assertNotNull;
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.metamodel.AssignExprMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
-import com.github.javaparser.printer.Printable;
-import com.github.javaparser.TokenRange;
-import java.util.function.Consumer;
+import com.github.javaparser.printer.Stringable;
 import java.util.Optional;
-import com.github.javaparser.ast.Generated;
+import java.util.function.Consumer;
 
 /**
- * An assignment expression. It supports the operators that are found the the AssignExpr.Operator enum.
- * <br/><code>a=5</code>
- * <br/><code>time+=500</code>
- * <br/><code>watch.time+=500</code>
- * <br/><code>(((time)))=100*60</code>
- * <br/><code>peanut[a]=true</code>
+ * An assignment expression. It supports the operators that are found the AssignExpr.Operator enum.
+ * <br>{@code a=5}
+ * <br>{@code time+=500}
+ * <br>{@code watch.time+=500}
+ * <br>{@code (((time)))=100*60}
+ * <br>{@code peanut[a]=true}
  *
  * @author Julio Vilmar Gesser
  */
 public class AssignExpr extends Expression {
 
-    public enum Operator implements Printable {
-
+    public enum Operator implements Stringable {
         ASSIGN("="),
         PLUS("+="),
         MINUS("-="),
@@ -73,7 +73,7 @@ public class AssignExpr extends Expression {
         }
 
         public Optional<BinaryExpr.Operator> toBinaryOperator() {
-            switch(this) {
+            switch (this) {
                 case PLUS:
                     return Optional.of(BinaryExpr.Operator.PLUS);
                 case MINUS:
@@ -160,7 +160,7 @@ public class AssignExpr extends Expression {
     public AssignExpr setOperator(final Operator operator) {
         assertNotNull(operator);
         if (operator == this.operator) {
-            return (AssignExpr) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.OPERATOR, this.operator, operator);
         this.operator = operator;
@@ -171,11 +171,10 @@ public class AssignExpr extends Expression {
     public AssignExpr setTarget(final Expression target) {
         assertNotNull(target);
         if (target == this.target) {
-            return (AssignExpr) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.TARGET, this.target, target);
-        if (this.target != null)
-            this.target.setParentNode(null);
+        if (this.target != null) this.target.setParentNode(null);
         this.target = target;
         setAsParentNodeOf(target);
         return this;
@@ -185,22 +184,13 @@ public class AssignExpr extends Expression {
     public AssignExpr setValue(final Expression value) {
         assertNotNull(value);
         if (value == this.value) {
-            return (AssignExpr) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.VALUE, this.value, value);
-        if (this.value != null)
-            this.value.setParentNode(null);
+        if (this.value != null) this.value.setParentNode(null);
         this.value = value;
         setAsParentNodeOf(value);
         return this;
-    }
-
-    @Override
-    @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
-    public boolean remove(Node node) {
-        if (node == null)
-            return false;
-        return super.remove(node);
     }
 
     @Override
@@ -218,8 +208,9 @@ public class AssignExpr extends Expression {
     @Override
     @Generated("com.github.javaparser.generator.core.node.ReplaceMethodGenerator")
     public boolean replace(Node node, Node replacementNode) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         if (node == target) {
             setTarget((Expression) replacementNode);
             return true;
@@ -243,6 +234,7 @@ public class AssignExpr extends Expression {
         return this;
     }
 
+    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public void ifAssignExpr(Consumer<AssignExpr> action) {
         action.accept(this);
@@ -252,5 +244,15 @@ public class AssignExpr extends Expression {
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public Optional<AssignExpr> toAssignExpr() {
         return Optional.of(this);
+    }
+
+    /*
+     * Returns true if the expression is an assignment context
+     * https://docs.oracle.com/javase/specs/jls/se8/html/jls-5.html#jls-5.2
+     * 5.2. Assignment Contexts: Assignment contexts allow the value of an expression to be assigned (§15.26) to a variable;...
+     */
+    @Override
+    protected boolean isAssignmentContext() {
+        return true;
     }
 }

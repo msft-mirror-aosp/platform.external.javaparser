@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -20,23 +20,22 @@
  */
 package com.github.javaparser.ast.expr;
 
+import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.AllFieldsConstructor;
+import com.github.javaparser.ast.Generated;
 import com.github.javaparser.ast.observer.ObservableProperty;
+import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.metamodel.BooleanLiteralExprMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
-import com.github.javaparser.TokenRange;
-import java.util.function.Consumer;
 import java.util.Optional;
-import com.github.javaparser.ast.Generated;
+import java.util.function.Consumer;
 
 /**
  * The boolean literals.
- * <br/><code>true</code>
- * <br/><code>false</code>
+ * <br>{@code true}
+ * <br>{@code false}
  *
  * @author Julio Vilmar Gesser
  */
@@ -75,27 +74,27 @@ public class BooleanLiteralExpr extends LiteralExpr {
         v.visit(this, arg);
     }
 
+    /**
+     * The code generator likes to generate an "is" getter for boolean, so this here is the generated version,
+     * but "getValue" does the same and makes more sense.
+     */
     @Generated("com.github.javaparser.generator.core.node.PropertyGenerator")
-    public boolean getValue() {
+    public boolean isValue() {
         return value;
+    }
+
+    public boolean getValue() {
+        return isValue();
     }
 
     @Generated("com.github.javaparser.generator.core.node.PropertyGenerator")
     public BooleanLiteralExpr setValue(final boolean value) {
         if (value == this.value) {
-            return (BooleanLiteralExpr) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.VALUE, this.value, value);
         this.value = value;
         return this;
-    }
-
-    @Override
-    @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
-    public boolean remove(Node node) {
-        if (node == null)
-            return false;
-        return super.remove(node);
     }
 
     @Override
@@ -111,14 +110,6 @@ public class BooleanLiteralExpr extends LiteralExpr {
     }
 
     @Override
-    @Generated("com.github.javaparser.generator.core.node.ReplaceMethodGenerator")
-    public boolean replace(Node node, Node replacementNode) {
-        if (node == null)
-            return false;
-        return super.replace(node, replacementNode);
-    }
-
-    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public boolean isBooleanLiteralExpr() {
         return true;
@@ -130,6 +121,7 @@ public class BooleanLiteralExpr extends LiteralExpr {
         return this;
     }
 
+    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public void ifBooleanLiteralExpr(Consumer<BooleanLiteralExpr> action) {
         action.accept(this);

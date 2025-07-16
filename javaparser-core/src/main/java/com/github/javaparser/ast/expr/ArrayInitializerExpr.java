@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -20,26 +20,27 @@
  */
 package com.github.javaparser.ast.expr;
 
+import static com.github.javaparser.utils.Utils.assertNotNull;
+
+import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.AllFieldsConstructor;
+import com.github.javaparser.ast.Generated;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.observer.ObservableProperty;
+import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
-import static com.github.javaparser.utils.Utils.assertNotNull;
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.metamodel.ArrayInitializerExprMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
-import com.github.javaparser.TokenRange;
-import java.util.function.Consumer;
 import java.util.Optional;
-import com.github.javaparser.ast.Generated;
+import java.util.function.Consumer;
 
 /**
  * The initialization of an array. In the following sample, the outer { } is an ArrayInitializerExpr.
  * It has two expressions inside: two ArrayInitializerExprs.
  * These have two expressions each, one has 1 and 1, the other two and two.
- * <br/><code>new int[][]{{1, 1}, {2, 2}};</code>
+ * <br>{@code new int[][]{{1, 1}, {2, 2}};}
  *
  * @author Julio Vilmar Gesser
  */
@@ -87,11 +88,10 @@ public class ArrayInitializerExpr extends Expression {
     public ArrayInitializerExpr setValues(final NodeList<Expression> values) {
         assertNotNull(values);
         if (values == this.values) {
-            return (ArrayInitializerExpr) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.VALUES, this.values, values);
-        if (this.values != null)
-            this.values.setParentNode(null);
+        if (this.values != null) this.values.setParentNode(null);
         this.values = values;
         setAsParentNodeOf(values);
         return this;
@@ -100,8 +100,9 @@ public class ArrayInitializerExpr extends Expression {
     @Override
     @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
     public boolean remove(Node node) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         for (int i = 0; i < values.size(); i++) {
             if (values.get(i) == node) {
                 values.remove(i);
@@ -126,8 +127,9 @@ public class ArrayInitializerExpr extends Expression {
     @Override
     @Generated("com.github.javaparser.generator.core.node.ReplaceMethodGenerator")
     public boolean replace(Node node, Node replacementNode) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         for (int i = 0; i < values.size(); i++) {
             if (values.get(i) == node) {
                 values.set(i, (Expression) replacementNode);
@@ -149,6 +151,7 @@ public class ArrayInitializerExpr extends Expression {
         return this;
     }
 
+    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public void ifArrayInitializerExpr(Consumer<ArrayInitializerExpr> action) {
         action.accept(this);

@@ -1,31 +1,35 @@
 /*
- * Copyright 2016 Federico Tomassetti
+ * Copyright (C) 2015-2016 Federico Tomassetti
+ * Copyright (C) 2017-2024 The JavaParser Team.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This file is part of JavaParser.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * JavaParser can be used either under the terms of
+ * a) the GNU Lesser General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ * b) the terms of the Apache License
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * You should have received a copy of both licenses in LICENCE.LGPL and
+ * LICENCE.APACHE. Please refer to those files for details.
+ *
+ * JavaParser is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  */
 
 package com.github.javaparser.symbolsolver.declarations.common;
 
+import com.github.javaparser.resolution.Context;
 import com.github.javaparser.resolution.MethodUsage;
+import com.github.javaparser.resolution.TypeSolver;
 import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
+import com.github.javaparser.resolution.declarations.ResolvedParameterDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedTypeParameterDeclaration;
+import com.github.javaparser.resolution.logic.InferenceContext;
 import com.github.javaparser.resolution.types.ResolvedType;
 import com.github.javaparser.resolution.types.ResolvedTypeVariable;
-import com.github.javaparser.symbolsolver.core.resolution.Context;
-import com.github.javaparser.symbolsolver.logic.InferenceContext;
-import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
-import com.github.javaparser.symbolsolver.reflectionmodel.MyObjectProvider;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -47,17 +51,30 @@ public class MethodDeclarationCommonLogic {
         ResolvedType returnType = replaceTypeParams(methodDeclaration.getReturnType(), context);
         List<ResolvedType> params = new ArrayList<>();
         for (int i = 0; i < methodDeclaration.getNumberOfParams(); i++) {
-            ResolvedType replaced = replaceTypeParams(methodDeclaration.getParam(i).getType(), context);
+            ResolvedType replaced =
+                    replaceTypeParams(methodDeclaration.getParam(i).getType(), context);
             params.add(replaced);
         }
 
         // We now look at the type parameter for the method which we can derive from the parameter types
         // and then we replace them in the return type
         // Map<TypeParameterDeclaration, Type> determinedTypeParameters = new HashMap<>();
-        InferenceContext inferenceContext = new InferenceContext(MyObjectProvider.INSTANCE);
-        for (int i = 0; i < methodDeclaration.getNumberOfParams() - (methodDeclaration.hasVariadicParameter() ? 1 : 0); i++) {
-            ResolvedType formalParamType = methodDeclaration.getParam(i).getType();
+        InferenceContext inferenceContext = new InferenceContext(typeSolver);
+        for (int i = 0; i < methodDeclaration.getNumberOfParams(); i++) {
+            ResolvedParameterDeclaration formalParamDecl = methodDeclaration.getParam(i);
+            ResolvedType formalParamType = formalParamDecl.getType();
+
+            // Don't continue if a vararg parameter is reached and there are no arguments left
+            if (formalParamDecl.isVariadic() && parameterTypes.size() < methodDeclaration.getNumberOfParams()) {
+                break;
+            }
+
             ResolvedType actualParamType = parameterTypes.get(i);
+
+            if (formalParamDecl.isVariadic() && !actualParamType.isArray()) {
+                formalParamType = formalParamType.asArrayType().getComponentType();
+            }
+
             inferenceContext.addPair(formalParamType, actualParamType);
         }
 
@@ -85,7 +102,10 @@ public class MethodDeclarationCommonLogic {
     }
 
     protected Optional<ResolvedType> typeParamByName(String name, Context context) {
-        return methodDeclaration.getTypeParameters().stream().filter(tp -> tp.getName().equals(name)).map(tp -> toType(tp)).findFirst();
+        return methodDeclaration.getTypeParameters().stream()
+                .filter(tp -> tp.getName().equals(name))
+                .map(tp -> toType(tp))
+                .findFirst();
     }
 
     protected ResolvedType toType(ResolvedTypeParameterDeclaration typeParameterDeclaration) {

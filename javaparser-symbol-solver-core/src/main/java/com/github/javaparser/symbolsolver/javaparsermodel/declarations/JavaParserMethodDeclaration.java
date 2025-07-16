@@ -1,44 +1,48 @@
 /*
- * Copyright 2016 Federico Tomassetti
+ * Copyright (C) 2015-2016 Federico Tomassetti
+ * Copyright (C) 2017-2024 The JavaParser Team.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This file is part of JavaParser.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * JavaParser can be used either under the terms of
+ * a) the GNU Lesser General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ * b) the terms of the Apache License
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * You should have received a copy of both licenses in LICENCE.LGPL and
+ * LICENCE.APACHE. Please refer to those files for details.
+ *
+ * JavaParser is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  */
 
 package com.github.javaparser.symbolsolver.javaparsermodel.declarations;
 
+import static com.github.javaparser.resolution.Navigator.demandParentNode;
+
 import com.github.javaparser.ast.AccessSpecifier;
-import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.expr.ObjectCreationExpr;
+import com.github.javaparser.resolution.Context;
 import com.github.javaparser.resolution.MethodUsage;
+import com.github.javaparser.resolution.SymbolResolver;
+import com.github.javaparser.resolution.TypeSolver;
 import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedParameterDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedTypeParameterDeclaration;
 import com.github.javaparser.resolution.types.ResolvedType;
-import com.github.javaparser.symbolsolver.core.resolution.Context;
+import com.github.javaparser.symbolsolver.JavaSymbolSolver;
 import com.github.javaparser.symbolsolver.core.resolution.TypeVariableResolutionCapability;
 import com.github.javaparser.symbolsolver.declarations.common.MethodDeclarationCommonLogic;
 import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFacade;
 import com.github.javaparser.symbolsolver.javaparsermodel.JavaParserFactory;
-import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
-
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
-
-import static com.github.javaparser.symbolsolver.javaparser.Navigator.requireParentNode;
 
 /**
  * @author Federico Tomassetti
@@ -48,26 +52,32 @@ public class JavaParserMethodDeclaration implements ResolvedMethodDeclaration, T
     private com.github.javaparser.ast.body.MethodDeclaration wrappedNode;
     private TypeSolver typeSolver;
 
-    public JavaParserMethodDeclaration(com.github.javaparser.ast.body.MethodDeclaration wrappedNode, TypeSolver typeSolver) {
+    public JavaParserMethodDeclaration(
+            com.github.javaparser.ast.body.MethodDeclaration wrappedNode, TypeSolver typeSolver) {
         this.wrappedNode = wrappedNode;
         this.typeSolver = typeSolver;
     }
 
     @Override
     public String toString() {
-        return "JavaParserMethodDeclaration{" +
-                "wrappedNode=" + wrappedNode +
-                ", typeSolver=" + typeSolver +
-                '}';
+        return "JavaParserMethodDeclaration{" + "wrappedNode=" + wrappedNode + ", typeSolver=" + typeSolver + '}';
     }
 
     @Override
     public ResolvedReferenceTypeDeclaration declaringType() {
-        if (requireParentNode(wrappedNode) instanceof ObjectCreationExpr) {
-            ObjectCreationExpr parentNode = (ObjectCreationExpr) requireParentNode(wrappedNode);
+        if (demandParentNode(wrappedNode) instanceof ObjectCreationExpr) {
+            ObjectCreationExpr parentNode = (ObjectCreationExpr) demandParentNode(wrappedNode);
             return new JavaParserAnonymousClassDeclaration(parentNode, typeSolver);
         }
-        return JavaParserFactory.toTypeDeclaration(requireParentNode(wrappedNode), typeSolver);
+        // TODO Fix: to use getSymbolResolver() we have to fix many unit tests
+        // that throw IllegalStateException("Symbol resolution not configured: to configure consider setting a
+        // SymbolResolver in the ParserConfiguration"
+        // return wrappedNode.getSymbolResolver().toTypeDeclaration(wrappedNode);
+        return symbolResolver(typeSolver).toTypeDeclaration(demandParentNode(wrappedNode));
+    }
+
+    private SymbolResolver symbolResolver(TypeSolver typeSolver) {
+        return new JavaSymbolSolver(typeSolver);
     }
 
     @Override
@@ -83,7 +93,8 @@ public class JavaParserMethodDeclaration implements ResolvedMethodDeclaration, T
     @Override
     public ResolvedParameterDeclaration getParam(int i) {
         if (i < 0 || i >= getNumberOfParams()) {
-            throw new IllegalArgumentException(String.format("No param with index %d. Number of params: %d", i, getNumberOfParams()));
+            throw new IllegalArgumentException(
+                    String.format("No param with index %d. Number of params: %d", i, getNumberOfParams()));
         }
         return new JavaParserParameterDeclaration(wrappedNode.getParameters().get(i), typeSolver);
     }
@@ -111,23 +122,10 @@ public class JavaParserMethodDeclaration implements ResolvedMethodDeclaration, T
     }
 
     @Override
-    public boolean isField() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean isParameter() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public boolean isType() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public List<ResolvedTypeParameterDeclaration> getTypeParameters() {
-        return this.wrappedNode.getTypeParameters().stream().map((astTp) -> new JavaParserTypeParameter(astTp, typeSolver)).collect(Collectors.toList());
+        return this.wrappedNode.getTypeParameters().stream()
+                .map((astTp) -> new JavaParserTypeParameter(astTp, typeSolver))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -162,15 +160,20 @@ public class JavaParserMethodDeclaration implements ResolvedMethodDeclaration, T
     @Override
     public ResolvedType getSpecifiedException(int index) {
         if (index < 0 || index >= getNumberOfSpecifiedExceptions()) {
-            throw new IllegalArgumentException(String.format("No exception with index %d. Number of exceptions: %d",
-                    index, getNumberOfSpecifiedExceptions()));
+            throw new IllegalArgumentException(String.format(
+                    "No exception with index %d. Number of exceptions: %d", index, getNumberOfSpecifiedExceptions()));
         }
-        return JavaParserFacade.get(typeSolver).convert(wrappedNode.getThrownExceptions()
-                .get(index), wrappedNode);
+        return JavaParserFacade.get(typeSolver)
+                .convert(wrappedNode.getThrownExceptions().get(index), wrappedNode);
     }
 
     @Override
-    public Optional<MethodDeclaration> toAst() {
+    public Optional<Node> toAst() {
         return Optional.of(wrappedNode);
+    }
+
+    @Override
+    public String toDescriptor() {
+        return wrappedNode.toDescriptor();
     }
 }

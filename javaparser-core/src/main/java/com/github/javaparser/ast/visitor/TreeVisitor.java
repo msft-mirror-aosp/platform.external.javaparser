@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -18,11 +18,9 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  */
-
 package com.github.javaparser.ast.visitor;
 
 import com.github.javaparser.ast.Node;
-
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
@@ -46,7 +44,7 @@ public abstract class TreeVisitor {
      * is called for further processing.
      *
      * @param node The node at which the traversal begins.
-     * @see <a href="https://en.wikipedia.org/wiki/Pre-order">Pre-order traversal</a>
+     * @see <a href="https://en.wikipedia.org/wiki/Depth-first_search#Vertex_orderings">Pre-order traversal</a>
      */
     public void visitPreOrder(Node node) {
         process(node);
@@ -58,7 +56,7 @@ public abstract class TreeVisitor {
      * #process(Node)} is called for further processing.
      *
      * @param node The node at which the traversal begins.
-     * @see <a href="https://en.wikipedia.org/wiki/Post-order">Post-order traversal</a>
+     * @see <a href="https://en.wikipedia.org/wiki/Depth-first_search#Vertex_orderings">Post-order traversal</a>
      */
     public void visitPostOrder(Node node) {
         new ArrayList<>(node.getChildNodes()).forEach(this::visitPostOrder);

@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -20,26 +20,27 @@
  */
 package com.github.javaparser.ast.stmt;
 
+import static com.github.javaparser.utils.Utils.assertNotNull;
+
+import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.AllFieldsConstructor;
+import com.github.javaparser.ast.Generated;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.expr.BooleanLiteralExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.observer.ObservableProperty;
+import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
-import java.util.Optional;
-import static com.github.javaparser.utils.Utils.assertNotNull;
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.metamodel.AssertStmtMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
-import com.github.javaparser.TokenRange;
 import com.github.javaparser.metamodel.OptionalProperty;
+import java.util.Optional;
 import java.util.function.Consumer;
-import com.github.javaparser.ast.Generated;
 
 /**
  * A usage of the keyword "assert"
- * <br/>In <code>assert dead : "Wasn't expecting to be dead here";</code> the check is "dead" and the message is the string.
+ * <br>In {@code assert dead : "Wasn't expecting to be dead here";} the check is "dead" and the message is the string.
  * @author Julio Vilmar Gesser
  */
 public class AssertStmt extends Statement {
@@ -99,11 +100,10 @@ public class AssertStmt extends Statement {
     public AssertStmt setCheck(final Expression check) {
         assertNotNull(check);
         if (check == this.check) {
-            return (AssertStmt) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.CHECK, this.check, check);
-        if (this.check != null)
-            this.check.setParentNode(null);
+        if (this.check != null) this.check.setParentNode(null);
         this.check = check;
         setAsParentNodeOf(check);
         return this;
@@ -118,11 +118,10 @@ public class AssertStmt extends Statement {
     @Generated("com.github.javaparser.generator.core.node.PropertyGenerator")
     public AssertStmt setMessage(final Expression message) {
         if (message == this.message) {
-            return (AssertStmt) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.MESSAGE, this.message, message);
-        if (this.message != null)
-            this.message.setParentNode(null);
+        if (this.message != null) this.message.setParentNode(null);
         this.message = message;
         setAsParentNodeOf(message);
         return this;
@@ -131,8 +130,9 @@ public class AssertStmt extends Statement {
     @Override
     @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
     public boolean remove(Node node) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         if (message != null) {
             if (node == message) {
                 removeMessage();
@@ -162,8 +162,9 @@ public class AssertStmt extends Statement {
     @Override
     @Generated("com.github.javaparser.generator.core.node.ReplaceMethodGenerator")
     public boolean replace(Node node, Node replacementNode) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         if (node == check) {
             setCheck((Expression) replacementNode);
             return true;
@@ -189,6 +190,7 @@ public class AssertStmt extends Statement {
         return this;
     }
 
+    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public void ifAssertStmt(Consumer<AssertStmt> action) {
         action.accept(this);

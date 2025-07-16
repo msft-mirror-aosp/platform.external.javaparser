@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -18,7 +18,6 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  */
-
 package com.github.javaparser.ast;
 
 import com.github.javaparser.HasParentNode;
@@ -28,9 +27,10 @@ import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.Visitable;
 import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.github.javaparser.metamodel.InternalProperty;
-
 import java.util.*;
-import java.util.function.*;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,13 +44,15 @@ import java.util.stream.Stream;
  *
  * @param <N> the type of nodes contained.
  */
-public class NodeList<N extends Node> implements List<N>, Iterable<N>, HasParentNode<NodeList<N>>, Visitable, Observable {
+public class NodeList<N extends Node>
+        implements List<N>, Iterable<N>, HasParentNode<NodeList<N>>, Visitable, Observable {
+
     @InternalProperty
-    private List<N> innerList = new ArrayList<>(0);
+    private final List<N> innerList = new ArrayList<>(0);
 
     private Node parentNode;
 
-    private List<AstObserver> observers = new ArrayList<>();
+    private final List<AstObserver> observers = new ArrayList<>();
 
     public NodeList() {
         parentNode = null;
@@ -131,8 +133,8 @@ public class NodeList<N extends Node> implements List<N>, Iterable<N>, HasParent
 
     @Override
     public Iterator<N> iterator() {
-        // TODO take care of "Iterator.remove"
-        return innerList.iterator();
+        // Custom iterator required, to ensure that the relevant `notifyElement...` methods are called.
+        return new NodeListIterator(innerList);
     }
 
     @Override
@@ -154,8 +156,7 @@ public class NodeList<N extends Node> implements List<N>, Iterable<N>, HasParent
     public N remove(int index) {
         notifyElementRemoved(index, innerList.get(index));
         N remove = innerList.remove(index);
-        if (remove != null)
-            remove.setParentNode(null);
+        if (remove != null) remove.setParentNode(null);
         return remove;
     }
 
@@ -224,10 +225,33 @@ public class NodeList<N extends Node> implements List<N>, Iterable<N>, HasParent
         return this;
     }
 
-
     @Override
     public Optional<Node> getParentNode() {
         return Optional.ofNullable(parentNode);
+    }
+
+    /**
+     * @return the first node, or throw if the list is empty.
+     *
+     * @throws NoSuchElementException
+     */
+    public N getFirst() {
+        if (isEmpty()) {
+            throw new NoSuchElementException();
+        }
+        return get(0);
+    }
+
+    /**
+     * @return the last node, or throw if the list is empty.
+     *
+     * @throws NoSuchElementException
+     */
+    public N getLast() {
+        if (isEmpty()) {
+            throw new NoSuchElementException();
+        }
+        return get(size() - 1);
     }
 
     /**
@@ -297,9 +321,8 @@ public class NodeList<N extends Node> implements List<N>, Iterable<N>, HasParent
     public boolean remove(Object o) {
         if (o instanceof Node) {
             return remove((Node) o);
-        } else {
-            return false;
         }
+        return false;
     }
 
     /**
@@ -425,7 +448,8 @@ public class NodeList<N extends Node> implements List<N>, Iterable<N>, HasParent
      */
     @Override
     public ListIterator<N> listIterator() {
-        return innerList.listIterator();
+        // Custom iterator required, to ensure that the relevant `notifyElement...` methods are called.
+        return new NodeListIterator(innerList);
     }
 
     /**
@@ -433,7 +457,8 @@ public class NodeList<N extends Node> implements List<N>, Iterable<N>, HasParent
      */
     @Override
     public ListIterator<N> listIterator(int index) {
-        return innerList.listIterator(index);
+        // Custom iterator required, to ensure that the relevant `notifyElement...` methods are called.
+        return new NodeListIterator(innerList, index);
     }
 
     /**
@@ -479,7 +504,7 @@ public class NodeList<N extends Node> implements List<N>, Iterable<N>, HasParent
 
     @Override
     public void register(AstObserver observer) {
-        if(!this.observers.contains(observer)) {
+        if (!this.observers.contains(observer)) {
             this.observers.add(observer);
         }
     }
@@ -511,8 +536,7 @@ public class NodeList<N extends Node> implements List<N>, Iterable<N>, HasParent
     }
 
     public void ifNonEmpty(Consumer<? super NodeList<N>> consumer) {
-        if (isNonEmpty())
-            consumer.accept(this);
+        if (isNonEmpty()) consumer.accept(this);
     }
 
     public static <T extends Node> Collector<T, NodeList<T>, NodeList<T>> toNodeList() {
@@ -539,5 +563,90 @@ public class NodeList<N extends Node> implements List<N>, Iterable<N>, HasParent
     @Override
     public String toString() {
         return innerList.stream().map(Node::toString).collect(Collectors.joining(", ", "[", "]"));
+    }
+
+    protected class NodeListIterator implements ListIterator<N> {
+
+        ListIterator<N> iterator;
+
+        N current = null;
+
+        // initialize pointer to head of the list for iteration
+        public NodeListIterator(List<N> list) {
+            iterator = list.listIterator();
+        }
+
+        public NodeListIterator(List<N> list, int index) {
+            iterator = list.listIterator(index);
+        }
+
+        @Override
+        public boolean hasNext() {
+            return iterator.hasNext();
+        }
+
+        @Override
+        public N next() {
+            current = iterator.next();
+            return current;
+        }
+
+        @Override
+        public boolean hasPrevious() {
+            return iterator.hasPrevious();
+        }
+
+        @Override
+        public N previous() {
+            current = iterator.previous();
+            return current;
+        }
+
+        @Override
+        public int nextIndex() {
+            return iterator.nextIndex();
+        }
+
+        @Override
+        public int previousIndex() {
+            return iterator.previousIndex();
+        }
+
+        @Override
+        public void remove() {
+            int index = innerList.indexOf(current);
+            if (index != -1) {
+                notifyElementRemoved(index, current);
+                current.setParentNode(null);
+            }
+            iterator.remove();
+        }
+
+        @Override
+        public void set(N n) {
+            int index = innerList.indexOf(current);
+            if (index < 0 || index >= innerList.size()) {
+                throw new IllegalArgumentException("Illegal index. The index should be between 0 and "
+                        + innerList.size() + " excluded. It is instead " + index);
+            }
+            if (n != innerList.get(index)) {
+                notifyElementReplaced(index, n);
+                innerList.get(index).setParentNode(null);
+                setAsParentNodeOf(n);
+                iterator.set(n);
+            }
+        }
+
+        @Override
+        public void add(N n) {
+            notifyElementAdded(innerList.size(), n);
+            own(n);
+            iterator.add(n);
+        }
+
+        @Override
+        public void forEachRemaining(Consumer<? super N> action) {
+            iterator.forEachRemaining(action);
+        }
     }
 }

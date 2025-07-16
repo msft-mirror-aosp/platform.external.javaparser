@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -20,11 +20,10 @@
  */
 package com.github.javaparser.ast.body;
 
+import static com.github.javaparser.utils.Utils.assertNotNull;
+
 import com.github.javaparser.TokenRange;
-import com.github.javaparser.ast.AllFieldsConstructor;
-import com.github.javaparser.ast.Modifier;
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.NodeList;
+import com.github.javaparser.ast.*;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.expr.SimpleName;
@@ -46,18 +45,22 @@ import com.github.javaparser.resolution.Resolvable;
 import com.github.javaparser.resolution.declarations.ResolvedAnnotationMemberDeclaration;
 import java.util.Optional;
 import java.util.function.Consumer;
-import static com.github.javaparser.utils.Utils.assertNotNull;
-import com.github.javaparser.ast.Generated;
 
 /**
- * The "int id();" in <code>@interface X { int id(); }</code>
+ * The "int id();" in {@code @interface X { int id(); }}
  * <p>
- * <br/>All annotations preceding the type will be set on this object, not on the type. JavaParser doesn't know if it
+ * <br>All annotations preceding the type will be set on this object, not on the type. JavaParser doesn't know if it
  * they are applicable to the method or the type.
  *
  * @author Julio Vilmar Gesser
  */
-public class AnnotationMemberDeclaration extends BodyDeclaration<AnnotationMemberDeclaration> implements NodeWithJavadoc<AnnotationMemberDeclaration>, NodeWithSimpleName<AnnotationMemberDeclaration>, NodeWithType<AnnotationMemberDeclaration, Type>, NodeWithPublicModifier<AnnotationMemberDeclaration>, NodeWithAbstractModifier<AnnotationMemberDeclaration>, Resolvable<ResolvedAnnotationMemberDeclaration> {
+public class AnnotationMemberDeclaration extends BodyDeclaration<AnnotationMemberDeclaration>
+        implements NodeWithJavadoc<AnnotationMemberDeclaration>,
+                NodeWithSimpleName<AnnotationMemberDeclaration>,
+                NodeWithType<AnnotationMemberDeclaration, Type>,
+                NodeWithPublicModifier<AnnotationMemberDeclaration>,
+                NodeWithAbstractModifier<AnnotationMemberDeclaration>,
+                Resolvable<ResolvedAnnotationMemberDeclaration> {
 
     private NodeList<Modifier> modifiers;
 
@@ -77,7 +80,12 @@ public class AnnotationMemberDeclaration extends BodyDeclaration<AnnotationMembe
     }
 
     @AllFieldsConstructor
-    public AnnotationMemberDeclaration(NodeList<Modifier> modifiers, NodeList<AnnotationExpr> annotations, Type type, SimpleName name, Expression defaultValue) {
+    public AnnotationMemberDeclaration(
+            NodeList<Modifier> modifiers,
+            NodeList<AnnotationExpr> annotations,
+            Type type,
+            SimpleName name,
+            Expression defaultValue) {
         this(null, modifiers, annotations, type, name, defaultValue);
     }
 
@@ -85,7 +93,13 @@ public class AnnotationMemberDeclaration extends BodyDeclaration<AnnotationMembe
      * This constructor is used by the parser and is considered private.
      */
     @Generated("com.github.javaparser.generator.core.node.MainConstructorGenerator")
-    public AnnotationMemberDeclaration(TokenRange tokenRange, NodeList<Modifier> modifiers, NodeList<AnnotationExpr> annotations, Type type, SimpleName name, Expression defaultValue) {
+    public AnnotationMemberDeclaration(
+            TokenRange tokenRange,
+            NodeList<Modifier> modifiers,
+            NodeList<AnnotationExpr> annotations,
+            Type type,
+            SimpleName name,
+            Expression defaultValue) {
         super(tokenRange, annotations);
         setModifiers(modifiers);
         setType(type);
@@ -146,11 +160,10 @@ public class AnnotationMemberDeclaration extends BodyDeclaration<AnnotationMembe
     @Generated("com.github.javaparser.generator.core.node.PropertyGenerator")
     public AnnotationMemberDeclaration setDefaultValue(final Expression defaultValue) {
         if (defaultValue == this.defaultValue) {
-            return (AnnotationMemberDeclaration) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.DEFAULT_VALUE, this.defaultValue, defaultValue);
-        if (this.defaultValue != null)
-            this.defaultValue.setParentNode(null);
+        if (this.defaultValue != null) this.defaultValue.setParentNode(null);
         this.defaultValue = defaultValue;
         setAsParentNodeOf(defaultValue);
         return this;
@@ -160,11 +173,10 @@ public class AnnotationMemberDeclaration extends BodyDeclaration<AnnotationMembe
     public AnnotationMemberDeclaration setModifiers(final NodeList<Modifier> modifiers) {
         assertNotNull(modifiers);
         if (modifiers == this.modifiers) {
-            return (AnnotationMemberDeclaration) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.MODIFIERS, this.modifiers, modifiers);
-        if (this.modifiers != null)
-            this.modifiers.setParentNode(null);
+        if (this.modifiers != null) this.modifiers.setParentNode(null);
         this.modifiers = modifiers;
         setAsParentNodeOf(modifiers);
         return this;
@@ -174,11 +186,10 @@ public class AnnotationMemberDeclaration extends BodyDeclaration<AnnotationMembe
     public AnnotationMemberDeclaration setName(final SimpleName name) {
         assertNotNull(name);
         if (name == this.name) {
-            return (AnnotationMemberDeclaration) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.NAME, this.name, name);
-        if (this.name != null)
-            this.name.setParentNode(null);
+        if (this.name != null) this.name.setParentNode(null);
         this.name = name;
         setAsParentNodeOf(name);
         return this;
@@ -188,11 +199,10 @@ public class AnnotationMemberDeclaration extends BodyDeclaration<AnnotationMembe
     public AnnotationMemberDeclaration setType(final Type type) {
         assertNotNull(type);
         if (type == this.type) {
-            return (AnnotationMemberDeclaration) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.TYPE, this.type, type);
-        if (this.type != null)
-            this.type.setParentNode(null);
+        if (this.type != null) this.type.setParentNode(null);
         this.type = type;
         setAsParentNodeOf(type);
         return this;
@@ -201,8 +211,9 @@ public class AnnotationMemberDeclaration extends BodyDeclaration<AnnotationMembe
     @Override
     @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
     public boolean remove(Node node) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         if (defaultValue != null) {
             if (node == defaultValue) {
                 removeDefaultValue();
@@ -233,8 +244,9 @@ public class AnnotationMemberDeclaration extends BodyDeclaration<AnnotationMembe
     @Override
     @Generated("com.github.javaparser.generator.core.node.ReplaceMethodGenerator")
     public boolean replace(Node node, Node replacementNode) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         if (defaultValue != null) {
             if (node == defaultValue) {
                 setDefaultValue((Expression) replacementNode);
@@ -270,6 +282,7 @@ public class AnnotationMemberDeclaration extends BodyDeclaration<AnnotationMembe
         return this;
     }
 
+    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public void ifAnnotationMemberDeclaration(Consumer<AnnotationMemberDeclaration> action) {
         action.accept(this);

@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -20,8 +20,11 @@
  */
 package com.github.javaparser.ast.stmt;
 
+import static com.github.javaparser.utils.Utils.assertNotNull;
+
 import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.AllFieldsConstructor;
+import com.github.javaparser.ast.Generated;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.expr.Expression;
@@ -33,9 +36,7 @@ import com.github.javaparser.metamodel.JavaParserMetaModel;
 import com.github.javaparser.metamodel.OptionalProperty;
 import com.github.javaparser.metamodel.TryStmtMetaModel;
 import java.util.Optional;
-import static com.github.javaparser.utils.Utils.assertNotNull;
 import java.util.function.Consumer;
-import com.github.javaparser.ast.Generated;
 
 /**
  * <h1>The try statement</h1>
@@ -112,7 +113,11 @@ public class TryStmt extends Statement {
     }
 
     @AllFieldsConstructor
-    public TryStmt(NodeList<Expression> resources, final BlockStmt tryBlock, final NodeList<CatchClause> catchClauses, final BlockStmt finallyBlock) {
+    public TryStmt(
+            NodeList<Expression> resources,
+            final BlockStmt tryBlock,
+            final NodeList<CatchClause> catchClauses,
+            final BlockStmt finallyBlock) {
         this(null, resources, tryBlock, catchClauses, finallyBlock);
     }
 
@@ -120,7 +125,12 @@ public class TryStmt extends Statement {
      * This constructor is used by the parser and is considered private.
      */
     @Generated("com.github.javaparser.generator.core.node.MainConstructorGenerator")
-    public TryStmt(TokenRange tokenRange, NodeList<Expression> resources, BlockStmt tryBlock, NodeList<CatchClause> catchClauses, BlockStmt finallyBlock) {
+    public TryStmt(
+            TokenRange tokenRange,
+            NodeList<Expression> resources,
+            BlockStmt tryBlock,
+            NodeList<CatchClause> catchClauses,
+            BlockStmt finallyBlock) {
         super(tokenRange);
         setResources(resources);
         setTryBlock(tryBlock);
@@ -165,11 +175,10 @@ public class TryStmt extends Statement {
     public TryStmt setCatchClauses(final NodeList<CatchClause> catchClauses) {
         assertNotNull(catchClauses);
         if (catchClauses == this.catchClauses) {
-            return (TryStmt) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.CATCH_CLAUSES, this.catchClauses, catchClauses);
-        if (this.catchClauses != null)
-            this.catchClauses.setParentNode(null);
+        if (this.catchClauses != null) this.catchClauses.setParentNode(null);
         this.catchClauses = catchClauses;
         setAsParentNodeOf(catchClauses);
         return this;
@@ -178,11 +187,10 @@ public class TryStmt extends Statement {
     @Generated("com.github.javaparser.generator.core.node.PropertyGenerator")
     public TryStmt setFinallyBlock(final BlockStmt finallyBlock) {
         if (finallyBlock == this.finallyBlock) {
-            return (TryStmt) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.FINALLY_BLOCK, this.finallyBlock, finallyBlock);
-        if (this.finallyBlock != null)
-            this.finallyBlock.setParentNode(null);
+        if (this.finallyBlock != null) this.finallyBlock.setParentNode(null);
         this.finallyBlock = finallyBlock;
         setAsParentNodeOf(finallyBlock);
         return this;
@@ -192,11 +200,10 @@ public class TryStmt extends Statement {
     public TryStmt setTryBlock(final BlockStmt tryBlock) {
         assertNotNull(tryBlock);
         if (tryBlock == this.tryBlock) {
-            return (TryStmt) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.TRY_BLOCK, this.tryBlock, tryBlock);
-        if (this.tryBlock != null)
-            this.tryBlock.setParentNode(null);
+        if (this.tryBlock != null) this.tryBlock.setParentNode(null);
         this.tryBlock = tryBlock;
         setAsParentNodeOf(tryBlock);
         return this;
@@ -206,11 +213,10 @@ public class TryStmt extends Statement {
     public TryStmt setResources(final NodeList<Expression> resources) {
         assertNotNull(resources);
         if (resources == this.resources) {
-            return (TryStmt) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.RESOURCES, this.resources, resources);
-        if (this.resources != null)
-            this.resources.setParentNode(null);
+        if (this.resources != null) this.resources.setParentNode(null);
         this.resources = resources;
         setAsParentNodeOf(resources);
         return this;
@@ -219,8 +225,9 @@ public class TryStmt extends Statement {
     @Override
     @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
     public boolean remove(Node node) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         for (int i = 0; i < catchClauses.size(); i++) {
             if (catchClauses.get(i) == node) {
                 catchClauses.remove(i);
@@ -247,11 +254,6 @@ public class TryStmt extends Statement {
         return setFinallyBlock((BlockStmt) null);
     }
 
-    @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
-    public TryStmt removeTryBlock() {
-        return setTryBlock((BlockStmt) null);
-    }
-
     @Override
     @Generated("com.github.javaparser.generator.core.node.CloneGenerator")
     public TryStmt clone() {
@@ -267,8 +269,9 @@ public class TryStmt extends Statement {
     @Override
     @Generated("com.github.javaparser.generator.core.node.ReplaceMethodGenerator")
     public boolean replace(Node node, Node replacementNode) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         for (int i = 0; i < catchClauses.size(); i++) {
             if (catchClauses.get(i) == node) {
                 catchClauses.set(i, (CatchClause) replacementNode);
@@ -306,6 +309,7 @@ public class TryStmt extends Statement {
         return this;
     }
 
+    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public void ifTryStmt(Consumer<TryStmt> action) {
         action.accept(this);

@@ -1,4 +1,32 @@
+/*
+ * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
+ *
+ * This file is part of JavaParser.
+ *
+ * JavaParser can be used either under the terms of
+ * a) the GNU Lesser General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ * b) the terms of the Apache License
+ *
+ * You should have received a copy of both licenses in LICENCE.LGPL and
+ * LICENCE.APACHE. Please refer to those files for details.
+ *
+ * JavaParser is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ */
+
 package com.github.javaparser.ast.validator;
+
+import static com.github.javaparser.ParseStart.CLASS_BODY;
+import static com.github.javaparser.ParseStart.STATEMENT;
+import static com.github.javaparser.ParserConfiguration.LanguageLevel.JAVA_10;
+import static com.github.javaparser.Providers.provider;
+import static com.github.javaparser.utils.TestUtils.assertNoProblems;
+import static com.github.javaparser.utils.TestUtils.assertProblems;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseResult;
@@ -7,13 +35,6 @@ import com.github.javaparser.ast.body.BodyDeclaration;
 import com.github.javaparser.ast.stmt.Statement;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-
-import static com.github.javaparser.ParseStart.CLASS_BODY;
-import static com.github.javaparser.ParseStart.STATEMENT;
-import static com.github.javaparser.ParserConfiguration.LanguageLevel.JAVA_10;
-import static com.github.javaparser.Providers.provider;
-import static com.github.javaparser.utils.TestUtils.assertNoProblems;
-import static com.github.javaparser.utils.TestUtils.assertProblems;
 
 class Java10ValidatorTest {
     public static final JavaParser javaParser = new JavaParser(new ParserConfiguration().setLanguageLevel(JAVA_10));
@@ -37,15 +58,16 @@ class Java10ValidatorTest {
     }
 
     @Test
-    void varNotAllowedInCast() {
-        ParseResult<Statement> result = javaParser.parse(STATEMENT, provider("int a = (var)20;"));
+    void varAllowedInTryWithResources() {
+        ParseResult<Statement> result =
+                javaParser.parse(STATEMENT, provider("try(var f = new FileReader(\"\")){ }catch (Exception e){ }"));
         assertNoProblems(result);
     }
 
     @Test
-    void varNotAllowedInTryWithResources() {
-        ParseResult<Statement> result = javaParser.parse(STATEMENT, provider("try(var f = new FileReader(\"\")){ }catch (Exception e){ }"));
-        assertProblems(result, "(line 1,col 5) \"var\" is not allowed here.");
+    void varNotAllowedInCast() {
+        ParseResult<Statement> result = javaParser.parse(STATEMENT, provider("int a = (var)20;"));
+        assertNoProblems(result);
     }
 
     @Test

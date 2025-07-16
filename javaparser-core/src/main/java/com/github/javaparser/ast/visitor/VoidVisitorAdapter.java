@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -117,7 +117,7 @@ public abstract class VoidVisitorAdapter<A> implements VoidVisitor<A> {
 
     @Override
     public void visit(final BreakStmt n, final A arg) {
-        n.getValue().ifPresent(l -> l.accept(this, arg));
+        n.getLabel().ifPresent(l -> l.accept(this, arg));
         n.getComment().ifPresent(l -> l.accept(this, arg));
     }
 
@@ -150,6 +150,7 @@ public abstract class VoidVisitorAdapter<A> implements VoidVisitor<A> {
     public void visit(final ClassOrInterfaceDeclaration n, final A arg) {
         n.getExtendedTypes().forEach(p -> p.accept(this, arg));
         n.getImplementedTypes().forEach(p -> p.accept(this, arg));
+        n.getPermittedTypes().forEach(p -> p.accept(this, arg));
         n.getTypeParameters().forEach(p -> p.accept(this, arg));
         n.getMembers().forEach(p -> p.accept(this, arg));
         n.getModifiers().forEach(p -> p.accept(this, arg));
@@ -311,6 +312,7 @@ public abstract class VoidVisitorAdapter<A> implements VoidVisitor<A> {
     @Override
     public void visit(final InstanceOfExpr n, final A arg) {
         n.getExpression().accept(this, arg);
+        n.getPattern().ifPresent(l -> l.accept(this, arg));
         n.getType().accept(this, arg);
         n.getComment().ifPresent(l -> l.accept(this, arg));
     }
@@ -494,6 +496,7 @@ public abstract class VoidVisitorAdapter<A> implements VoidVisitor<A> {
 
     @Override
     public void visit(final SwitchEntry n, final A arg) {
+        n.getGuard().ifPresent(l -> l.accept(this, arg));
         n.getLabels().forEach(p -> p.accept(this, arg));
         n.getStatements().forEach(p -> p.accept(this, arg));
         n.getComment().ifPresent(l -> l.accept(this, arg));
@@ -537,6 +540,12 @@ public abstract class VoidVisitorAdapter<A> implements VoidVisitor<A> {
     @Override
     public void visit(final LocalClassDeclarationStmt n, final A arg) {
         n.getClassDeclaration().accept(this, arg);
+        n.getComment().ifPresent(l -> l.accept(this, arg));
+    }
+
+    @Override
+    public void visit(final LocalRecordDeclarationStmt n, final A arg) {
+        n.getRecordDeclaration().accept(this, arg);
         n.getComment().ifPresent(l -> l.accept(this, arg));
     }
 
@@ -698,6 +707,57 @@ public abstract class VoidVisitorAdapter<A> implements VoidVisitor<A> {
     public void visit(final SwitchExpr n, final A arg) {
         n.getEntries().forEach(p -> p.accept(this, arg));
         n.getSelector().accept(this, arg);
+        n.getComment().ifPresent(l -> l.accept(this, arg));
+    }
+
+    @Override
+    public void visit(final TextBlockLiteralExpr n, final A arg) {
+        n.getComment().ifPresent(l -> l.accept(this, arg));
+    }
+
+    @Override
+    public void visit(final YieldStmt n, final A arg) {
+        n.getExpression().accept(this, arg);
+        n.getComment().ifPresent(l -> l.accept(this, arg));
+    }
+
+    @Override
+    public void visit(final TypePatternExpr n, final A arg) {
+        n.getModifiers().forEach(p -> p.accept(this, arg));
+        n.getName().accept(this, arg);
+        n.getType().accept(this, arg);
+        n.getComment().ifPresent(l -> l.accept(this, arg));
+    }
+
+    @Override
+    public void visit(final RecordDeclaration n, final A arg) {
+        n.getImplementedTypes().forEach(p -> p.accept(this, arg));
+        n.getParameters().forEach(p -> p.accept(this, arg));
+        n.getReceiverParameter().ifPresent(l -> l.accept(this, arg));
+        n.getTypeParameters().forEach(p -> p.accept(this, arg));
+        n.getMembers().forEach(p -> p.accept(this, arg));
+        n.getModifiers().forEach(p -> p.accept(this, arg));
+        n.getName().accept(this, arg);
+        n.getAnnotations().forEach(p -> p.accept(this, arg));
+        n.getComment().ifPresent(l -> l.accept(this, arg));
+    }
+
+    @Override
+    public void visit(final CompactConstructorDeclaration n, final A arg) {
+        n.getBody().accept(this, arg);
+        n.getModifiers().forEach(p -> p.accept(this, arg));
+        n.getName().accept(this, arg);
+        n.getThrownExceptions().forEach(p -> p.accept(this, arg));
+        n.getTypeParameters().forEach(p -> p.accept(this, arg));
+        n.getAnnotations().forEach(p -> p.accept(this, arg));
+        n.getComment().ifPresent(l -> l.accept(this, arg));
+    }
+
+    @Override
+    public void visit(final RecordPatternExpr n, final A arg) {
+        n.getModifiers().forEach(p -> p.accept(this, arg));
+        n.getPatternList().forEach(p -> p.accept(this, arg));
+        n.getType().accept(this, arg);
         n.getComment().ifPresent(l -> l.accept(this, arg));
     }
 }

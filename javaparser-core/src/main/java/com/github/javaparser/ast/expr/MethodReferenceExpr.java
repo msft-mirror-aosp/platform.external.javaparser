@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -20,39 +20,45 @@
  */
 package com.github.javaparser.ast.expr;
 
+import static com.github.javaparser.utils.Utils.assertNonEmpty;
+import static com.github.javaparser.utils.Utils.assertNotNull;
+
+import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.AllFieldsConstructor;
+import com.github.javaparser.ast.Generated;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.nodeTypes.NodeWithIdentifier;
 import com.github.javaparser.ast.nodeTypes.NodeWithTypeArguments;
 import com.github.javaparser.ast.observer.ObservableProperty;
 import com.github.javaparser.ast.type.Type;
+import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
-import java.util.Optional;
-import static com.github.javaparser.utils.Utils.assertNonEmpty;
-import static com.github.javaparser.utils.Utils.assertNotNull;
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.visitor.CloneVisitor;
-import com.github.javaparser.metamodel.MethodReferenceExprMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
+import com.github.javaparser.metamodel.MethodReferenceExprMetaModel;
 import com.github.javaparser.metamodel.NonEmptyProperty;
-import com.github.javaparser.TokenRange;
 import com.github.javaparser.metamodel.OptionalProperty;
+import com.github.javaparser.resolution.Resolvable;
+import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
+import java.util.Optional;
 import java.util.function.Consumer;
-import com.github.javaparser.ast.Generated;
 
 /**
  * Method reference expressions introduced in Java 8 specifically designed to simplify lambda Expressions.
  * Note that the field "identifier", indicating the word to the right of the ::, is not always a method name,
  * it can be "new".
- * <br/>In <code>System.out::println;</code> the scope is System.out and the identifier is "println"
- * <br/><code>(test ? stream.map(String::trim) : stream)::toArray;</code>
- * <br/>In <code>Bar&lt;String>::&lt;Integer>new</code> the String type argument is on the scope,
+ * <br>In {@code System.out::println;} the scope is System.out and the identifier is "println"
+ * <br>{@code (test ? stream.map(String::trim) : stream)::toArray;}
+ * <br>In {@code Bar<String>::<Integer>new} the String type argument is on the scope,
  * and the Integer type argument is on this MethodReferenceExpr.
  *
  * @author Raquel Pau
  */
-public class MethodReferenceExpr extends Expression implements NodeWithTypeArguments<MethodReferenceExpr>, NodeWithIdentifier<MethodReferenceExpr> {
+public class MethodReferenceExpr extends Expression
+        implements NodeWithTypeArguments<MethodReferenceExpr>,
+                NodeWithIdentifier<MethodReferenceExpr>,
+                Resolvable<ResolvedMethodDeclaration> {
 
     private Expression scope;
 
@@ -75,7 +81,8 @@ public class MethodReferenceExpr extends Expression implements NodeWithTypeArgum
      * This constructor is used by the parser and is considered private.
      */
     @Generated("com.github.javaparser.generator.core.node.MainConstructorGenerator")
-    public MethodReferenceExpr(TokenRange tokenRange, Expression scope, NodeList<Type> typeArguments, String identifier) {
+    public MethodReferenceExpr(
+            TokenRange tokenRange, Expression scope, NodeList<Type> typeArguments, String identifier) {
         super(tokenRange);
         setScope(scope);
         setTypeArguments(typeArguments);
@@ -104,11 +111,10 @@ public class MethodReferenceExpr extends Expression implements NodeWithTypeArgum
     public MethodReferenceExpr setScope(final Expression scope) {
         assertNotNull(scope);
         if (scope == this.scope) {
-            return (MethodReferenceExpr) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.SCOPE, this.scope, scope);
-        if (this.scope != null)
-            this.scope.setParentNode(null);
+        if (this.scope != null) this.scope.setParentNode(null);
         this.scope = scope;
         setAsParentNodeOf(scope);
         return this;
@@ -128,11 +134,10 @@ public class MethodReferenceExpr extends Expression implements NodeWithTypeArgum
     @Generated("com.github.javaparser.generator.core.node.PropertyGenerator")
     public MethodReferenceExpr setTypeArguments(final NodeList<Type> typeArguments) {
         if (typeArguments == this.typeArguments) {
-            return (MethodReferenceExpr) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.TYPE_ARGUMENTS, this.typeArguments, typeArguments);
-        if (this.typeArguments != null)
-            this.typeArguments.setParentNode(null);
+        if (this.typeArguments != null) this.typeArguments.setParentNode(null);
         this.typeArguments = typeArguments;
         setAsParentNodeOf(typeArguments);
         return this;
@@ -146,8 +151,8 @@ public class MethodReferenceExpr extends Expression implements NodeWithTypeArgum
     @Generated("com.github.javaparser.generator.core.node.PropertyGenerator")
     public MethodReferenceExpr setIdentifier(final String identifier) {
         assertNonEmpty(identifier);
-        if (identifier == this.identifier) {
-            return (MethodReferenceExpr) this;
+        if (identifier.equals(this.identifier)) {
+            return this;
         }
         notifyPropertyChange(ObservableProperty.IDENTIFIER, this.identifier, identifier);
         this.identifier = identifier;
@@ -157,8 +162,9 @@ public class MethodReferenceExpr extends Expression implements NodeWithTypeArgum
     @Override
     @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
     public boolean remove(Node node) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         if (typeArguments != null) {
             for (int i = 0; i < typeArguments.size(); i++) {
                 if (typeArguments.get(i) == node) {
@@ -185,8 +191,9 @@ public class MethodReferenceExpr extends Expression implements NodeWithTypeArgum
     @Override
     @Generated("com.github.javaparser.generator.core.node.ReplaceMethodGenerator")
     public boolean replace(Node node, Node replacementNode) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         if (node == scope) {
             setScope((Expression) replacementNode);
             return true;
@@ -214,6 +221,7 @@ public class MethodReferenceExpr extends Expression implements NodeWithTypeArgum
         return this;
     }
 
+    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public void ifMethodReferenceExpr(Consumer<MethodReferenceExpr> action) {
         action.accept(this);
@@ -223,5 +231,22 @@ public class MethodReferenceExpr extends Expression implements NodeWithTypeArgum
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public Optional<MethodReferenceExpr> toMethodReferenceExpr() {
         return Optional.of(this);
+    }
+
+    /**
+     * @return the method declaration this method reference is referencing.
+     */
+    @Override
+    public ResolvedMethodDeclaration resolve() {
+        return getSymbolResolver().resolveDeclaration(this, ResolvedMethodDeclaration.class);
+    }
+
+    /*
+     * Method reference expressions are always poly expressions
+     * (https://docs.oracle.com/javase/specs/jls/se8/html/jls-15.html 15.13. Method Reference Expressions)
+     */
+    @Override
+    public boolean isPolyExpression() {
+        return true;
     }
 }

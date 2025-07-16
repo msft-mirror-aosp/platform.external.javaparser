@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -18,7 +18,6 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  */
-
 package com.github.javaparser.ast.observer;
 
 import com.github.javaparser.ast.Node;
@@ -38,13 +37,16 @@ public abstract class PropagatingAstObserver implements AstObserver {
             return (PropagatingAstObserver) observer;
         }
         return new PropagatingAstObserver() {
+
             @Override
-            public void concretePropertyChange(Node observedNode, ObservableProperty property, Object oldValue, Object newValue) {
+            public void concretePropertyChange(
+                    Node observedNode, ObservableProperty property, Object oldValue, Object newValue) {
                 observer.propertyChange(observedNode, property, oldValue, newValue);
             }
 
             @Override
-            public void concreteListChange(NodeList observedNode, ListChangeType type, int index, Node nodeAddedOrRemoved) {
+            public void concreteListChange(
+                    NodeList<?> observedNode, ListChangeType type, int index, Node nodeAddedOrRemoved) {
                 observer.listChange(observedNode, type, index, nodeAddedOrRemoved);
             }
 
@@ -63,7 +65,7 @@ public abstract class PropagatingAstObserver implements AstObserver {
     }
 
     @Override
-    public final void listChange(NodeList observedNode, ListChangeType type, int index, Node nodeAddedOrRemoved) {
+    public final void listChange(NodeList<?> observedNode, ListChangeType type, int index, Node nodeAddedOrRemoved) {
         if (type == ListChangeType.REMOVAL) {
             considerRemoving(nodeAddedOrRemoved);
         } else if (type == ListChangeType.ADDITION) {
@@ -73,7 +75,7 @@ public abstract class PropagatingAstObserver implements AstObserver {
     }
 
     @Override
-    public void listReplacement(NodeList observedNode, int index, Node oldNode, Node newNode) {
+    public void listReplacement(NodeList<?> observedNode, int index, Node oldNode, Node newNode) {
         if (oldNode == newNode) {
             return;
         }
@@ -82,15 +84,16 @@ public abstract class PropagatingAstObserver implements AstObserver {
         concreteListReplacement(observedNode, index, oldNode, newNode);
     }
 
-    public void concretePropertyChange(Node observedNode, ObservableProperty property, Object oldValue, Object newValue) {
+    public void concretePropertyChange(
+            Node observedNode, ObservableProperty property, Object oldValue, Object newValue) {
         // do nothing
     }
 
-    public void concreteListChange(NodeList observedNode, ListChangeType type, int index, Node nodeAddedOrRemoved) {
+    public void concreteListChange(NodeList<?> observedNode, ListChangeType type, int index, Node nodeAddedOrRemoved) {
         // do nothing
     }
 
-    public void concreteListReplacement(NodeList observedNode, int index, Node oldValue, Node newValue) {
+    public void concreteListReplacement(NodeList<?> observedNode, int index, Node oldValue, Node newValue) {
         // do nothing
     }
 
@@ -114,5 +117,4 @@ public abstract class PropagatingAstObserver implements AstObserver {
             ((Observable) element).register(this);
         }
     }
-
 }

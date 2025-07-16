@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -20,39 +20,43 @@
  */
 package com.github.javaparser.ast.stmt;
 
+import static com.github.javaparser.utils.Utils.assertNotNull;
+
+import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.AllFieldsConstructor;
+import com.github.javaparser.ast.Generated;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.expr.*;
 import com.github.javaparser.ast.nodeTypes.NodeWithArguments;
 import com.github.javaparser.ast.nodeTypes.NodeWithTypeArguments;
 import com.github.javaparser.ast.observer.ObservableProperty;
 import com.github.javaparser.ast.type.Type;
+import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
-import java.util.Optional;
-import static com.github.javaparser.utils.Utils.assertNotNull;
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.metamodel.ExplicitConstructorInvocationStmtMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
-import com.github.javaparser.TokenRange;
 import com.github.javaparser.metamodel.OptionalProperty;
 import com.github.javaparser.resolution.Resolvable;
 import com.github.javaparser.resolution.UnsolvedSymbolException;
 import com.github.javaparser.resolution.declarations.ResolvedConstructorDeclaration;
+import java.util.Optional;
 import java.util.function.Consumer;
-import com.github.javaparser.ast.Generated;
 
 /**
  * A call to super or this in a constructor or initializer.
- * <br/><code>class X { X() { super(15); } }</code>
- * <br/><code>class X { X() { this(1, 2); } }</code>
+ * <br>{@code class X { X() { super(15); } }}
+ * <br>{@code class X { X() { this(1, 2); } }}
  *
  * @author Julio Vilmar Gesser
  * @see com.github.javaparser.ast.expr.SuperExpr
  * @see com.github.javaparser.ast.expr.ThisExpr
  */
-public class ExplicitConstructorInvocationStmt extends Statement implements NodeWithTypeArguments<ExplicitConstructorInvocationStmt>, NodeWithArguments<ExplicitConstructorInvocationStmt>, Resolvable<ResolvedConstructorDeclaration> {
+public class ExplicitConstructorInvocationStmt extends Statement
+        implements NodeWithTypeArguments<ExplicitConstructorInvocationStmt>,
+                NodeWithArguments<ExplicitConstructorInvocationStmt>,
+                Resolvable<ResolvedConstructorDeclaration> {
 
     @OptionalProperty
     private NodeList<Type> typeArguments;
@@ -68,12 +72,17 @@ public class ExplicitConstructorInvocationStmt extends Statement implements Node
         this(null, null, true, null, new NodeList<>());
     }
 
-    public ExplicitConstructorInvocationStmt(final boolean isThis, final Expression expression, final NodeList<Expression> arguments) {
+    public ExplicitConstructorInvocationStmt(
+            final boolean isThis, final Expression expression, final NodeList<Expression> arguments) {
         this(null, null, isThis, expression, arguments);
     }
 
     @AllFieldsConstructor
-    public ExplicitConstructorInvocationStmt(final NodeList<Type> typeArguments, final boolean isThis, final Expression expression, final NodeList<Expression> arguments) {
+    public ExplicitConstructorInvocationStmt(
+            final NodeList<Type> typeArguments,
+            final boolean isThis,
+            final Expression expression,
+            final NodeList<Expression> arguments) {
         this(null, typeArguments, isThis, expression, arguments);
     }
 
@@ -81,7 +90,12 @@ public class ExplicitConstructorInvocationStmt extends Statement implements Node
      * This constructor is used by the parser and is considered private.
      */
     @Generated("com.github.javaparser.generator.core.node.MainConstructorGenerator")
-    public ExplicitConstructorInvocationStmt(TokenRange tokenRange, NodeList<Type> typeArguments, boolean isThis, Expression expression, NodeList<Expression> arguments) {
+    public ExplicitConstructorInvocationStmt(
+            TokenRange tokenRange,
+            NodeList<Type> typeArguments,
+            boolean isThis,
+            Expression expression,
+            NodeList<Expression> arguments) {
         super(tokenRange);
         setTypeArguments(typeArguments);
         setThis(isThis);
@@ -121,11 +135,10 @@ public class ExplicitConstructorInvocationStmt extends Statement implements Node
     public ExplicitConstructorInvocationStmt setArguments(final NodeList<Expression> arguments) {
         assertNotNull(arguments);
         if (arguments == this.arguments) {
-            return (ExplicitConstructorInvocationStmt) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.ARGUMENTS, this.arguments, arguments);
-        if (this.arguments != null)
-            this.arguments.setParentNode(null);
+        if (this.arguments != null) this.arguments.setParentNode(null);
         this.arguments = arguments;
         setAsParentNodeOf(arguments);
         return this;
@@ -140,11 +153,10 @@ public class ExplicitConstructorInvocationStmt extends Statement implements Node
     @Generated("com.github.javaparser.generator.core.node.PropertyGenerator")
     public ExplicitConstructorInvocationStmt setExpression(final Expression expression) {
         if (expression == this.expression) {
-            return (ExplicitConstructorInvocationStmt) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.EXPRESSION, this.expression, expression);
-        if (this.expression != null)
-            this.expression.setParentNode(null);
+        if (this.expression != null) this.expression.setParentNode(null);
         this.expression = expression;
         setAsParentNodeOf(expression);
         return this;
@@ -153,7 +165,7 @@ public class ExplicitConstructorInvocationStmt extends Statement implements Node
     @Generated("com.github.javaparser.generator.core.node.PropertyGenerator")
     public ExplicitConstructorInvocationStmt setThis(final boolean isThis) {
         if (isThis == this.isThis) {
-            return (ExplicitConstructorInvocationStmt) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.THIS, this.isThis, isThis);
         this.isThis = isThis;
@@ -174,11 +186,10 @@ public class ExplicitConstructorInvocationStmt extends Statement implements Node
     @Generated("com.github.javaparser.generator.core.node.PropertyGenerator")
     public ExplicitConstructorInvocationStmt setTypeArguments(final NodeList<Type> typeArguments) {
         if (typeArguments == this.typeArguments) {
-            return (ExplicitConstructorInvocationStmt) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.TYPE_ARGUMENTS, this.typeArguments, typeArguments);
-        if (this.typeArguments != null)
-            this.typeArguments.setParentNode(null);
+        if (this.typeArguments != null) this.typeArguments.setParentNode(null);
         this.typeArguments = typeArguments;
         setAsParentNodeOf(typeArguments);
         return this;
@@ -187,8 +198,9 @@ public class ExplicitConstructorInvocationStmt extends Statement implements Node
     @Override
     @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
     public boolean remove(Node node) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         for (int i = 0; i < arguments.size(); i++) {
             if (arguments.get(i) == node) {
                 arguments.remove(i);
@@ -232,8 +244,9 @@ public class ExplicitConstructorInvocationStmt extends Statement implements Node
     @Override
     @Generated("com.github.javaparser.generator.core.node.ReplaceMethodGenerator")
     public boolean replace(Node node, Node replacementNode) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         for (int i = 0; i < arguments.size(); i++) {
             if (arguments.get(i) == node) {
                 arguments.set(i, (Expression) replacementNode);
@@ -269,6 +282,7 @@ public class ExplicitConstructorInvocationStmt extends Statement implements Node
         return this;
     }
 
+    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public void ifExplicitConstructorInvocationStmt(Consumer<ExplicitConstructorInvocationStmt> action) {
         action.accept(this);

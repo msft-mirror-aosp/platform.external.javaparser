@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -20,7 +20,12 @@
  */
 package com.github.javaparser.ast.type;
 
+import static com.github.javaparser.utils.Utils.assertNotNull;
+import static java.util.stream.Collectors.joining;
+
+import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.AllFieldsConstructor;
+import com.github.javaparser.ast.Generated;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.expr.AnnotationExpr;
@@ -32,23 +37,21 @@ import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.github.javaparser.metamodel.IntersectionTypeMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
 import com.github.javaparser.metamodel.NonEmptyProperty;
-import static com.github.javaparser.utils.Utils.assertNotNull;
-import static java.util.stream.Collectors.joining;
-import com.github.javaparser.TokenRange;
+import com.github.javaparser.resolution.Context;
 import com.github.javaparser.resolution.types.ResolvedIntersectionType;
-import java.util.function.Consumer;
+import com.github.javaparser.resolution.types.ResolvedType;
 import java.util.Optional;
-import com.github.javaparser.ast.Generated;
+import java.util.function.Consumer;
 
 /**
  * Represents a set of types. A given value of this type has to be assignable to at all of the element types.
  * As of Java 8 it is used in casts or while expressing bounds for generic types.
  * <p>
  * For example:
- * <code>public class A&lt;T extends Serializable &amp; Cloneable&gt; { }</code>
+ * {@code public class A<T extends Serializable & Cloneable> { }}
  * <p>
  * Or:
- * <code>void foo((Serializable &amp; Cloneable)myObject);</code>
+ * {@code void foo((Serializable & Cloneable)myObject);}
  *
  * @since 3.0.0
  */
@@ -93,11 +96,10 @@ public class IntersectionType extends Type implements NodeWithAnnotations<Inters
     public IntersectionType setElements(final NodeList<ReferenceType> elements) {
         assertNotNull(elements);
         if (elements == this.elements) {
-            return (IntersectionType) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.ELEMENTS, this.elements, elements);
-        if (this.elements != null)
-            this.elements.setParentNode(null);
+        if (this.elements != null) this.elements.setParentNode(null);
         this.elements = elements;
         setAsParentNodeOf(elements);
         return this;
@@ -111,8 +113,9 @@ public class IntersectionType extends Type implements NodeWithAnnotations<Inters
     @Override
     @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
     public boolean remove(Node node) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         for (int i = 0; i < elements.size(); i++) {
             if (elements.get(i) == node) {
                 elements.remove(i);
@@ -142,8 +145,9 @@ public class IntersectionType extends Type implements NodeWithAnnotations<Inters
     @Override
     @Generated("com.github.javaparser.generator.core.node.ReplaceMethodGenerator")
     public boolean replace(Node node, Node replacementNode) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         for (int i = 0; i < elements.size(); i++) {
             if (elements.get(i) == node) {
                 elements.set(i, (ReferenceType) replacementNode);
@@ -165,6 +169,7 @@ public class IntersectionType extends Type implements NodeWithAnnotations<Inters
         return this;
     }
 
+    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public void ifIntersectionType(Consumer<IntersectionType> action) {
         action.accept(this);
@@ -179,5 +184,10 @@ public class IntersectionType extends Type implements NodeWithAnnotations<Inters
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public Optional<IntersectionType> toIntersectionType() {
         return Optional.of(this);
+    }
+
+    @Override
+    public ResolvedType convertToUsage(Context context) {
+        throw new UnsupportedOperationException(getClass().getCanonicalName());
     }
 }

@@ -1,12 +1,34 @@
+/*
+ * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
+ *
+ * This file is part of JavaParser.
+ *
+ * JavaParser can be used either under the terms of
+ * a) the GNU Lesser General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ * b) the terms of the Apache License
+ *
+ * You should have received a copy of both licenses in LICENCE.LGPL and
+ * LICENCE.APACHE. Please refer to those files for details.
+ *
+ * JavaParser is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ */
 package com.github.javaparser;
 
 import static com.github.javaparser.GeneratedJavaParserConstants.*;
-import static com.github.javaparser.utils.Utils.EOL;
+
+import com.github.javaparser.utils.LineSeparator;
 
 /**
  * Complements GeneratedJavaParserConstants
  */
 public class TokenTypes {
+
     public static boolean isWhitespace(int kind) {
         return getCategory(kind).isWhitespace();
     }
@@ -19,7 +41,21 @@ public class TokenTypes {
         return getCategory(kind).isWhitespaceOrComment();
     }
 
+    /**
+     * @deprecated Use {@link #isWhitespaceButNotEndOfLine(int)} which more explicitly reflects that this also includes
+     *  other whitespace e.g. {@code EOF} and {@code CTRL_Z} and a large number of other characters.
+     *  See the grammar for details of exactly which characters are included as a "space" (.
+     *  <pre>{@code
+     *   <SPACE: [" ", "\t", "\f", "\u0085", "\u00A0", "\u1680", "\u180e", "\u2000", "\u2001", "\u2002", "\u2003", "\u2004", "\u2005",
+     *       "\u2006", "\u2007", "\u2008", "\u2009", "\u200a", "\u200b", "\u200c", "\u200d", "\u2028", "\u2029", "\u202f", "\u205f", "\u2060", "\u3000", "\ufeff"]>
+     *  }</pre>
+     */
+    @Deprecated
     public static boolean isSpaceOrTab(int kind) {
+        return isWhitespaceButNotEndOfLine(kind);
+    }
+
+    public static boolean isWhitespaceButNotEndOfLine(int kind) {
         return getCategory(kind).isWhitespaceButNotEndOfLine();
     }
 
@@ -30,17 +66,21 @@ public class TokenTypes {
     /**
      * @return the kind of EOL token to use on the platform you're running on.
      */
-    public static int eolTokenKind() {
-        if (EOL.equals("\n")) {
+    public static int eolTokenKind(LineSeparator lineSeparator) {
+        if (lineSeparator.equalsString(LineSeparator.LF)) {
             return UNIX_EOL;
         }
-        if (EOL.equals("\r\n")) {
+        if (lineSeparator.equalsString(LineSeparator.CRLF)) {
             return WINDOWS_EOL;
         }
-        if (EOL.equals("\r")) {
+        if (lineSeparator.equalsString(LineSeparator.CR)) {
             return OLD_MAC_EOL;
         }
         throw new AssertionError("Unknown EOL character sequence");
+    }
+
+    public static int eolTokenKind() {
+        return eolTokenKind(LineSeparator.SYSTEM);
     }
 
     /**
@@ -85,7 +125,6 @@ public class TokenTypes {
             case ELSE:
             case ENUM:
             case EXTENDS:
-            case FALSE:
             case FINAL:
             case FINALLY:
             case FLOAT:
@@ -100,11 +139,11 @@ public class TokenTypes {
             case LONG:
             case NATIVE:
             case NEW:
-            case NULL:
             case PACKAGE:
             case PRIVATE:
             case PROTECTED:
             case PUBLIC:
+            case RECORD:
             case RETURN:
             case SHORT:
             case STATIC:
@@ -116,11 +155,11 @@ public class TokenTypes {
             case THROW:
             case THROWS:
             case TRANSIENT:
-            case TRUE:
             case TRY:
             case VOID:
             case VOLATILE:
             case WHILE:
+            case YIELD:
             case REQUIRES:
             case TO:
             case WITH:
@@ -131,6 +170,10 @@ public class TokenTypes {
             case EXPORTS:
             case PROVIDES:
             case TRANSITIVE:
+            case PERMITS:
+            case SEALED:
+            case NON_SEALED:
+            case WHEN:
                 return JavaToken.Category.KEYWORD;
             case LONG_LITERAL:
             case INTEGER_LITERAL:
@@ -145,6 +188,10 @@ public class TokenTypes {
             case HEXADECIMAL_EXPONENT:
             case CHARACTER_LITERAL:
             case STRING_LITERAL:
+            case TEXT_BLOCK_LITERAL:
+            case TRUE:
+            case FALSE:
+            case NULL:
                 return JavaToken.Category.LITERAL;
             case IDENTIFIER:
                 return JavaToken.Category.IDENTIFIER;
@@ -157,7 +204,9 @@ public class TokenTypes {
             case SEMICOLON:
             case COMMA:
             case DOT:
+            case ELLIPSIS:
             case AT:
+            case DOUBLECOLON:
                 return JavaToken.Category.SEPARATOR;
             case ASSIGN:
             case LT:
@@ -193,9 +242,7 @@ public class TokenTypes {
             case LSHIFTASSIGN:
             case RSIGNEDSHIFTASSIGN:
             case RUNSIGNEDSHIFTASSIGN:
-            case ELLIPSIS:
             case ARROW:
-            case DOUBLECOLON:
             case RUNSIGNEDSHIFT:
             case RSIGNEDSHIFT:
             case GT:
@@ -208,8 +255,12 @@ public class TokenTypes {
             case LETTER:
             case UNICODE_ESCAPE:
             case PART_LETTER:
+            case TEXT_BLOCK_CONTENT:
+            case ENTER_TEXT_BLOCK:
             default:
-                throw new AssertionError("Invalid token kind " + kind);
+                throw new AssertionError(
+                        "Unable to categorise token kind " + kind
+                                + " -- has it recently been added to the grammar but not classified within TokenTypes.java, perhaps?");
         }
     }
 }

@@ -1,29 +1,34 @@
 /*
- * Copyright 2016 Federico Tomassetti
+ * Copyright (C) 2015-2016 Federico Tomassetti
+ * Copyright (C) 2017-2024 The JavaParser Team.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This file is part of JavaParser.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * JavaParser can be used either under the terms of
+ * a) the GNU Lesser General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ * b) the terms of the Apache License
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * You should have received a copy of both licenses in LICENCE.LGPL and
+ * LICENCE.APACHE. Please refer to those files for details.
+ *
+ * JavaParser is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  */
 
 package com.github.javaparser.symbolsolver.resolution.typesolvers;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Predicate;
-
+import com.github.javaparser.resolution.TypeSolver;
 import com.github.javaparser.resolution.UnsolvedSymbolException;
+import com.github.javaparser.resolution.cache.Cache;
 import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
-import com.github.javaparser.symbolsolver.model.resolution.SymbolReference;
-import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
+import com.github.javaparser.resolution.model.SymbolReference;
+import com.github.javaparser.symbolsolver.cache.InMemoryCache;
+import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * A container for type solvers. All solving is done by the contained type solvers.
@@ -33,33 +38,62 @@ import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
  */
 public class CombinedTypeSolver implements TypeSolver {
 
+    private final Cache<String, SymbolReference<ResolvedReferenceTypeDeclaration>> typeCache;
+
     private TypeSolver parent;
     private List<TypeSolver> elements = new ArrayList<>();
-    
+
     /**
      * A predicate which determines what to do if an exception is raised during the parsing process.
-     * If it returns <code>true</code> the exception will be ignored, and solving will continue using the next solver in line.
-     * If it returns <code>false</code> the exception will be thrown, stopping the solving process.
-     * 
+     * If it returns {@code true} the exception will be ignored, and solving will continue using the next solver in line.
+     * If it returns {@code false} the exception will be thrown, stopping the solving process.
+     *
      * Main use case for this is to circumvent bugs or missing functionality in some type solvers.
      * If for example solver A has a bug resulting in a {@link NullPointerException}, you could use a {@link ExceptionHandlers#getTypeBasedWhitelist(Class...) whitelist} to ignore that type of exception.
      * A secondary solver would then be able to step in when such an error occurs.
-     * 
+     *
      * @see #CombinedTypeSolver(Predicate, TypeSolver...)
      * @see #setExceptionHandler(Predicate)
      */
     private Predicate<Exception> exceptionHandler;
 
     public CombinedTypeSolver(TypeSolver... elements) {
+        this(Arrays.asList(elements));
+    }
+
+    public CombinedTypeSolver(Predicate<Exception> exceptionHandler, TypeSolver... elements) {
+        this(exceptionHandler, Arrays.asList(elements));
+    }
+
+    public CombinedTypeSolver(Iterable<TypeSolver> elements) {
         this(ExceptionHandlers.IGNORE_NONE, elements);
     }
 
     /** @see #exceptionHandler */
-    public CombinedTypeSolver(Predicate<Exception> exceptionHandler, TypeSolver... elements) {
+    public CombinedTypeSolver(Predicate<Exception> exceptionHandler, Iterable<TypeSolver> elements) {
+        this(exceptionHandler, elements, InMemoryCache.create());
+    }
+
+    /**
+     * Create a new instance of {@link CombinedTypeSolver} with a custom symbol cache.
+     *
+     * @param exceptionHandler  How exception should be handled.
+     * @param elements          The list of elements to include by default.
+     * @param typeCache       The cache to be used to store symbols.
+     *
+     * @see #exceptionHandler
+     */
+    public CombinedTypeSolver(
+            Predicate<Exception> exceptionHandler,
+            Iterable<TypeSolver> elements,
+            Cache<String, SymbolReference<ResolvedReferenceTypeDeclaration>> typeCache) {
+        Objects.requireNonNull(typeCache, "The typeCache can't be null.");
+
         setExceptionHandler(exceptionHandler);
+        this.typeCache = typeCache;
 
         for (TypeSolver el : elements) {
-            add(el);
+            add(el, false);
         }
     }
 
@@ -75,20 +109,58 @@ public class CombinedTypeSolver implements TypeSolver {
 
     @Override
     public void setParent(TypeSolver parent) {
+        Objects.requireNonNull(parent);
+        if (this.parent != null) {
+            throw new IllegalStateException("This TypeSolver already has a parent.");
+        }
+        if (parent == this) {
+            throw new IllegalStateException("The parent of this TypeSolver cannot be itself.");
+        }
         this.parent = parent;
     }
 
-    public void add(TypeSolver typeSolver) {
+    /**
+     * Append a type solver to the current solver.
+     *
+     * @param typeSolver The type solver to be appended.
+     * @param resetCache If should reset the cache when the solver is inserted.
+     */
+    public void add(TypeSolver typeSolver, boolean resetCache) {
+        Objects.requireNonNull(typeSolver, "The type solver can't be null");
+
         this.elements.add(typeSolver);
         typeSolver.setParent(this);
+
+        // Check if the cache should be reset after inserting
+        if (resetCache) {
+            typeCache.removeAll();
+        }
+    }
+
+    /**
+     * Append a type solver to the current solver.
+     * <br>
+     * By default the cached values will be removed.
+     *
+     * @param typeSolver The type solver to be appended.
+     */
+    public void add(TypeSolver typeSolver) {
+        add(typeSolver, true);
     }
 
     @Override
     public SymbolReference<ResolvedReferenceTypeDeclaration> tryToSolveType(String name) {
+        Optional<SymbolReference<ResolvedReferenceTypeDeclaration>> cachedSymbol = typeCache.get(name);
+        if (cachedSymbol.isPresent()) {
+            return cachedSymbol.get();
+        }
+
+        // If the symbol is not cached
         for (TypeSolver ts : elements) {
             try {
                 SymbolReference<ResolvedReferenceTypeDeclaration> res = ts.tryToSolveType(name);
                 if (res.isSolved()) {
+                    typeCache.put(name, res);
                     return res;
                 }
             } catch (Exception e) {
@@ -97,7 +169,11 @@ public class CombinedTypeSolver implements TypeSolver {
                 }
             }
         }
-        return SymbolReference.unsolved(ResolvedReferenceTypeDeclaration.class);
+
+        // When unable to solve, cache the value with unsolved symbol
+        SymbolReference<ResolvedReferenceTypeDeclaration> unsolvedSymbol = SymbolReference.unsolved();
+        typeCache.put(name, unsolvedSymbol);
+        return unsolvedSymbol;
     }
 
     @Override
@@ -105,9 +181,8 @@ public class CombinedTypeSolver implements TypeSolver {
         SymbolReference<ResolvedReferenceTypeDeclaration> res = tryToSolveType(name);
         if (res.isSolved()) {
             return res.getCorrespondingDeclaration();
-        } else {
-            throw new UnsolvedSymbolException(name);
         }
+        throw new UnsolvedSymbolException(name);
     }
 
     /**
@@ -125,36 +200,36 @@ public class CombinedTypeSolver implements TypeSolver {
         /**
          * Ignores any exception that is {@link Class#isAssignableFrom(Class) assignable from}
          * {@link UnsupportedOperationException}.
-         * 
+         *
          * @see #getTypeBasedWhitelist(Class...)
          */
-        public static final Predicate<Exception> IGNORE_UNSUPPORTED_OPERATION = getTypeBasedWhitelist(
-                UnsupportedOperationException.class);
+        public static final Predicate<Exception> IGNORE_UNSUPPORTED_OPERATION =
+                getTypeBasedWhitelist(UnsupportedOperationException.class);
 
         /**
          * Ignores any exception that is {@link Class#isAssignableFrom(Class) assignable from}
          * {@link UnsolvedSymbolException}.
-         * 
+         *
          * @see #getTypeBasedWhitelist(Class...)
          */
-        public static final Predicate<Exception> IGNORE_UNSOLVED_SYMBOL = getTypeBasedWhitelist(
-                UnsolvedSymbolException.class);
+        public static final Predicate<Exception> IGNORE_UNSOLVED_SYMBOL =
+                getTypeBasedWhitelist(UnsolvedSymbolException.class);
 
         /**
          * Ignores any exception that is {@link Class#isAssignableFrom(Class) assignable from} either
          * {@link UnsolvedSymbolException} or {@link UnsupportedOperationException}.
-         * 
+         *
          * @see #IGNORE_UNSOLVED_SYMBOL
          * @see #IGNORE_UNSUPPORTED_OPERATION
          * @see #getTypeBasedWhitelist(Class...)
          */
-        public static final Predicate<Exception> IGNORE_UNSUPPORTED_AND_UNSOLVED = getTypeBasedWhitelist(
-                UnsupportedOperationException.class, UnsolvedSymbolException.class);
+        public static final Predicate<Exception> IGNORE_UNSUPPORTED_AND_UNSOLVED =
+                getTypeBasedWhitelist(UnsupportedOperationException.class, UnsolvedSymbolException.class);
 
         /**
          * @see CombinedTypeSolver#setExceptionHandler(Predicate)
          * @see #getTypeBasedWhitelist(Class...)
-         * 
+         *
          * @return A filter that ignores an exception if <b>none</b> of the listed classes are
          *         {@link Class#isAssignableFrom(Class) assignable from}
          *         the thrown exception class.
@@ -173,7 +248,7 @@ public class CombinedTypeSolver implements TypeSolver {
         /**
          * @see CombinedTypeSolver#setExceptionHandler(Predicate)
          * @see #getTypeBasedBlacklist(Class...)
-         * 
+         *
          * @return A filter that ignores an exception if <b>any</b> of the listed classes are
          *         {@link Class#isAssignableFrom(Class) assignable from}
          *         the thrown exception class.

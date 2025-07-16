@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -18,25 +18,24 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  */
-
 package com.github.javaparser;
+
+import static com.github.javaparser.utils.Utils.assertNotNull;
 
 import java.io.*;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static com.github.javaparser.utils.Utils.assertNotNull;
-
 /**
  * Factory for providers of source code for JavaParser. Providers that have no parameter for encoding but need it will
  * use UTF-8.
  */
 public final class Providers {
+
     public static final Charset UTF8 = Charset.forName("utf-8");
 
-    private Providers() {
-    }
+    private Providers() {}
 
     public static Provider provider(Reader reader) {
         return new StreamProvider(assertNotNull(reader));
@@ -78,12 +77,12 @@ public final class Providers {
         return new StringProvider(assertNotNull(source));
     }
 
-
     /**
-     * Provide a Provider from the resource found in class loader with the provided encoding.<br/> As resource is
+     * Provide a Provider from the resource found in class loader with the provided encoding.<br> As resource is
      * accessed through a class loader, a leading "/" is not allowed in pathToResource
      */
-    public static Provider resourceProvider(ClassLoader classLoader, String pathToResource, Charset encoding) throws IOException {
+    public static Provider resourceProvider(ClassLoader classLoader, String pathToResource, Charset encoding)
+            throws IOException {
         InputStream resourceAsStream = classLoader.getResourceAsStream(pathToResource);
         if (resourceAsStream == null) {
             throw new IOException("Cannot find " + pathToResource);
@@ -92,7 +91,7 @@ public final class Providers {
     }
 
     /**
-     * Provide a Provider from the resource found in the current class loader with the provided encoding.<br/> As
+     * Provide a Provider from the resource found in the current class loader with the provided encoding.<br> As
      * resource is accessed through a class loader, a leading "/" is not allowed in pathToResource
      */
     public static Provider resourceProvider(String pathToResource, Charset encoding) throws IOException {
@@ -101,14 +100,10 @@ public final class Providers {
     }
 
     /**
-     * Provide a Provider from the resource found in the current class loader with UTF-8 encoding.<br/> As resource is
+     * Provide a Provider from the resource found in the current class loader with UTF-8 encoding.<br> As resource is
      * accessed through a class loader, a leading "/" is not allowed in pathToResource
      */
     public static Provider resourceProvider(String pathToResource) throws IOException {
         return resourceProvider(pathToResource, UTF8);
-    }
-
-    public interface PreProcessor {
-        Provider process(Provider innerProvider);
     }
 }

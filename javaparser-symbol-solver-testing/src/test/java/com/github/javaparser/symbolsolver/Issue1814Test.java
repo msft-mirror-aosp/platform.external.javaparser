@@ -1,4 +1,27 @@
+/*
+ * Copyright (C) 2015-2016 Federico Tomassetti
+ * Copyright (C) 2017-2024 The JavaParser Team.
+ *
+ * This file is part of JavaParser.
+ *
+ * JavaParser can be used either under the terms of
+ * a) the GNU Lesser General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ * b) the terms of the Apache License
+ *
+ * You should have received a copy of both licenses in LICENCE.LGPL and
+ * LICENCE.APACHE. Please refer to those files for details.
+ *
+ * JavaParser is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ */
+
 package com.github.javaparser.symbolsolver;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 import com.github.javaparser.*;
 import com.github.javaparser.ast.CompilationUnit;
@@ -7,21 +30,16 @@ import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;
 import com.github.javaparser.ast.stmt.BlockStmt;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
+import com.github.javaparser.resolution.TypeSolver;
 import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
+import com.github.javaparser.resolution.model.SymbolReference;
 import com.github.javaparser.symbolsolver.javaparsermodel.declarations.JavaParserClassDeclaration;
-import com.github.javaparser.symbolsolver.model.resolution.SymbolReference;
-import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
 import com.github.javaparser.symbolsolver.resolution.AbstractResolutionTest;
+import java.time.Duration;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import java.time.Duration;
-import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 
 /**
  * @author Dominik Hardtke
@@ -49,8 +67,7 @@ class Issue1814Test extends AbstractResolutionTest {
             }
 
             @Override
-            public void setParent(TypeSolver parent) {
-            }
+            public void setParent(TypeSolver parent) {}
 
             @Override
             public SymbolReference<ResolvedReferenceTypeDeclaration> tryToSolveType(String name) {
@@ -59,7 +76,7 @@ class Issue1814Test extends AbstractResolutionTest {
                     return SymbolReference.solved(new JavaParserClassDeclaration(clazz, this));
                 }
 
-                return SymbolReference.unsolved(ResolvedReferenceTypeDeclaration.class);
+                return SymbolReference.unsolved();
             }
         };
 
@@ -71,16 +88,18 @@ class Issue1814Test extends AbstractResolutionTest {
     @Test
     void getAllMethodsVisibleToInheritors() {
         assertTimeoutPreemptively(Duration.ofMillis(1000L), () -> {
-            String code = String.join(System.lineSeparator(), "public class AbstractExercise extends java.lang.Object {", "}");
-            ParseResult<CompilationUnit> parseResult = javaParser.parse(ParseStart.COMPILATION_UNIT, Providers.provider(code));
+            String code = String.join(
+                    System.lineSeparator(), "public class AbstractExercise extends java.lang.Object {", "}");
+            ParseResult<CompilationUnit> parseResult =
+                    javaParser.parse(ParseStart.COMPILATION_UNIT, Providers.provider(code));
             assertTrue(parseResult.isSuccessful());
             assertTrue(parseResult.getResult().isPresent());
-            List<ClassOrInterfaceType> referenceTypes = parseResult.getResult().get().findAll(ClassOrInterfaceType.class);
+            List<ClassOrInterfaceType> referenceTypes =
+                    parseResult.getResult().get().findAll(ClassOrInterfaceType.class);
             assertTrue(referenceTypes.size() > 0);
-            final List<ResolvedMethodDeclaration> methods = referenceTypes.get(0).resolve().getAllMethodsVisibleToInheritors();
+            final List<ResolvedMethodDeclaration> methods =
+                    referenceTypes.get(0).resolve().asReferenceType().getAllMethodsVisibleToInheritors();
             assertEquals(1, methods.size());
         });
-
-
     }
 }

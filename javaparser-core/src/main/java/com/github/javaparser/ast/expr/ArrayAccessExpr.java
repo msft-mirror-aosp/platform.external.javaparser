@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -20,23 +20,24 @@
  */
 package com.github.javaparser.ast.expr;
 
+import static com.github.javaparser.utils.Utils.assertNotNull;
+
+import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.AllFieldsConstructor;
+import com.github.javaparser.ast.Generated;
+import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.observer.ObservableProperty;
+import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
-import static com.github.javaparser.utils.Utils.assertNotNull;
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.metamodel.ArrayAccessExprMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
-import com.github.javaparser.TokenRange;
-import java.util.function.Consumer;
 import java.util.Optional;
-import com.github.javaparser.ast.Generated;
+import java.util.function.Consumer;
 
 /**
  * Array brackets [] being used to get a value from an array.
- * In <br/><code>getNames()[15*15]</code> the name expression is getNames() and the index expression is 15*15.
+ * In <br>{@code getNames()[15*15]} the name expression is getNames() and the index expression is 15*15.
  *
  * @author Julio Vilmar Gesser
  */
@@ -92,11 +93,10 @@ public class ArrayAccessExpr extends Expression {
     public ArrayAccessExpr setIndex(final Expression index) {
         assertNotNull(index);
         if (index == this.index) {
-            return (ArrayAccessExpr) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.INDEX, this.index, index);
-        if (this.index != null)
-            this.index.setParentNode(null);
+        if (this.index != null) this.index.setParentNode(null);
         this.index = index;
         setAsParentNodeOf(index);
         return this;
@@ -106,22 +106,13 @@ public class ArrayAccessExpr extends Expression {
     public ArrayAccessExpr setName(final Expression name) {
         assertNotNull(name);
         if (name == this.name) {
-            return (ArrayAccessExpr) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.NAME, this.name, name);
-        if (this.name != null)
-            this.name.setParentNode(null);
+        if (this.name != null) this.name.setParentNode(null);
         this.name = name;
         setAsParentNodeOf(name);
         return this;
-    }
-
-    @Override
-    @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
-    public boolean remove(Node node) {
-        if (node == null)
-            return false;
-        return super.remove(node);
     }
 
     @Override
@@ -139,8 +130,9 @@ public class ArrayAccessExpr extends Expression {
     @Override
     @Generated("com.github.javaparser.generator.core.node.ReplaceMethodGenerator")
     public boolean replace(Node node, Node replacementNode) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         if (node == index) {
             setIndex((Expression) replacementNode);
             return true;
@@ -164,6 +156,7 @@ public class ArrayAccessExpr extends Expression {
         return this;
     }
 
+    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public void ifArrayAccessExpr(Consumer<ArrayAccessExpr> action) {
         action.accept(this);

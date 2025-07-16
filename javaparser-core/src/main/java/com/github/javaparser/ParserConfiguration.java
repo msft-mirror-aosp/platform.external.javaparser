@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -18,42 +18,27 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  */
-
 package com.github.javaparser;
 
-import static com.github.javaparser.ParserConfiguration.LanguageLevel.*;
-import static com.github.javaparser.utils.Utils.*;
+import static com.github.javaparser.ParserConfiguration.LanguageLevel.POPULAR;
 
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import com.github.javaparser.ParseResult.PostProcessor;
-import com.github.javaparser.Providers.PreProcessor;
 import com.github.javaparser.UnicodeEscapeProcessingProvider.PositionMapping;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.validator.Java10Validator;
-import com.github.javaparser.ast.validator.Java11Validator;
-import com.github.javaparser.ast.validator.Java12Validator;
-import com.github.javaparser.ast.validator.Java1_0Validator;
-import com.github.javaparser.ast.validator.Java1_1Validator;
-import com.github.javaparser.ast.validator.Java1_2Validator;
-import com.github.javaparser.ast.validator.Java1_3Validator;
-import com.github.javaparser.ast.validator.Java1_4Validator;
-import com.github.javaparser.ast.validator.Java5Validator;
-import com.github.javaparser.ast.validator.Java6Validator;
-import com.github.javaparser.ast.validator.Java7Validator;
-import com.github.javaparser.ast.validator.Java8Validator;
-import com.github.javaparser.ast.validator.Java9Validator;
 import com.github.javaparser.ast.validator.ProblemReporter;
 import com.github.javaparser.ast.validator.Validator;
+import com.github.javaparser.ast.validator.language_level_validations.*;
+import com.github.javaparser.ast.validator.postprocessors.*;
+import com.github.javaparser.printer.lexicalpreservation.DefaultLexicalPreservingPrinter;
 import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
 import com.github.javaparser.resolution.SymbolResolver;
-import com.github.javaparser.version.Java10PostProcessor;
-import com.github.javaparser.version.Java11PostProcessor;
-import com.github.javaparser.version.Java12PostProcessor;
+import com.github.javaparser.utils.LineSeparator;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * The configuration that is used by the parser.
@@ -61,23 +46,9 @@ import com.github.javaparser.version.Java12PostProcessor;
  * It will pick up the changes.
  */
 public class ParserConfiguration {
+
     public enum LanguageLevel {
-        /**
-         * Does no post processing or validation. Only for people wanting the fastest parsing.
-         */
-        RAW(null, null),
-        /**
-         * The most used Java version.
-         */
-        POPULAR(new Java8Validator(), null),
-        /**
-         * The latest Java version that is available.
-         */
-        CURRENT(new Java8Validator(), null),
-        /**
-         * The newest Java features supported.
-         */
-        BLEEDING_EDGE(new Java12Validator(), new Java12PostProcessor()),
+
         /**
          * Java 1.0
          */
@@ -123,98 +94,282 @@ public class ParserConfiguration {
          */
         JAVA_10(new Java10Validator(), new Java10PostProcessor()),
         /**
+         * Java 10 -- including incubator/preview/second preview features.
+         * Note that preview features, unless otherwise specified, follow the grammar and behaviour of the latest released JEP for that feature.
+         */
+        JAVA_10_PREVIEW(new Java10PreviewValidator(), new Java10PostProcessor()),
+        /**
          * Java 11
          */
         JAVA_11(new Java11Validator(), new Java11PostProcessor()),
         /**
+         * Java 11 -- including incubator/preview/second preview features.
+         * Note that preview features, unless otherwise specified, follow the grammar and behaviour of the latest released JEP for that feature.
+         */
+        JAVA_11_PREVIEW(new Java11PreviewValidator(), new Java11PostProcessor()),
+        /**
          * Java 12
          */
-        JAVA_12(new Java12Validator(), new Java12PostProcessor());
+        JAVA_12(new Java12Validator(), new Java12PostProcessor()),
+        /**
+         * Java 12 -- including incubator/preview/second preview features.
+         * Note that preview features, unless otherwise specified, follow the grammar and behaviour of the latest released JEP for that feature.
+         * <ul>
+         *     <li>Switch expressions are permitted, with a single label only and no yield.</li>
+         * </ul>
+         */
+        JAVA_12_PREVIEW(new Java12PreviewValidator(), new Java12PostProcessor()),
+        /**
+         * Java 13
+         */
+        JAVA_13(new Java13Validator(), new Java13PostProcessor()),
+        /**
+         * Java 13 -- including incubator/preview/second preview features.
+         * Note that preview features, unless otherwise specified, follow the grammar and behaviour of the latest released JEP for that feature.
+         * <ul>
+         *     <li>Switch expressions are permitted, with a single label only.</li>
+         * </ul>
+         */
+        JAVA_13_PREVIEW(new Java13PreviewValidator(), new Java13PostProcessor()),
+        /**
+         * Java 14
+         */
+        JAVA_14(new Java14Validator(), new Java14PostProcessor()),
+        /**
+         * Java 14 -- including incubator/preview/second preview features.
+         * Note that preview features, unless otherwise specified, follow the grammar and behaviour of the latest released JEP for that feature.
+         */
+        JAVA_14_PREVIEW(new Java14PreviewValidator(), new Java14PostProcessor()),
+        /**
+         * Java 15
+         */
+        JAVA_15(new Java15Validator(), new Java15PostProcessor()),
+        /**
+         * Java 15 -- including incubator/preview/second preview features.
+         * Note that preview features, unless otherwise specified, follow the grammar and behaviour of the latest released JEP for that feature.
+         */
+        JAVA_15_PREVIEW(new Java15PreviewValidator(), new Java15PostProcessor()),
+        /**
+         * Java 16
+         */
+        JAVA_16(new Java16Validator(), new Java16PostProcessor()),
+        /**
+         * Java 16 -- including incubator/preview/second preview features.
+         * Note that preview features, unless otherwise specified, follow the grammar and behaviour of the latest released JEP for that feature.
+         */
+        JAVA_16_PREVIEW(new Java16PreviewValidator(), new Java16PostProcessor()),
+        /**
+         * Java 17
+         */
+        JAVA_17(new Java17Validator(), new Java17PostProcessor()),
+        /**
+         * Java 17 -- including incubator/preview/second preview features.
+         * Note that preview features, unless otherwise specified, follow the grammar and behaviour of the latest released JEP for that feature.
+         */
+        JAVA_17_PREVIEW(new Java17PreviewValidator(), new Java17PostProcessor()),
+        /**
+         * Java 18
+         */
+        JAVA_18(new Java18Validator(), new Java18PostProcessor()),
+        /**
+         * Java 19
+         */
+        JAVA_19(new Java19Validator(), new Java19PostProcessor()),
+        /**
+         * Java 20
+         */
+        JAVA_20(new Java20Validator(), new Java20PostProcessor()),
+        /**
+         * Java 21
+         */
+        JAVA_21(new Java21Validator(), new Java21PostProcessor());
+
+        /**
+         * Does no post processing or validation. Only for people wanting the fastest parsing.
+         */
+        public static LanguageLevel RAW = null;
+
+        /**
+         * The most used Java version.
+         */
+        public static LanguageLevel POPULAR = JAVA_11;
+
+        /**
+         * The latest Java version that is available.
+         */
+        public static LanguageLevel CURRENT = JAVA_18;
+
+        /**
+         * The newest Java features supported.
+         */
+        public static LanguageLevel BLEEDING_EDGE = JAVA_21;
 
         final Validator validator;
-        final ParseResult.PostProcessor postProcessor;
 
-        LanguageLevel(Validator validator, ParseResult.PostProcessor postProcessor) {
+        final PostProcessors postProcessor;
+
+        private static final LanguageLevel[] yieldSupport = new LanguageLevel[] {
+            JAVA_13,
+            JAVA_13_PREVIEW,
+            JAVA_14,
+            JAVA_14_PREVIEW,
+            JAVA_15,
+            JAVA_15_PREVIEW,
+            JAVA_16,
+            JAVA_16_PREVIEW,
+            JAVA_17,
+            JAVA_17_PREVIEW,
+            JAVA_18,
+            JAVA_19,
+            JAVA_20,
+            JAVA_21
+        };
+
+        LanguageLevel(Validator validator, PostProcessors postProcessor) {
             this.validator = validator;
             this.postProcessor = postProcessor;
         }
+
+        public boolean isYieldSupported() {
+            return Arrays.stream(yieldSupport).anyMatch(level -> level == this);
+        }
     }
 
+    // TODO: Add a configurable option e.g. setDesiredLineEnding(...) to replace/swap out existing line endings
+    private boolean detectOriginalLineSeparator = true;
+
     private boolean storeTokens = true;
+
     private boolean attributeComments = true;
+
     private boolean doNotAssignCommentsPrecedingEmptyLines = true;
+
     private boolean ignoreAnnotationsWhenAttributingComments = false;
+
     private boolean lexicalPreservationEnabled = false;
+
     private boolean preprocessUnicodeEscapes = false;
+
     private SymbolResolver symbolResolver = null;
+
     private int tabSize = 1;
-    private LanguageLevel languageLevel = CURRENT;
+
+    private LanguageLevel languageLevel = POPULAR;
+
     private Charset characterEncoding = Providers.UTF8;
 
-    private final List<Providers.PreProcessor> preProcessors = new ArrayList<>();
-    private final List<ParseResult.PostProcessor> postProcessors = new ArrayList<>();
+    private final List<Supplier<Processor>> processors = new ArrayList<>();
+
+    private class UnicodeEscapeProcessor extends Processor {
+
+        private UnicodeEscapeProcessingProvider _unicodeDecoder;
+
+        @Override
+        public Provider preProcess(Provider innerProvider) {
+            if (isPreprocessUnicodeEscapes()) {
+                _unicodeDecoder = new UnicodeEscapeProcessingProvider(innerProvider);
+                return _unicodeDecoder;
+            }
+            return innerProvider;
+        }
+
+        @Override
+        public void postProcess(ParseResult<? extends Node> result, ParserConfiguration configuration) {
+            if (isPreprocessUnicodeEscapes()) {
+                result.getResult().ifPresent(root -> {
+                    PositionMapping mapping = _unicodeDecoder.getPositionMapping();
+                    if (!mapping.isEmpty()) {
+                        root.walk(node -> node.getRange().ifPresent(range -> node.setRange(mapping.transform(range))));
+                    }
+                });
+            }
+        }
+    }
+
+    private class LineEndingProcessor extends Processor {
+
+        private LineEndingProcessingProvider _lineEndingProcessingProvider;
+
+        @Override
+        public Provider preProcess(Provider innerProvider) {
+            if (isDetectOriginalLineSeparator()) {
+                _lineEndingProcessingProvider = new LineEndingProcessingProvider(innerProvider);
+                return _lineEndingProcessingProvider;
+            }
+            return innerProvider;
+        }
+
+        @Override
+        public void postProcess(ParseResult<? extends Node> result, ParserConfiguration configuration) {
+            if (isDetectOriginalLineSeparator()) {
+                result.getResult().ifPresent(rootNode -> {
+                    LineSeparator detectedLineSeparator = _lineEndingProcessingProvider.getDetectedLineEnding();
+                    // Set the line ending on the root node
+                    rootNode.setData(Node.LINE_SEPARATOR_KEY, detectedLineSeparator);
+                    // // Set the line ending on all children of the root node -- FIXME: Should ignore """textblocks"""
+                    // rootNode.findAll(Node.class)
+                    // .forEach(node -> node.setData(Node.LINE_SEPARATOR_KEY, detectedLineSeparator));
+                });
+            }
+        }
+    }
 
     public ParserConfiguration() {
-    	class UnicodeEscapeProcessor implements PreProcessor, PostProcessor {
-    		private UnicodeEscapeProcessingProvider _unicodeDecoder;
+        processors.add(() -> ParserConfiguration.this.new UnicodeEscapeProcessor());
+        processors.add(() -> ParserConfiguration.this.new LineEndingProcessor());
+        processors.add(() -> new Processor() {
 
-			@Override
-    		public Provider process(Provider innerProvider) {
-	            if (isPreprocessUnicodeEscapes()) {
-	                _unicodeDecoder = new UnicodeEscapeProcessingProvider(innerProvider);
-					return _unicodeDecoder;
-	            }
-	            return innerProvider;
-    		}
-    		
-			@Override
-			public void process(ParseResult<? extends Node> result,
-					ParserConfiguration configuration) {
-				if (isPreprocessUnicodeEscapes()) {
-					result.getResult().ifPresent(
-						root -> {
-							PositionMapping mapping = _unicodeDecoder.getPositionMapping();
-							if (!mapping.isEmpty()) {
-								root.walk(
-									node -> node.getRange().ifPresent(
-										range -> node.setRange(mapping.transform(range))));
-							}
-						}
-					);
-				}
-			}
-    	}
-    	UnicodeEscapeProcessor unicodeProcessor = new UnicodeEscapeProcessor();
-    	preProcessors.add(unicodeProcessor);
-		postProcessors.add(unicodeProcessor);
-        postProcessors.add((result, configuration) -> {
-            if (configuration.isLexicalPreservationEnabled()) {
-                result.ifSuccessful(LexicalPreservingPrinter::setup);
+            @Override
+            public void postProcess(ParseResult<? extends Node> result, ParserConfiguration configuration) {
+                if (configuration.isAttributeComments()) {
+                    result.ifSuccessful(resultNode -> result.getCommentsCollection()
+                            .ifPresent(comments -> new CommentsInserter(configuration)
+                                    .insertComments(resultNode, comments.copy().getComments())));
+                }
             }
         });
-        postProcessors.add((result, configuration) -> {
-            if (configuration.isAttributeComments()) {
-                result.ifSuccessful(resultNode -> result
-                        .getCommentsCollection().ifPresent(comments ->
-                                new CommentsInserter(configuration).insertComments(resultNode, comments.copy().getComments())));
-            }
-        });
-        postProcessors.add((result, configuration) -> {
-            LanguageLevel languageLevel = getLanguageLevel();
-            if (languageLevel.postProcessor != null) {
-                languageLevel.postProcessor.process(result, configuration);
-            }
-            if (languageLevel.validator != null) {
-                languageLevel.validator.accept(result.getResult().get(), new ProblemReporter(newProblem -> result.getProblems().add(newProblem)));
-            }
-        });
-        postProcessors.add((result, configuration) -> configuration.getSymbolResolver().ifPresent(symbolResolver ->
-                result.ifSuccessful(resultNode -> {
-                    if (resultNode instanceof CompilationUnit) {
-                        resultNode.setData(Node.SYMBOL_RESOLVER_KEY, symbolResolver);
+        processors.add(() -> new Processor() {
+
+            @Override
+            public void postProcess(ParseResult<? extends Node> result, ParserConfiguration configuration) {
+                LanguageLevel languageLevel = getLanguageLevel();
+                if (languageLevel != null) {
+                    if (languageLevel.postProcessor != null) {
+                        languageLevel.postProcessor.postProcess(result, configuration);
                     }
-                })
-        ));
+                    if (languageLevel.validator != null) {
+                        languageLevel.validator.accept(
+                                result.getResult().get(), new ProblemReporter(newProblem -> result.getProblems()
+                                        .add(newProblem)));
+                    }
+                }
+            }
+        });
+        processors.add(() -> new Processor() {
+
+            @Override
+            public void postProcess(ParseResult<? extends Node> result, ParserConfiguration configuration) {
+                configuration
+                        .getSymbolResolver()
+                        .ifPresent(symbolResolver -> result.ifSuccessful(resultNode -> {
+                            if (resultNode instanceof CompilationUnit) {
+                                resultNode.setData(Node.SYMBOL_RESOLVER_KEY, symbolResolver);
+                            }
+                        }));
+            }
+        });
+        processors.add(() -> new Processor() {
+
+            @Override
+            public void postProcess(ParseResult<? extends Node> result, ParserConfiguration configuration) {
+                if (configuration.isLexicalPreservationEnabled()) {
+                    result.ifSuccessful(resultNode -> {
+                        LexicalPreservingPrinter.setup(resultNode);
+                        resultNode.setData(Node.PRINTER_KEY, new DefaultLexicalPreservingPrinter());
+                    });
+                }
+            }
+        });
     }
 
     public boolean isAttributeComments() {
@@ -234,7 +389,8 @@ public class ParserConfiguration {
         return doNotAssignCommentsPrecedingEmptyLines;
     }
 
-    public ParserConfiguration setDoNotAssignCommentsPrecedingEmptyLines(boolean doNotAssignCommentsPrecedingEmptyLines) {
+    public ParserConfiguration setDoNotAssignCommentsPrecedingEmptyLines(
+            boolean doNotAssignCommentsPrecedingEmptyLines) {
         this.doNotAssignCommentsPrecedingEmptyLines = doNotAssignCommentsPrecedingEmptyLines;
         return this;
     }
@@ -243,7 +399,8 @@ public class ParserConfiguration {
         return ignoreAnnotationsWhenAttributingComments;
     }
 
-    public ParserConfiguration setIgnoreAnnotationsWhenAttributingComments(boolean ignoreAnnotationsWhenAttributingComments) {
+    public ParserConfiguration setIgnoreAnnotationsWhenAttributingComments(
+            boolean ignoreAnnotationsWhenAttributingComments) {
         this.ignoreAnnotationsWhenAttributingComments = ignoreAnnotationsWhenAttributingComments;
         return this;
     }
@@ -302,16 +459,12 @@ public class ParserConfiguration {
         return this;
     }
 
-    public List<Providers.PreProcessor> getPreProcessors() {
-        return preProcessors;
-    }
-
-    public List<ParseResult.PostProcessor> getPostProcessors() {
-        return postProcessors;
+    public List<Supplier<Processor>> getProcessors() {
+        return processors;
     }
 
     public ParserConfiguration setLanguageLevel(LanguageLevel languageLevel) {
-        this.languageLevel = assertNotNull(languageLevel);
+        this.languageLevel = languageLevel;
         return this;
     }
 
@@ -335,6 +488,15 @@ public class ParserConfiguration {
         return preprocessUnicodeEscapes;
     }
 
+    public ParserConfiguration setDetectOriginalLineSeparator(boolean detectOriginalLineSeparator) {
+        this.detectOriginalLineSeparator = detectOriginalLineSeparator;
+        return this;
+    }
+
+    public boolean isDetectOriginalLineSeparator() {
+        return detectOriginalLineSeparator;
+    }
+
     public Charset getCharacterEncoding() {
         return characterEncoding;
     }
@@ -346,5 +508,4 @@ public class ParserConfiguration {
         this.characterEncoding = characterEncoding;
         return this;
     }
-
 }

@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -18,24 +18,23 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  */
-
 package com.github.javaparser;
 
-import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.comments.CommentsCollection;
-
+import com.github.javaparser.utils.LineSeparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
-
-import static com.github.javaparser.utils.Utils.EOL;
 
 /**
  * The results given when parsing with an instance of JavaParser.
  */
 public class ParseResult<T> {
+
     private final T result;
+
     private final List<Problem> problems;
+
     private final CommentsCollection commentsCollection;
 
     /**
@@ -74,7 +73,7 @@ public class ParseResult<T> {
     }
 
     /**
-     * @return the <code>i</code>'th encountered parsing problem. May throw <code>IndexOutOfBoundsException</code>.
+     * @return the {@code i}'th encountered parsing problem. May throw <code>IndexOutOfBoundsException</code>.
      */
     public Problem getProblem(int i) {
         return getProblems().get(i);
@@ -99,17 +98,10 @@ public class ParseResult<T> {
         if (isSuccessful()) {
             return "Parsing successful";
         }
-        StringBuilder message = new StringBuilder("Parsing failed:").append(EOL);
+        StringBuilder message = new StringBuilder("Parsing failed:").append(LineSeparator.SYSTEM);
         for (Problem problem : problems) {
-            message.append(problem.toString()).append(EOL);
+            message.append(problem.toString()).append(LineSeparator.SYSTEM);
         }
         return message.toString();
-    }
-
-    /**
-     * A post processor that can be added to ParserConfiguration to add some processing right after parsing.
-     */
-    public interface PostProcessor {
-        void process(ParseResult<? extends Node> result, ParserConfiguration configuration);
     }
 }

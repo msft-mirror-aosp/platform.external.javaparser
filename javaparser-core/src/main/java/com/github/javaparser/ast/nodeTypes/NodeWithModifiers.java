@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -18,27 +18,23 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  */
-
 package com.github.javaparser.ast.nodeTypes;
+
+import static com.github.javaparser.ast.NodeList.toNodeList;
 
 import com.github.javaparser.ast.AccessSpecifier;
 import com.github.javaparser.ast.Modifier;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
-import com.github.javaparser.resolution.declarations.HasAccessSpecifier;
-
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Supplier;
-import java.util.stream.Collectors;
-
-import static com.github.javaparser.ast.NodeList.toNodeList;
 
 /**
  * A Node with Modifiers.
  * Note that not all modifiers may be valid for this node.
  */
 public interface NodeWithModifiers<N extends Node> {
+
     /**
      * Return the modifiers of this variable declaration.
      * Warning: modifying the returned set will not trigger observers,
@@ -77,11 +73,14 @@ public interface NodeWithModifiers<N extends Node> {
     default N setModifier(Modifier.Keyword m, boolean set) {
         if (set) {
             return addModifier(m);
-        } else {
-            return removeModifier(m);
         }
+        return removeModifier(m);
     }
 
+    /**
+     * @param modifier the modifer being searched for
+     * @return true if the modifier has been explicitly added to this node, else false
+     */
     default boolean hasModifier(Modifier.Keyword modifier) {
         for (Modifier m : getModifiers()) {
             if (m.getKeyword() == modifier) {
@@ -113,6 +112,6 @@ public interface NodeWithModifiers<N extends Node> {
                     return AccessSpecifier.PRIVATE;
             }
         }
-        return AccessSpecifier.PACKAGE_PRIVATE;
+        return AccessSpecifier.NONE;
     }
 }

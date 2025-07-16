@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -18,13 +18,11 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  */
-
 package com.github.javaparser.resolution.declarations;
 
-import com.github.javaparser.ast.Node;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
-
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Declaration of a Class (not an interface or an enum).
@@ -34,8 +32,8 @@ import java.util.List;
  *
  * @author Federico Tomassetti
  */
-public interface ResolvedClassDeclaration extends ResolvedReferenceTypeDeclaration,
-        ResolvedTypeParametrizable, HasAccessSpecifier, AssociableToAST<Node> {
+public interface ResolvedClassDeclaration
+        extends ResolvedReferenceTypeDeclaration, ResolvedTypeParametrizable, HasAccessSpecifier {
 
     /**
      * This method should always return true.
@@ -47,12 +45,12 @@ public interface ResolvedClassDeclaration extends ResolvedReferenceTypeDeclarati
 
     /**
      * This is a ReferenceTypeUsage because it could contain type typeParametersValues.
-     * For example: class A extends B<Integer, String>.
+     * For example: {@code class A extends B<Integer, String>}.
      * <p>
      * Note that only the Object class should not have a superclass and therefore
-     * return null.
+     * return empty.
      */
-    ResolvedReferenceType getSuperClass();
+    Optional<ResolvedReferenceType> getSuperClass();
 
     /**
      * Return all the interfaces implemented directly by this class.
@@ -76,15 +74,13 @@ public interface ResolvedClassDeclaration extends ResolvedReferenceTypeDeclarati
      */
     List<ResolvedReferenceType> getAllInterfaces();
 
-    ///
-    /// Constructors
-    ///
-
+    // /
+    // / Constructors
+    // /
     /**
      * List of constructors available for the class.
      * This list should also include the default constructor.
      */
     @Override
     List<ResolvedConstructorDeclaration> getConstructors();
-
 }

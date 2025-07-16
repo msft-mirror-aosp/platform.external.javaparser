@@ -1,26 +1,31 @@
 /*
- * Copyright (C) 2016-2018 The JavaParser Team.
+ * Copyright (C) 2015-2016 Federico Tomassetti
+ * Copyright (C) 2017-2024 The JavaParser Team.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This file is part of JavaParser.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * JavaParser can be used either under the terms of
+ * a) the GNU Lesser General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ * b) the terms of the Apache License
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * You should have received a copy of both licenses in LICENCE.LGPL and
+ * LICENCE.APACHE. Please refer to those files for details.
+ *
+ * JavaParser is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  */
 
 package com.github.javaparser.symbolsolver.resolution.typesolvers;
 
+import com.github.javaparser.resolution.TypeSolver;
 import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
-import com.github.javaparser.symbolsolver.model.resolution.SymbolReference;
-import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
+import com.github.javaparser.resolution.model.SymbolReference;
 import com.github.javaparser.symbolsolver.reflectionmodel.ReflectionFactory;
-
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -46,6 +51,13 @@ public class ClassLoaderTypeSolver implements TypeSolver {
 
     @Override
     public void setParent(TypeSolver parent) {
+        Objects.requireNonNull(parent);
+        if (this.parent != null) {
+            throw new IllegalStateException("This TypeSolver already has a parent.");
+        }
+        if (parent == this) {
+            throw new IllegalStateException("The parent of this TypeSolver cannot be itself.");
+        }
         this.parent = parent;
     }
 
@@ -67,36 +79,34 @@ public class ClassLoaderTypeSolver implements TypeSolver {
                 Class<?> clazz = classLoader.loadClass(name);
                 return SymbolReference.solved(ReflectionFactory.typeDeclarationFor(clazz, getRoot()));
             } catch (NoClassDefFoundError e) {
-                // We can safely ignore this one because it is triggered when there are package names which are almost the
+                // We can safely ignore this one because it is triggered when there are package names which are almost
+                // the
                 // same as class name, with the exclusion of the case.
                 // For example:
                 // java.lang.NoClassDefFoundError: com/github/javaparser/printer/ConcreteSyntaxModel
                 // (wrong name: com/github/javaparser/printer/concretesyntaxmodel)
                 // note that this exception seems to be thrown only on certain platform (mac yes, linux no)
-                return SymbolReference.unsolved(ResolvedReferenceTypeDeclaration.class);
+                return SymbolReference.unsolved();
             } catch (ClassNotFoundException e) {
                 // it could be an inner class
                 int lastDot = name.lastIndexOf('.');
                 if (lastDot == -1) {
-                    return SymbolReference.unsolved(ResolvedReferenceTypeDeclaration.class);
-                } else {
-                    String parentName = name.substring(0, lastDot);
-                    String childName = name.substring(lastDot + 1);
-                    SymbolReference<ResolvedReferenceTypeDeclaration> parent = tryToSolveType(parentName);
-                    if (parent.isSolved()) {
-                        Optional<ResolvedReferenceTypeDeclaration> innerClass = parent.getCorrespondingDeclaration()
-                                .internalTypes()
-                                .stream().filter(it -> it.getName().equals(childName)).findFirst();
-                        return innerClass.map(SymbolReference::solved)
-                                .orElseGet(() -> SymbolReference.unsolved(ResolvedReferenceTypeDeclaration.class));
-                    } else {
-                        return SymbolReference.unsolved(ResolvedReferenceTypeDeclaration.class);
-                    }
+                    return SymbolReference.unsolved();
                 }
+                String parentName = name.substring(0, lastDot);
+                String childName = name.substring(lastDot + 1);
+                SymbolReference<ResolvedReferenceTypeDeclaration> parent = tryToSolveType(parentName);
+                if (parent.isSolved()) {
+                    Optional<ResolvedReferenceTypeDeclaration> innerClass =
+                            parent.getCorrespondingDeclaration().internalTypes().stream()
+                                    .filter(it -> it.getName().equals(childName))
+                                    .findFirst();
+                    return innerClass.map(SymbolReference::solved).orElseGet(() -> SymbolReference.unsolved());
+                }
+                return SymbolReference.unsolved();
             }
         } else {
-            return SymbolReference.unsolved(ResolvedReferenceTypeDeclaration.class);
+            return SymbolReference.unsolved();
         }
     }
-
 }

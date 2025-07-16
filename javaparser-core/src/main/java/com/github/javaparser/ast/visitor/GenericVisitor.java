@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -50,6 +50,10 @@ public interface GenericVisitor<R, A> {
 
     // - Body ----------------------------------------------
     R visit(ClassOrInterfaceDeclaration n, A arg);
+
+    R visit(RecordDeclaration n, A arg);
+
+    R visit(CompactConstructorDeclaration n, A arg);
 
     R visit(EnumDeclaration n, A arg);
 
@@ -156,6 +160,8 @@ public interface GenericVisitor<R, A> {
 
     R visit(LocalClassDeclarationStmt n, A arg);
 
+    R visit(LocalRecordDeclarationStmt n, A arg);
+
     R visit(AssertStmt n, A arg);
 
     R visit(BlockStmt n, A arg);
@@ -229,4 +235,12 @@ public interface GenericVisitor<R, A> {
     R visit(Modifier n, A arg);
 
     R visit(SwitchExpr n, A arg);
+
+    R visit(YieldStmt n, A arg);
+
+    R visit(TextBlockLiteralExpr n, A arg);
+
+    R visit(TypePatternExpr n, A arg);
+
+    R visit(RecordPatternExpr n, A arg);
 }

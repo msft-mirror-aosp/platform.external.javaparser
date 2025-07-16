@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -18,16 +18,16 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  */
-
 package com.github.javaparser.printer.lexicalpreservation;
 
 import com.github.javaparser.JavaToken;
+import com.github.javaparser.JavaToken.Kind;
 import com.github.javaparser.Range;
 import com.github.javaparser.ast.Node;
-
 import java.util.Optional;
 
-class TokenTextElement extends TextElement {
+public class TokenTextElement extends TextElement {
+
     private final JavaToken token;
 
     TokenTextElement(JavaToken token) {
@@ -43,16 +43,16 @@ class TokenTextElement extends TextElement {
     }
 
     @Override
-    String expand() {
+    public String expand() {
         return token.getText();
     }
 
     // Visible for testing
-    String getText() {
+    public String getText() {
         return token.getText();
     }
 
-    int getTokenKind() {
+    public int getTokenKind() {
         return token.getKind();
     }
 
@@ -64,9 +64,7 @@ class TokenTextElement extends TextElement {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         TokenTextElement that = (TokenTextElement) o;
-
         return token.equals(that.token);
     }
 
@@ -106,6 +104,11 @@ class TokenTextElement extends TextElement {
     }
 
     @Override
+    public boolean isSeparator() {
+        return token.getCategory().isSeparator();
+    }
+
+    @Override
     public boolean isNewline() {
         return token.getCategory().isEndOfLine();
     }
@@ -116,7 +119,32 @@ class TokenTextElement extends TextElement {
     }
 
     @Override
+    public boolean isIdentifier() {
+        return getToken().getCategory().isIdentifier();
+    }
+
+    @Override
+    public boolean isKeyword() {
+        return getToken().getCategory().isKeyword();
+    }
+
+    @Override
+    public boolean isLiteral() {
+        return getToken().getCategory().isLiteral();
+    }
+
+    @Override
+    public boolean isPrimitive() {
+        return Kind.valueOf(getTokenKind()).isPrimitive();
+    }
+
+    @Override
     Optional<Range> getRange() {
         return token.getRange();
+    }
+
+    @Override
+    public void accept(LexicalPreservingVisitor visitor) {
+        visitor.visit(this);
     }
 }

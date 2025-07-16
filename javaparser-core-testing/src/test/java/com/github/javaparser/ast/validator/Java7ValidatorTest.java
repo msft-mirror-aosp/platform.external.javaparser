@@ -1,4 +1,31 @@
+/*
+ * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
+ *
+ * This file is part of JavaParser.
+ *
+ * JavaParser can be used either under the terms of
+ * a) the GNU Lesser General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ * b) the terms of the Apache License
+ *
+ * You should have received a copy of both licenses in LICENCE.LGPL and
+ * LICENCE.APACHE. Please refer to those files for details.
+ *
+ * JavaParser is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ */
+
 package com.github.javaparser.ast.validator;
+
+import static com.github.javaparser.ParseStart.*;
+import static com.github.javaparser.ParserConfiguration.LanguageLevel.JAVA_7;
+import static com.github.javaparser.Providers.provider;
+import static com.github.javaparser.utils.TestUtils.assertNoProblems;
+import static com.github.javaparser.utils.TestUtils.assertProblems;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseResult;
@@ -9,30 +36,25 @@ import com.github.javaparser.ast.expr.Expression;
 import com.github.javaparser.ast.stmt.Statement;
 import com.github.javaparser.ast.type.ClassOrInterfaceType;
 import com.github.javaparser.ast.type.UnionType;
+import com.github.javaparser.ast.validator.language_level_validations.Java7Validator;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.Test;
-
-import java.util.*;
-
-import static com.github.javaparser.ParseStart.COMPILATION_UNIT;
-import static com.github.javaparser.ParseStart.EXPRESSION;
-import static com.github.javaparser.ParseStart.STATEMENT;
-import static com.github.javaparser.ParserConfiguration.LanguageLevel.*;
-import static com.github.javaparser.Providers.provider;
-import static com.github.javaparser.utils.TestUtils.assertNoProblems;
-import static com.github.javaparser.utils.TestUtils.assertProblems;
 
 class Java7ValidatorTest {
     public static final JavaParser javaParser = new JavaParser(new ParserConfiguration().setLanguageLevel(JAVA_7));
 
     @Test
     void generics() {
-        ParseResult<CompilationUnit> result = javaParser.parse(COMPILATION_UNIT, provider("class X<A>{List<String> b = new ArrayList<>();}"));
+        ParseResult<CompilationUnit> result =
+                javaParser.parse(COMPILATION_UNIT, provider("class X<A>{List<String> b = new ArrayList<>();}"));
         assertNoProblems(result);
     }
 
     @Test
     void defaultMethodWithoutBody() {
-        ParseResult<CompilationUnit> result = javaParser.parse(COMPILATION_UNIT, provider("interface X {default void a();}"));
+        ParseResult<CompilationUnit> result =
+                javaParser.parse(COMPILATION_UNIT, provider("interface X {default void a();}"));
         assertProblems(result, "(line 1,col 14) 'default' is not allowed here.");
     }
 
@@ -84,7 +106,7 @@ class Java7ValidatorTest {
 
         List<Problem> problems = new ArrayList<>();
         new Java7Validator().accept(unionType, new ProblemReporter(problems::add));
-        
+
         assertProblems(problems, "UnionType.elements can not be empty.");
     }
 
@@ -95,13 +117,15 @@ class Java7ValidatorTest {
 
         List<Problem> problems = new ArrayList<>();
         new Java7Validator().accept(unionType, new ProblemReporter(problems::add));
-        
+
         assertProblems(problems, "Union type (multi catch) must have at least two elements.");
     }
 
     @Test
     void noLambdas() {
         ParseResult<Statement> result = javaParser.parse(STATEMENT, provider("a(() -> 1);"));
-        assertProblems(result, "(line 1,col 3) Lambdas are not supported.");
+        assertProblems(
+                result,
+                "(line 1,col 3) Lambdas are not supported. Pay attention that this feature is supported starting from 'JAVA_8' language level. If you need that feature the language level must be configured in the configuration before parsing the source files.");
     }
 }

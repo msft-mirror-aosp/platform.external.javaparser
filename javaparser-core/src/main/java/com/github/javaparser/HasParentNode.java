@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -18,12 +18,10 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  */
-
 package com.github.javaparser;
 
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.observer.Observable;
-
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -31,6 +29,13 @@ import java.util.function.Predicate;
  * An object that can have a parent node.
  */
 public interface HasParentNode<T> extends Observable {
+
+    /**
+     * Returns true if the parent has a parent
+     */
+    default boolean hasParentNode() {
+        return getParentNode().isPresent();
+    }
 
     /**
      * Returns the parent node, or {@code Optional.empty} if no parent is set.
@@ -41,7 +46,7 @@ public interface HasParentNode<T> extends Observable {
      * Sets the parent node.
      *
      * @param parentNode the parent node, or {@code null} to set no parent.
-     * @return return {@code this}
+     * @return {@code this}
      */
     T setParentNode(Node parentNode);
 
@@ -58,25 +63,38 @@ public interface HasParentNode<T> extends Observable {
      * Walks the parents of this node and returns the first node of type {@code type}, or {@code empty()} if none is
      * found. The given type may also be an interface type, such as one of the {@code NodeWith...} interface types.
      */
-    default <N> Optional<N> findAncestor(Class<N> type) {
-        return findAncestor(type, x -> true);
+    default <N> Optional<N> findAncestor(Class<N>... types) {
+        return findAncestor(x -> true, types);
     }
 
     /**
      * Walks the parents of this node and returns the first node of type {@code type} that matches {@code predicate}, or
      * {@code empty()} if none is found. The given type may also be an interface type, such as one of the
      * {@code NodeWith...} interface types.
+     * @deprecated
+     * This method is no longer acceptable to find ancestor.
+     * <p> Use {@link findAncestor(Predicate, Class)} instead.
      */
+    @Deprecated
     default <N> Optional<N> findAncestor(Class<N> type, Predicate<N> predicate) {
-        Optional<Node> possibleParent = getParentNode();
-        while (possibleParent.isPresent()) {
-            Node parent = possibleParent.get();
+        return findAncestor(predicate, type);
+    }
+
+    /**
+     * Walks the parents of this node and returns the first node that matches one of types {@code types}, or
+     * {@code empty()} if none is found. The given type may also be an interface type, such as one of the
+     * {@code NodeWith...} interface types.
+     * @param <N>
+     */
+    default <N> Optional<N> findAncestor(Predicate<N> predicate, Class<N>... types) {
+        if (!hasParentNode()) return Optional.empty();
+        Node parent = getParentNode().get();
+        for (Class<N> type : types) {
             if (type.isAssignableFrom(parent.getClass()) && predicate.test(type.cast(parent))) {
                 return Optional.of(type.cast(parent));
             }
-            possibleParent = parent.getParentNode();
         }
-        return Optional.empty();
+        return parent.findAncestor(predicate, types);
     }
 
     /**
@@ -88,7 +106,6 @@ public interface HasParentNode<T> extends Observable {
      * @see Node#isAncestorOf(Node)
      */
     default boolean isDescendantOf(Node ancestor) {
-        return findAncestor(Node.class, n -> n == ancestor).isPresent();
+        return findAncestor(n -> n == ancestor, Node.class).isPresent();
     }
-
 }

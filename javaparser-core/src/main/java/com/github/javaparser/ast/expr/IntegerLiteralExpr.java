@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -20,29 +20,37 @@
  */
 package com.github.javaparser.ast.expr;
 
+import static com.github.javaparser.utils.Utils.hasUnaryMinusAsParent;
+
+import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.AllFieldsConstructor;
-import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.Generated;
 import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.github.javaparser.metamodel.IntegerLiteralExprMetaModel;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
-import com.github.javaparser.TokenRange;
-import java.util.function.Consumer;
+import java.util.Objects;
 import java.util.Optional;
-import com.github.javaparser.ast.Generated;
+import java.util.function.Consumer;
 
 /**
  * All ways to specify an int literal.
- * <br/><code>8934</code>
- * <br/><code>0x01</code>
- * <br/><code>022</code>
- * <br/><code>0B10101010</code>
- * <br/><code>99999999L</code>
+ *
+ * <ul>
+ * <li>{@code 8934}</li>
+ * <li>{@code 0x01}</li>
+ * <li>{@code 022}</li>
+ * <li>{@code 0B10101010}</li>
+ * </ul>
  *
  * @author Julio Vilmar Gesser
  */
 public class IntegerLiteralExpr extends LiteralStringValueExpr {
+
+    public static final String MAX_31_BIT_UNSIGNED_VALUE_AS_STRING = "2147483648";
+
+    public static final long MAX_31_BIT_UNSIGNED_VALUE_AS_LONG = 2147483648L;
 
     public IntegerLiteralExpr() {
         this(null, "0");
@@ -62,6 +70,11 @@ public class IntegerLiteralExpr extends LiteralStringValueExpr {
         customInitialization();
     }
 
+    /**
+     * @deprecated This function is deprecated in favor of {@link #IntegerLiteralExpr(String)}. Please refer to the
+     * {@link #asNumber()} function for valid formats and how to construct literals holding negative values.
+     */
+    @Deprecated
     public IntegerLiteralExpr(final int value) {
         this(null, String.valueOf(value));
     }
@@ -78,17 +91,13 @@ public class IntegerLiteralExpr extends LiteralStringValueExpr {
         v.visit(this, arg);
     }
 
-    @Override
-    @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
-    public boolean remove(Node node) {
-        if (node == null)
-            return false;
-        return super.remove(node);
-    }
-
     /**
      * @return the literal value as an integer while respecting different number representations
+     * @deprecated This function has issues with corner cases, such as 2147483648, so please use {@link
+     * IntegerLiteralExpr#asNumber()}. It will be made private or merged with {@link IntegerLiteralExpr#asNumber()} in
+     * future releases
      */
+    @Deprecated
     public int asInt() {
         String result = value.replaceAll("_", "");
         if (result.startsWith("0x") || result.startsWith("0X")) {
@@ -103,6 +112,32 @@ public class IntegerLiteralExpr extends LiteralStringValueExpr {
         return Integer.parseInt(result);
     }
 
+    /**
+     * This function returns a representation of the literal value as a number. This will return an integer, except for
+     * the case when the literal has the value {@code 2147483648}. This special literal is only allowed in the
+     * expression {@code -2147483648} which represents <code>Integer.MIN_VALUE</code>). However 2147483648 (2^31)
+     * is out of range of int, which is -(2^31) to (2^31)-1 and thus a long must be returned.
+     *
+     * <p>Note, that this function will NOT return a negative number if the literal was specified in decimal, since
+     * according to the language specification (chapter 3.10.1) an expression such as {@code -1} is represented by
+     * a unary expression with a minus operator and the literal {@code 1}. It is however possible to represent
+     * negative numbers in a literal directly, i.e. by using the binary or hexadecimal representation. For example
+     * {@code 0xffff_ffff} represents the value <code> -1</code>.
+     *
+     * @return the literal value as a number while respecting different number representations
+     */
+    public Number asNumber() {
+        if (Objects.equals(value, MAX_31_BIT_UNSIGNED_VALUE_AS_STRING) && hasUnaryMinusAsParent(this)) {
+            return MAX_31_BIT_UNSIGNED_VALUE_AS_LONG;
+        }
+        return asInt();
+    }
+
+    /**
+     * @deprecated This function is deprecated in favor of {@link #setValue(String)}. Please refer to the {@link
+     * #asNumber()} function for valid formats and how to construct literals holding negative values.
+     */
+    @Deprecated
     public IntegerLiteralExpr setInt(int value) {
         this.value = String.valueOf(value);
         return this;
@@ -121,14 +156,6 @@ public class IntegerLiteralExpr extends LiteralStringValueExpr {
     }
 
     @Override
-    @Generated("com.github.javaparser.generator.core.node.ReplaceMethodGenerator")
-    public boolean replace(Node node, Node replacementNode) {
-        if (node == null)
-            return false;
-        return super.replace(node, replacementNode);
-    }
-
-    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public boolean isIntegerLiteralExpr() {
         return true;
@@ -140,6 +167,7 @@ public class IntegerLiteralExpr extends LiteralStringValueExpr {
         return this;
     }
 
+    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public void ifIntegerLiteralExpr(Consumer<IntegerLiteralExpr> action) {
         action.accept(this);

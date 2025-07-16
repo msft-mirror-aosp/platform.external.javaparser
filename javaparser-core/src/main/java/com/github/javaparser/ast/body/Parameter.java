@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -20,10 +20,10 @@
  */
 package com.github.javaparser.ast.body;
 
-import com.github.javaparser.ast.AllFieldsConstructor;
-import com.github.javaparser.ast.Modifier;
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.NodeList;
+import static com.github.javaparser.utils.Utils.assertNotNull;
+
+import com.github.javaparser.TokenRange;
+import com.github.javaparser.ast.*;
 import com.github.javaparser.ast.expr.AnnotationExpr;
 import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.nodeTypes.NodeWithAnnotations;
@@ -38,24 +38,26 @@ import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
 import com.github.javaparser.metamodel.JavaParserMetaModel;
 import com.github.javaparser.metamodel.ParameterMetaModel;
-import static com.github.javaparser.utils.Utils.assertNotNull;
-import com.github.javaparser.TokenRange;
 import com.github.javaparser.resolution.Resolvable;
 import com.github.javaparser.resolution.declarations.ResolvedParameterDeclaration;
-import com.github.javaparser.ast.Generated;
 
 /**
  * The parameters to a method or lambda. Lambda parameters may have inferred types, in that case "type" is UnknownType.
- * <br/>Note that <a href="https://en.wikipedia.org/wiki/Parameter_(computer_programming)#Parameters_and_arguments">parameters
- * are different from arguments.</a> <br/>"String x" and "float y" are the parameters in <code>int abc(String x, float
- * y) {...}</code>
+ * <br>Note that <a href="https://en.wikipedia.org/wiki/Parameter_(computer_programming)#Parameters_and_arguments">parameters
+ * are different from arguments.</a> <br>"String x" and "float y" are the parameters in {@code int abc(String x, float
+ * y) {...}}
  *
- * <br/>All annotations preceding the type will be set on this object, not on the type.
+ * <br>All annotations preceding the type will be set on this object, not on the type.
  * JavaParser doesn't know if it they are applicable to the parameter or the type.
  *
  * @author Julio Vilmar Gesser
  */
-public class Parameter extends Node implements NodeWithType<Parameter, Type>, NodeWithAnnotations<Parameter>, NodeWithSimpleName<Parameter>, NodeWithFinalModifier<Parameter>, Resolvable<ResolvedParameterDeclaration> {
+public class Parameter extends Node
+        implements NodeWithType<Parameter, Type>,
+                NodeWithAnnotations<Parameter>,
+                NodeWithSimpleName<Parameter>,
+                NodeWithFinalModifier<Parameter>,
+                Resolvable<ResolvedParameterDeclaration> {
 
     private Type type;
 
@@ -70,7 +72,14 @@ public class Parameter extends Node implements NodeWithType<Parameter, Type>, No
     private SimpleName name;
 
     public Parameter() {
-        this(null, new NodeList<>(), new NodeList<>(), new ClassOrInterfaceType(), false, new NodeList<>(), new SimpleName());
+        this(
+                null,
+                new NodeList<>(),
+                new NodeList<>(),
+                new ClassOrInterfaceType(),
+                false,
+                new NodeList<>(),
+                new SimpleName());
     }
 
     public Parameter(Type type, SimpleName name) {
@@ -92,7 +101,13 @@ public class Parameter extends Node implements NodeWithType<Parameter, Type>, No
     }
 
     @AllFieldsConstructor
-    public Parameter(NodeList<Modifier> modifiers, NodeList<AnnotationExpr> annotations, Type type, boolean isVarArgs, NodeList<AnnotationExpr> varArgsAnnotations, SimpleName name) {
+    public Parameter(
+            NodeList<Modifier> modifiers,
+            NodeList<AnnotationExpr> annotations,
+            Type type,
+            boolean isVarArgs,
+            NodeList<AnnotationExpr> varArgsAnnotations,
+            SimpleName name) {
         this(null, modifiers, annotations, type, isVarArgs, varArgsAnnotations, name);
     }
 
@@ -100,7 +115,14 @@ public class Parameter extends Node implements NodeWithType<Parameter, Type>, No
      * This constructor is used by the parser and is considered private.
      */
     @Generated("com.github.javaparser.generator.core.node.MainConstructorGenerator")
-    public Parameter(TokenRange tokenRange, NodeList<Modifier> modifiers, NodeList<AnnotationExpr> annotations, Type type, boolean isVarArgs, NodeList<AnnotationExpr> varArgsAnnotations, SimpleName name) {
+    public Parameter(
+            TokenRange tokenRange,
+            NodeList<Modifier> modifiers,
+            NodeList<AnnotationExpr> annotations,
+            Type type,
+            boolean isVarArgs,
+            NodeList<AnnotationExpr> varArgsAnnotations,
+            SimpleName name) {
         super(tokenRange);
         setModifiers(modifiers);
         setAnnotations(annotations);
@@ -137,11 +159,10 @@ public class Parameter extends Node implements NodeWithType<Parameter, Type>, No
     public Parameter setType(final Type type) {
         assertNotNull(type);
         if (type == this.type) {
-            return (Parameter) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.TYPE, this.type, type);
-        if (this.type != null)
-            this.type.setParentNode(null);
+        if (this.type != null) this.type.setParentNode(null);
         this.type = type;
         setAsParentNodeOf(type);
         return this;
@@ -150,7 +171,7 @@ public class Parameter extends Node implements NodeWithType<Parameter, Type>, No
     @Generated("com.github.javaparser.generator.core.node.PropertyGenerator")
     public Parameter setVarArgs(final boolean isVarArgs) {
         if (isVarArgs == this.isVarArgs) {
-            return (Parameter) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.VAR_ARGS, this.isVarArgs, isVarArgs);
         this.isVarArgs = isVarArgs;
@@ -189,11 +210,10 @@ public class Parameter extends Node implements NodeWithType<Parameter, Type>, No
     public Parameter setAnnotations(final NodeList<AnnotationExpr> annotations) {
         assertNotNull(annotations);
         if (annotations == this.annotations) {
-            return (Parameter) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.ANNOTATIONS, this.annotations, annotations);
-        if (this.annotations != null)
-            this.annotations.setParentNode(null);
+        if (this.annotations != null) this.annotations.setParentNode(null);
         this.annotations = annotations;
         setAsParentNodeOf(annotations);
         return this;
@@ -203,11 +223,10 @@ public class Parameter extends Node implements NodeWithType<Parameter, Type>, No
     public Parameter setName(final SimpleName name) {
         assertNotNull(name);
         if (name == this.name) {
-            return (Parameter) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.NAME, this.name, name);
-        if (this.name != null)
-            this.name.setParentNode(null);
+        if (this.name != null) this.name.setParentNode(null);
         this.name = name;
         setAsParentNodeOf(name);
         return this;
@@ -217,11 +236,10 @@ public class Parameter extends Node implements NodeWithType<Parameter, Type>, No
     public Parameter setModifiers(final NodeList<Modifier> modifiers) {
         assertNotNull(modifiers);
         if (modifiers == this.modifiers) {
-            return (Parameter) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.MODIFIERS, this.modifiers, modifiers);
-        if (this.modifiers != null)
-            this.modifiers.setParentNode(null);
+        if (this.modifiers != null) this.modifiers.setParentNode(null);
         this.modifiers = modifiers;
         setAsParentNodeOf(modifiers);
         return this;
@@ -230,8 +248,9 @@ public class Parameter extends Node implements NodeWithType<Parameter, Type>, No
     @Override
     @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
     public boolean remove(Node node) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         for (int i = 0; i < annotations.size(); i++) {
             if (annotations.get(i) == node) {
                 annotations.remove(i);
@@ -262,11 +281,10 @@ public class Parameter extends Node implements NodeWithType<Parameter, Type>, No
     public Parameter setVarArgsAnnotations(final NodeList<AnnotationExpr> varArgsAnnotations) {
         assertNotNull(varArgsAnnotations);
         if (varArgsAnnotations == this.varArgsAnnotations) {
-            return (Parameter) this;
+            return this;
         }
         notifyPropertyChange(ObservableProperty.VAR_ARGS_ANNOTATIONS, this.varArgsAnnotations, varArgsAnnotations);
-        if (this.varArgsAnnotations != null)
-            this.varArgsAnnotations.setParentNode(null);
+        if (this.varArgsAnnotations != null) this.varArgsAnnotations.setParentNode(null);
         this.varArgsAnnotations = varArgsAnnotations;
         setAsParentNodeOf(varArgsAnnotations);
         return this;
@@ -287,8 +305,9 @@ public class Parameter extends Node implements NodeWithType<Parameter, Type>, No
     @Override
     @Generated("com.github.javaparser.generator.core.node.ReplaceMethodGenerator")
     public boolean replace(Node node, Node replacementNode) {
-        if (node == null)
+        if (node == null) {
             return false;
+        }
         for (int i = 0; i < annotations.size(); i++) {
             if (annotations.get(i) == node) {
                 annotations.set(i, (AnnotationExpr) replacementNode);
@@ -321,5 +340,27 @@ public class Parameter extends Node implements NodeWithType<Parameter, Type>, No
     @Override
     public ResolvedParameterDeclaration resolve() {
         return getSymbolResolver().resolveDeclaration(this, ResolvedParameterDeclaration.class);
+    }
+
+    /**
+     * Record components (parameters here) are implicitly final, even without the explicitly-added modifier.
+     * https://openjdk.java.net/jeps/359#Restrictions-on-records
+     *
+     * If wanting to find out if the keyword {@code final} has been explicitly added to this parameter,
+     * you should use {@code node.hasModifier(Modifier.Keyword.FINAL)}
+     *
+     * @return true if the node parameter is explicitly final (keyword attached) or implicitly final (e.g. parameters to a record)
+     */
+    @Override
+    public boolean isFinal() {
+        // RecordDeclaration-specific code
+        if (getParentNode().isPresent()) {
+            Node parentNode = getParentNode().get();
+            if (parentNode instanceof RecordDeclaration) {
+                return true;
+            }
+        }
+        // Otherwise use the default implementation.
+        return NodeWithFinalModifier.super.isFinal();
     }
 }

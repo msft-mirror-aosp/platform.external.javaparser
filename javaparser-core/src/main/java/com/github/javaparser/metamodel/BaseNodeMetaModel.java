@@ -1,30 +1,67 @@
+/*
+ * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
+ *
+ * This file is part of JavaParser.
+ *
+ * JavaParser can be used either under the terms of
+ * a) the GNU Lesser General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ * b) the terms of the Apache License
+ *
+ * You should have received a copy of both licenses in LICENCE.LGPL and
+ * LICENCE.APACHE. Please refer to those files for details.
+ *
+ * JavaParser is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ */
 package com.github.javaparser.metamodel;
+
+import static com.github.javaparser.utils.Utils.decapitalize;
 
 import com.github.javaparser.ast.AllFieldsConstructor;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
-
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.*;
-
-import static com.github.javaparser.utils.Utils.decapitalize;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Meta-data about all classes in the AST. These are all Nodes, except NodeList.
  */
 public abstract class BaseNodeMetaModel {
+
     private final Optional<BaseNodeMetaModel> superNodeMetaModel;
+
     private final List<PropertyMetaModel> declaredPropertyMetaModels = new ArrayList<>();
+
     private final List<PropertyMetaModel> derivedPropertyMetaModels = new ArrayList<>();
+
     private final List<PropertyMetaModel> constructorParameters = new ArrayList<>();
+
     private final Class<? extends Node> type;
+
     private final String name;
+
     private final String packageName;
+
     private final boolean isAbstract;
+
     private final boolean hasWildcard;
 
-    public BaseNodeMetaModel(Optional<BaseNodeMetaModel> superNodeMetaModel, Class<? extends Node> type, String name, String packageName, boolean isAbstract, boolean hasWildcard) {
+    public BaseNodeMetaModel(
+            Optional<BaseNodeMetaModel> superNodeMetaModel,
+            Class<? extends Node> type,
+            String name,
+            String packageName,
+            boolean isAbstract,
+            boolean hasWildcard) {
         this.superNodeMetaModel = superNodeMetaModel;
         this.type = type;
         this.name = name;
@@ -138,11 +175,8 @@ public abstract class BaseNodeMetaModel {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         BaseNodeMetaModel classMetaModel = (BaseNodeMetaModel) o;
-
         if (!type.equals(classMetaModel.type)) return false;
-
         return true;
     }
 
@@ -183,7 +217,7 @@ public abstract class BaseNodeMetaModel {
     /**
      * Creates a new node of this type.
      *
-     * @param parameters a map of propertyName -> value.
+     * @param parameters a map of propertyName -&gt; value.
      * This should at least contain a pair for every required property for this node.
      */
     public Node construct(Map<String, Object> parameters) {

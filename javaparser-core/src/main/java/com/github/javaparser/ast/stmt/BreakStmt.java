@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -23,61 +23,63 @@ package com.github.javaparser.ast.stmt;
 import com.github.javaparser.TokenRange;
 import com.github.javaparser.ast.AllFieldsConstructor;
 import com.github.javaparser.ast.Generated;
-import com.github.javaparser.ast.expr.Expression;
-import com.github.javaparser.ast.expr.NameExpr;
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.expr.SimpleName;
 import com.github.javaparser.ast.observer.ObservableProperty;
+import com.github.javaparser.ast.visitor.CloneVisitor;
 import com.github.javaparser.ast.visitor.GenericVisitor;
 import com.github.javaparser.ast.visitor.VoidVisitor;
+import com.github.javaparser.metamodel.BreakStmtMetaModel;
+import com.github.javaparser.metamodel.JavaParserMetaModel;
 import com.github.javaparser.metamodel.OptionalProperty;
 import java.util.Optional;
 import java.util.function.Consumer;
-import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.visitor.CloneVisitor;
-import com.github.javaparser.metamodel.BreakStmtMetaModel;
-import com.github.javaparser.metamodel.JavaParserMetaModel;
 
 /**
  * <h1>The break statement</h1>
  * <h2>Java 1.0-11</h2>
  * Break has an optional label:
- * <br/><code>break;</code>
- * <br/><code>break somewhere;</code>
- * <br/>The label is in the "value" property as a NameExpr.
+ * <br>{@code break;}
+ * <br>{@code break somewhere;}
+ * <br>The label is in the "value" property as a NameExpr.
  * <h2>Java 12</h2>
  * Break can now also have any expression,
  * to be used in the switch-expression:
- * <br/><code>break 123+456;</code>
- * <br/><code>break "more or less";</code>
- * <br/>The expression will be in the "value" property.
+ * <br>{@code break 123+456;}
+ * <br>{@code break "more or less";}
+ * <br>The expression will be in the "value" property.
+ * <h2>Java 13</h2>
+ * The break statement has been reverted to what it was before Java 12, and break-with-value is now the YieldStatement.
  *
  * @author Julio Vilmar Gesser
  * @see com.github.javaparser.ast.expr.SwitchExpr
+ * @see YieldStmt
  */
 public class BreakStmt extends Statement {
 
     @OptionalProperty
-    private Expression value;
+    private SimpleName label;
 
     public BreakStmt() {
-        this(null, new NameExpr());
+        this(null, null);
     }
 
     public BreakStmt(final String label) {
-        this(null, new NameExpr(label));
+        this(null, new SimpleName(label));
     }
 
     @AllFieldsConstructor
-    public BreakStmt(final Expression value) {
-        this(null, value);
+    public BreakStmt(final SimpleName label) {
+        this(null, label);
     }
 
     /**
      * This constructor is used by the parser and is considered private.
      */
     @Generated("com.github.javaparser.generator.core.node.MainConstructorGenerator")
-    public BreakStmt(TokenRange tokenRange, Expression value) {
+    public BreakStmt(TokenRange tokenRange, SimpleName label) {
         super(tokenRange);
-        setValue(value);
+        setLabel(label);
         customInitialization();
     }
 
@@ -94,37 +96,37 @@ public class BreakStmt extends Statement {
     }
 
     @Generated("com.github.javaparser.generator.core.node.PropertyGenerator")
-    public Optional<Expression> getValue() {
-        return Optional.ofNullable(value);
+    public Optional<SimpleName> getLabel() {
+        return Optional.ofNullable(label);
     }
 
     /**
      * Sets the label
      *
-     * @param value the label or the expression, can be null
+     * @param label the label, can be null
      * @return this, the BreakStmt
      */
     @Generated("com.github.javaparser.generator.core.node.PropertyGenerator")
-    public BreakStmt setValue(final Expression value) {
-        if (value == this.value) {
-            return (BreakStmt) this;
+    public BreakStmt setLabel(final SimpleName label) {
+        if (label == this.label) {
+            return this;
         }
-        notifyPropertyChange(ObservableProperty.VALUE, this.value, value);
-        if (this.value != null)
-            this.value.setParentNode(null);
-        this.value = value;
-        setAsParentNodeOf(value);
+        notifyPropertyChange(ObservableProperty.LABEL, this.label, label);
+        if (this.label != null) this.label.setParentNode(null);
+        this.label = label;
+        setAsParentNodeOf(label);
         return this;
     }
 
     @Override
     @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
     public boolean remove(Node node) {
-        if (node == null)
+        if (node == null) {
             return false;
-        if (value != null) {
-            if (node == value) {
-                removeValue();
+        }
+        if (label != null) {
+            if (node == label) {
+                removeLabel();
                 return true;
             }
         }
@@ -132,8 +134,8 @@ public class BreakStmt extends Statement {
     }
 
     @Generated("com.github.javaparser.generator.core.node.RemoveMethodGenerator")
-    public BreakStmt removeValue() {
-        return setValue((Expression) null);
+    public BreakStmt removeLabel() {
+        return setLabel((SimpleName) null);
     }
 
     @Override
@@ -151,11 +153,12 @@ public class BreakStmt extends Statement {
     @Override
     @Generated("com.github.javaparser.generator.core.node.ReplaceMethodGenerator")
     public boolean replace(Node node, Node replacementNode) {
-        if (node == null)
+        if (node == null) {
             return false;
-        if (value != null) {
-            if (node == value) {
-                setValue((Expression) replacementNode);
+        }
+        if (label != null) {
+            if (node == label) {
+                setLabel((SimpleName) replacementNode);
                 return true;
             }
         }
@@ -174,6 +177,7 @@ public class BreakStmt extends Statement {
         return this;
     }
 
+    @Override
     @Generated("com.github.javaparser.generator.core.node.TypeCastingGenerator")
     public void ifBreakStmt(Consumer<BreakStmt> action) {
         action.accept(this);

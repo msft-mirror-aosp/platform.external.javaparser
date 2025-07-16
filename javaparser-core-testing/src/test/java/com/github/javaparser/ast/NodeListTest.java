@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -21,230 +21,20 @@
 
 package com.github.javaparser.ast;
 
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.body.FieldDeclaration;
-import com.github.javaparser.ast.expr.Name;
-import com.github.javaparser.ast.expr.SimpleName;
-import com.github.javaparser.ast.observer.AstObserver;
-import com.github.javaparser.ast.observer.ObservableProperty;
-import com.github.javaparser.ast.type.PrimitiveType;
-import org.junit.jupiter.api.Test;
-
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.List;
-
-import static com.github.javaparser.StaticJavaParser.parse;
 import static com.github.javaparser.ast.NodeList.nodeList;
 import static org.junit.jupiter.api.Assertions.*;
 
-class NodeListTest {
+import com.github.javaparser.ast.expr.*;
+import com.github.javaparser.ast.observer.AstObserver;
+import com.github.javaparser.ast.observer.ObservableProperty;
+import com.github.javaparser.printer.lexicalpreservation.AbstractLexicalPreservingTest;
+import com.github.javaparser.printer.lexicalpreservation.LexicalPreservingPrinter;
+import java.util.*;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
-    private AstObserver createObserver(List<String> changes) {
-        return new AstObserver() {
-            @Override
-            public void propertyChange(Node observedNode, ObservableProperty property, Object oldValue, Object newValue) {
-                changes.add(String.format("change of property %s for %s: from '%s' to '%s'", property, observedNode, oldValue, newValue));
-            }
-
-            @Override
-            public void parentChange(Node observedNode, Node previousParent, Node newParent) {
-                changes.add(String.format("setting parent for %s: was %s, now is %s", observedNode, previousParent, newParent));
-            }
-
-            @Override
-            public void listChange(NodeList observedNode, ListChangeType type, int index, Node nodeAddedOrRemoved) {
-                changes.add(String.format("'%s' %s in list at %d", nodeAddedOrRemoved, type, index));
-            }
-
-            @Override
-            public void listReplacement(NodeList observedNode, int index, Node oldNode, Node newNode) {
-                changes.add(String.format("'%s' %s in list at %d", oldNode, ListChangeType.REMOVAL, index));
-                changes.add(String.format("'%s' %s in list at %d", newNode, ListChangeType.ADDITION, index));
-            }
-        };
-    }
-
-    private FieldDeclaration createIntField(String name) {
-        return new FieldDeclaration(new NodeList<>(), PrimitiveType.intType(), name);
-    }
-
-    @Test
-    void addAllWithoutIndex() {
-        List<String> changes = new LinkedList<>();
-        String code = "class A { void foo(int p) { }}";
-        CompilationUnit cu = parse(code);
-        ClassOrInterfaceDeclaration cd = cu.getClassByName("A").get();
-        cd.getMembers().register(createObserver(changes));
-
-        cd.getMembers().addAll(Arrays.asList(createIntField("a"), createIntField("b"), createIntField("c")));
-        assertEquals(Arrays.asList("'int a;' ADDITION in list at 1",
-                "'int b;' ADDITION in list at 2",
-                "'int c;' ADDITION in list at 3"), changes);
-    }
-
-    @Test
-    void addAllWithIndex() {
-        List<String> changes = new LinkedList<>();
-        String code = "class A { void foo(int p) { }}";
-        CompilationUnit cu = parse(code);
-        ClassOrInterfaceDeclaration cd = cu.getClassByName("A").get();
-        cd.getMembers().register(createObserver(changes));
-
-        cd.getMembers().addAll(0, Arrays.asList(createIntField("a"), createIntField("b"), createIntField("c")));
-        assertEquals(Arrays.asList("'int a;' ADDITION in list at 0",
-                "'int b;' ADDITION in list at 1",
-                "'int c;' ADDITION in list at 2"), changes);
-    }
-
-    @Test
-    void clear() {
-        List<String> changes = new LinkedList<>();
-        String code = "class A { int a; int b; int c; }";
-        CompilationUnit cu = parse(code);
-        ClassOrInterfaceDeclaration cd = cu.getClassByName("A").get();
-        cd.getMembers().register(createObserver(changes));
-
-        cd.getMembers().clear();
-        assertEquals(Arrays.asList("'int a;' REMOVAL in list at 0",
-                "'int b;' REMOVAL in list at 0",
-                "'int c;' REMOVAL in list at 0"), changes);
-    }
-
-    @Test
-    void set() {
-        List<String> changes = new LinkedList<>();
-        String code = "class A { int a; int b; int c; }";
-        CompilationUnit cu = parse(code);
-        ClassOrInterfaceDeclaration cd = cu.getClassByName("A").get();
-        cd.getMembers().register(createObserver(changes));
-
-        cd.getMembers().set(1, createIntField("d"));
-        assertEquals(Arrays.asList("'int b;' REMOVAL in list at 1",
-                "'int d;' ADDITION in list at 1"), changes);
-    }
-
-    @Test
-    void removeNode() {
-        List<String> changes = new LinkedList<>();
-        String code = "class A { int a; int b; int c; int d; int e; }";
-        CompilationUnit cu = parse(code);
-        ClassOrInterfaceDeclaration cd = cu.getClassByName("A").get();
-        cd.getMembers().register(createObserver(changes));
-
-        cd.getMembers().remove(cd.getFieldByName("c").get());
-        assertEquals(Arrays.asList("'int c;' REMOVAL in list at 2"), changes);
-    }
-
-    @Test
-    void removeFirstNode() {
-        List<String> changes = new LinkedList<>();
-        String code = "class A { int a; int b; int c; int d; int e; }";
-        CompilationUnit cu = parse(code);
-        ClassOrInterfaceDeclaration cd = cu.getClassByName("A").get();
-        cd.getMembers().register(createObserver(changes));
-
-        cd.getMembers().removeFirst();
-        assertEquals(Arrays.asList("'int a;' REMOVAL in list at 0"), changes);
-        assertEquals(cd.getMembers().size(), 4);
-
-        for (int i = 3; i >= 0; i--) {
-            assertNotNull(cd.getMembers().removeFirst());
-            assertEquals(cd.getMembers().size(), i);
-        }
-
-        assertEquals(cd.getMembers().size(), 0);
-    }
-
-    @Test
-    void removeLastNode() {
-        List<String> changes = new LinkedList<>();
-        String code = "class A { int a; int b; int c; int d; int e; }";
-        CompilationUnit cu = parse(code);
-        ClassOrInterfaceDeclaration cd = cu.getClassByName("A").get();
-        cd.getMembers().register(createObserver(changes));
-
-        cd.getMembers().removeLast();
-        assertEquals(Arrays.asList("'int e;' REMOVAL in list at 4"), changes);
-        assertEquals(cd.getMembers().size(), 4);
-
-        for (int i = 3; i >= 0; i--) {
-            assertNotNull(cd.getMembers().removeLast());
-            assertEquals(cd.getMembers().size(), i);
-        }
-
-        assertEquals(cd.getMembers().size(), 0);
-    }
-
-    @Test
-    void removeObject() {
-        List<String> changes = new LinkedList<>();
-        String code = "class A { int a; int b; int c; int d; int e; }";
-        CompilationUnit cu = parse(code);
-        ClassOrInterfaceDeclaration cd = cu.getClassByName("A").get();
-        cd.getMembers().register(createObserver(changes));
-
-        cd.getMembers().remove("hi");
-        assertEquals(Arrays.asList(), changes);
-    }
-
-    @Test
-    void removeAll() {
-        List<String> changes = new LinkedList<>();
-        String code = "class A { int a; int b; int c; int d; int e; }";
-        CompilationUnit cu = parse(code);
-        ClassOrInterfaceDeclaration cd = cu.getClassByName("A").get();
-        cd.getMembers().register(createObserver(changes));
-
-        cd.getMembers().removeAll(Arrays.asList(cd.getFieldByName("b").get(), "foo", cd.getFieldByName("d").get()));
-        assertEquals(Arrays.asList("'int b;' REMOVAL in list at 1",
-                "'int d;' REMOVAL in list at 2"), changes);
-    }
-
-    @Test
-    void retainAll() {
-        List<String> changes = new LinkedList<>();
-        String code = "class A { int a; int b; int c; int d; int e; }";
-        CompilationUnit cu = parse(code);
-        ClassOrInterfaceDeclaration cd = cu.getClassByName("A").get();
-        cd.getMembers().register(createObserver(changes));
-
-        cd.getMembers().retainAll(Arrays.asList(cd.getFieldByName("b").get(), "foo", cd.getFieldByName("d").get()));
-        assertEquals(Arrays.asList("'int a;' REMOVAL in list at 0",
-                "'int c;' REMOVAL in list at 1",
-                "'int e;' REMOVAL in list at 2"), changes);
-    }
-
-    @Test
-    void replaceAll() {
-        List<String> changes = new LinkedList<>();
-        String code = "class A { int a; int b; int c; }";
-        CompilationUnit cu = parse(code);
-        ClassOrInterfaceDeclaration cd = cu.getClassByName("A").get();
-        cd.getMembers().register(createObserver(changes));
-
-        cd.getMembers().replaceAll(bodyDeclaration -> {
-            FieldDeclaration clone = (FieldDeclaration) bodyDeclaration.clone();
-            SimpleName id = clone.getVariable(0).getName();
-            id.setIdentifier(id.getIdentifier().toUpperCase());
-            return clone;
-        });
-        assertEquals(Arrays.asList("'int a;' REMOVAL in list at 0", "'int A;' ADDITION in list at 0",
-                "'int b;' REMOVAL in list at 1", "'int B;' ADDITION in list at 1",
-                "'int c;' REMOVAL in list at 2", "'int C;' ADDITION in list at 2"), changes);
-    }
-
-    @Test
-    void removeIf() {
-        List<String> changes = new LinkedList<>();
-        String code = "class A { int a; int longName; int c; }";
-        CompilationUnit cu = parse(code);
-        ClassOrInterfaceDeclaration cd = cu.getClassByName("A").get();
-        cd.getMembers().register(createObserver(changes));
-
-        cd.getMembers().removeIf(m -> ((FieldDeclaration) m).getVariable(0).getName().getIdentifier().length() > 3);
-        assertEquals(Arrays.asList("'int longName;' REMOVAL in list at 1"), changes);
-    }
+class NodeListTest extends AbstractLexicalPreservingTest {
 
     @Test
     void replace() {
@@ -263,6 +53,7 @@ class NodeListTest {
     void toStringTest() {
         final NodeList<Name> list = nodeList(new Name("abc"), new Name("bcd"), new Name("cde"));
 
+        assertEquals(3, list.size());
         assertEquals("[abc, bcd, cde]", list.toString());
     }
 
@@ -272,6 +63,7 @@ class NodeListTest {
 
         list.addFirst(new Name("xxx"));
 
+        assertEquals(4, list.size());
         assertEquals("[xxx, abc, bcd, cde]", list.toString());
     }
 
@@ -281,6 +73,7 @@ class NodeListTest {
 
         list.addLast(new Name("xxx"));
 
+        assertEquals(4, list.size());
         assertEquals("[abc, bcd, cde, xxx]", list.toString());
     }
 
@@ -291,6 +84,7 @@ class NodeListTest {
 
         list.addBefore(new Name("xxx"), n);
 
+        assertEquals(4, list.size());
         assertEquals("[abc, xxx, bcd, cde]", list.toString());
     }
 
@@ -301,6 +95,7 @@ class NodeListTest {
 
         list.addAfter(new Name("xxx"), n);
 
+        assertEquals(4, list.size());
         assertEquals("[abc, bcd, xxx, cde]", list.toString());
     }
 
@@ -311,6 +106,7 @@ class NodeListTest {
 
         list.addBefore(new Name("xxx"), abc);
 
+        assertEquals(4, list.size());
         assertEquals("[xxx, abc, bcd, cde]", list.toString());
     }
 
@@ -321,6 +117,284 @@ class NodeListTest {
 
         list.addAfter(new Name("xxx"), cde);
 
+        assertEquals(4, list.size());
         assertEquals("[abc, bcd, cde, xxx]", list.toString());
+    }
+
+    @Nested
+    class IteratorTest {
+
+        @Nested
+        class ObserversTest {
+            NodeList<Name> list;
+            ListIterator<Name> iterator;
+
+            List<String> propertyChanges;
+            List<String> parentChanges;
+            List<String> listChanges;
+            List<String> listReplacements;
+            AstObserver testObserver = new AstObserver() {
+                @Override
+                public void propertyChange(
+                        Node observedNode, ObservableProperty property, Object oldValue, Object newValue) {
+                    propertyChanges.add(String.format(
+                            "%s.%s changed from %s to %s",
+                            observedNode.getClass().getSimpleName(),
+                            property.name().toLowerCase(),
+                            oldValue,
+                            newValue));
+                }
+
+                @Override
+                public void parentChange(Node observedNode, Node previousParent, Node newParent) {
+                    parentChanges.add(String.format(
+                            "%s 's parent changed from %s to %s",
+                            observedNode.getClass().getSimpleName(), previousParent, newParent));
+                }
+
+                @Override
+                public void listChange(
+                        NodeList<?> observedNode, ListChangeType type, int index, Node nodeAddedOrRemoved) {
+                    listChanges.add(String.format(
+                            "%s %s to/from %s at position %d",
+                            nodeAddedOrRemoved.getClass().getSimpleName(),
+                            type.name(),
+                            observedNode.getClass().getSimpleName(),
+                            index));
+                }
+
+                @Override
+                public void listReplacement(NodeList<?> observedNode, int index, Node oldNode, Node newNode) {
+                    listReplacements.add(String.format(
+                            "%s replaced within %s at position %d",
+                            newNode.getClass().getSimpleName(),
+                            observedNode.getClass().getSimpleName(),
+                            index));
+                }
+            };
+
+            @BeforeEach
+            void pre() {
+                list = nodeList();
+                list.register(testObserver);
+                iterator = list.listIterator();
+
+                propertyChanges = new ArrayList<>();
+                parentChanges = new ArrayList<>();
+                listChanges = new ArrayList<>();
+                listReplacements = new ArrayList<>();
+            }
+
+            @Test
+            void whenAdd() {
+                assertEquals(0, propertyChanges.size());
+                assertEquals(0, parentChanges.size());
+                assertEquals(0, listChanges.size());
+                assertEquals(0, listReplacements.size());
+
+                iterator.add(new Name("abc"));
+
+                assertEquals(0, propertyChanges.size());
+                assertEquals(0, parentChanges.size());
+                assertEquals(1, listChanges.size());
+                assertEquals(0, listReplacements.size());
+
+                assertEquals("Name ADDITION to/from NodeList at position 0", listChanges.get(0));
+            }
+
+            @Test
+            void whenRemove() {
+                iterator.add(new Name("abc"));
+
+                assertEquals(0, propertyChanges.size());
+                assertEquals(0, parentChanges.size());
+                assertEquals(1, listChanges.size());
+                assertEquals(0, listReplacements.size());
+
+                iterator.previous();
+                iterator.remove();
+
+                assertEquals(0, propertyChanges.size());
+                assertEquals(0, parentChanges.size());
+                assertEquals(2, listChanges.size());
+                assertEquals(0, listReplacements.size());
+
+                assertEquals("Name ADDITION to/from NodeList at position 0", listChanges.get(0));
+                assertEquals("Name REMOVAL to/from NodeList at position 0", listChanges.get(1));
+            }
+
+            @Test
+            void whenSet() {
+                iterator.add(new Name("abc"));
+
+                assertEquals(0, propertyChanges.size());
+                assertEquals(0, parentChanges.size());
+                assertEquals(1, listChanges.size());
+                assertEquals(0, listReplacements.size());
+
+                iterator.previous();
+                iterator.set(new Name("xyz"));
+
+                assertEquals(0, propertyChanges.size());
+                assertEquals(0, parentChanges.size());
+                assertEquals(1, listChanges.size());
+                assertEquals(1, listReplacements.size());
+
+                assertEquals("Name ADDITION to/from NodeList at position 0", listChanges.get(0));
+                assertEquals("Name replaced within NodeList at position 0", listReplacements.get(0));
+            }
+
+            @Test
+            void usageTest() {
+                final String REFERENCE_TO_BE_DELETED = "bad";
+                considerCode("" + "@MyAnnotation(myElements = {\"good\", \"bad\", \"ugly\"})\n"
+                        + "public final class MyClass {\n"
+                        + "}");
+                String expected = "" + "@MyAnnotation(myElements = {\"good\", \"ugly\"})\n"
+                        + "public final class MyClass {\n"
+                        + "}";
+
+                List<NormalAnnotationExpr> annotations = cu.findAll(NormalAnnotationExpr.class);
+
+                annotations.forEach(annotation -> {
+                    // testcase, per https://github.com/javaparser/javaparser/issues/2936#issuecomment-731370505
+                    MemberValuePair mvp = annotation.getPairs().get(0);
+                    Expression value = mvp.getValue();
+                    if ((value instanceof ArrayInitializerExpr)) {
+                        NodeList<Expression> myElements = ((ArrayInitializerExpr) value).getValues();
+
+                        for (Iterator<Expression> iterator = myElements.iterator(); iterator.hasNext(); ) {
+                            Node elt = iterator.next();
+                            {
+                                String nameAsString = ((StringLiteralExpr) elt).asString();
+                                if (REFERENCE_TO_BE_DELETED.equals(nameAsString)) iterator.remove();
+                            }
+                        }
+                    }
+                });
+
+                assertEquals(expected, LexicalPreservingPrinter.print(cu));
+            }
+        }
+
+        @Nested
+        class AddRemoveListIteratorTest {
+            NodeList<Name> list;
+            ListIterator<Name> iterator;
+
+            @BeforeEach
+            void pre() {
+                list = nodeList();
+                iterator = list.listIterator();
+            }
+
+            @Test
+            void whenAdd() {
+                assertFalse(iterator.hasNext());
+                assertFalse(iterator.hasPrevious());
+                // Note that the element is added before the current cursor, thus is accessible via "previous"
+                iterator.add(new Name("abc"));
+                assertFalse(iterator.hasNext());
+                assertTrue(iterator.hasPrevious());
+            }
+        }
+
+        @Nested
+        class EmptyIteratorTest {
+            NodeList<Name> list;
+            ListIterator<Name> iterator;
+
+            @BeforeEach
+            void pre() {
+                list = nodeList();
+                iterator = list.listIterator();
+            }
+
+            @Test
+            void whenNext() {
+                assertThrows(NoSuchElementException.class, () -> {
+                    iterator.next();
+                });
+            }
+
+            @Test
+            void whenHasNext() {
+                assertFalse(iterator.hasNext());
+            }
+
+            @Test
+            void whenAdd() {
+                assertFalse(iterator.hasNext());
+                assertFalse(iterator.hasPrevious());
+                // Note that the element is added before the current cursor, thus is accessible via "previous"
+                iterator.add(new Name("abc"));
+                assertFalse(iterator.hasNext());
+                assertTrue(iterator.hasPrevious());
+            }
+
+            @Test
+            void whenSet() {
+                assertFalse(iterator.hasNext());
+                assertFalse(iterator.hasPrevious());
+                assertThrows(IllegalArgumentException.class, () -> {
+                    // Note that the cursor is initially at -1, thus not possible to set the value here
+                    iterator.set(new Name("abc"));
+                });
+                // Assert that next/previous are still empty
+                assertFalse(iterator.hasNext());
+                assertFalse(iterator.hasPrevious());
+            }
+        }
+
+        @Nested
+        class SingleItemIteratorTest {
+            NodeList<Name> list;
+            Iterator<Name> iterator;
+
+            @BeforeEach
+            void pre() {
+                list = nodeList(new Name("abc"));
+                iterator = list.iterator();
+            }
+
+            @Test
+            void whenNext() {
+                Name next = iterator.next();
+                assertNotNull(next);
+            }
+
+            @Test
+            void whenHasNext() {
+                assertTrue(iterator.hasNext());
+            }
+
+            @Test
+            void whenHasNextRepeated() {
+                assertTrue(iterator.hasNext());
+                assertTrue(iterator.hasNext());
+                assertTrue(iterator.hasNext());
+                assertTrue(iterator.hasNext());
+            }
+
+            @Test
+            void whenHasNextThenNext() {
+                assertTrue(iterator.hasNext());
+                iterator.next();
+                assertFalse(iterator.hasNext());
+                assertThrows(NoSuchElementException.class, () -> {
+                    iterator.next();
+                });
+            }
+
+            @Test
+            void whenRemove() {
+                Name current = iterator.next();
+                iterator.remove();
+                assertFalse(iterator.hasNext());
+                assertThrows(NoSuchElementException.class, () -> {
+                    iterator.next();
+                });
+            }
+        }
     }
 }

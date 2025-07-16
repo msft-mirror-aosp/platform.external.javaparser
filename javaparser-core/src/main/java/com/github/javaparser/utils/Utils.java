@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2007-2010 Júlio Vilmar Gesser.
- * Copyright (C) 2011, 2013-2016 The JavaParser Team.
+ * Copyright (C) 2011, 2013-2024 The JavaParser Team.
  *
  * This file is part of JavaParser.
  *
@@ -18,17 +18,16 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
  */
-
 package com.github.javaparser.utils;
 
+import static java.util.Arrays.asList;
+
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.expr.UnaryExpr;
 import java.io.IOException;
 import java.io.Reader;
-import java.nio.file.Files;
 import java.util.*;
-import java.util.function.Predicate;
 import java.util.function.Function;
-
-import static java.util.Arrays.*;
 
 /**
  * Any kind of utility.
@@ -36,7 +35,6 @@ import static java.util.Arrays.*;
  * @author Federico Tomassetti
  */
 public class Utils {
-    public static final String EOL = System.getProperty("line.separator");
 
     public static <E> boolean isNullOrEmpty(Collection<E> collection) {
         return collection == null || collection.isEmpty();
@@ -94,17 +92,16 @@ public class Utils {
         final StringBuilder result = new StringBuilder();
         final char[] buffer = new char[8 * 1024];
         int numChars;
-
         while ((numChars = reader.read(buffer, 0, buffer.length)) > 0) {
             result.append(buffer, 0, numChars);
         }
-
         return result.toString();
     }
 
     /**
      * @deprecated use screamingToCamelCase
      */
+    @Deprecated
     public static String toCamelCase(String original) {
         return screamingToCamelCase(original);
     }
@@ -122,7 +119,6 @@ public class Utils {
         }
         return sb.toString();
     }
-
 
     /**
      * @param input "aCamelCaseString"
@@ -177,12 +173,12 @@ public class Utils {
         return stringTransformer(s, "decapitalize", String::toLowerCase);
     }
 
-    private static String stringTransformer(String s, String operationDescription, Function<String, String> transformation) {
+    private static String stringTransformer(
+            String s, String operationDescription, Function<String, String> transformation) {
         if (s.isEmpty()) {
             throw new IllegalArgumentException(String.format("You cannot %s an empty string", operationDescription));
         }
-        return transformation.apply(s.substring(0, 1)) +
-                s.substring(1);
+        return transformation.apply(s.substring(0, 1)) + s.substring(1);
     }
 
     /**
@@ -208,17 +204,20 @@ public class Utils {
     }
 
     public static boolean valueIsNullOrEmptyStringOrOptional(Object value) {
+        // is null?
         if (value == null) {
             return true;
         }
-        if (value instanceof Optional) {
-            if (((Optional) value).isPresent()) {
-                value = ((Optional) value).get();
-            } else {
-                return true;
-            }
-        }
-        return false;
+        //        // is not Optional?
+        //        if (!(value instanceof Optional)) {
+        //        	return false;
+        //        }
+        //        // is an empty Optional?
+        //		if (!((Optional) value).isPresent()) {
+        //			return true;
+        //		}
+        //        return false;
+        return value instanceof Optional ? !((Optional) value).isPresent() : false;
     }
 
     /**
@@ -259,16 +258,23 @@ public class Utils {
     /**
      * @return a set of the items.
      */
+    @SafeVarargs
     public static <T> Set<T> set(T... items) {
         return new HashSet<>(asList(items));
     }
 
     /**
-     * @return content with all kinds of EOL characters replaced by endOfLineCharacter
+     * @return content, with all kinds of EOL characters replaced by desiredEndOfLineCharacter
      */
-    public static String normalizeEolInTextBlock(String content, String endOfLineCharacter) {
-        return content
-                .replaceAll("\\R", endOfLineCharacter);
+    public static String normalizeEolInTextBlock(String content, String desiredEndOfLineCharacter) {
+        return content.replaceAll("\\R", desiredEndOfLineCharacter);
+    }
+
+    /**
+     * @return content, with all kinds of EOL characters replaced by desiredEndOfLineCharacter
+     */
+    public static String normalizeEolInTextBlock(String content, LineSeparator desiredEndOfLineCharacter) {
+        return normalizeEolInTextBlock(content, desiredEndOfLineCharacter.asRawString());
     }
 
     /**
@@ -276,9 +282,7 @@ public class Utils {
      */
     public static String removeFileExtension(String filename) {
         int extensionIndex = filename.lastIndexOf(".");
-        if (extensionIndex == -1)
-            return filename;
-
+        if (extensionIndex == -1) return filename;
         return filename.substring(0, extensionIndex);
     }
 
@@ -292,4 +296,14 @@ public class Utils {
         return line;
     }
 
+    /**
+     * Checks, if the parent is a unary expression with a minus operator. Used to check for negative literals.
+     */
+    public static boolean hasUnaryMinusAsParent(Node n) {
+        return n.getParentNode()
+                .filter(parent -> parent instanceof UnaryExpr)
+                .map(parent -> (UnaryExpr) parent)
+                .map(unaryExpr -> unaryExpr.getOperator() == UnaryExpr.Operator.MINUS)
+                .orElse(false);
+    }
 }

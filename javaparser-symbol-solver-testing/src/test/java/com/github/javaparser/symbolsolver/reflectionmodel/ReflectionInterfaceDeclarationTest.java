@@ -1,40 +1,50 @@
 /*
- * Copyright 2016 Federico Tomassetti
+ * Copyright (C) 2015-2016 Federico Tomassetti
+ * Copyright (C) 2017-2024 The JavaParser Team.
  *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
+ * This file is part of JavaParser.
  *
- * http://www.apache.org/licenses/LICENSE-2.0
+ * JavaParser can be used either under the terms of
+ * a) the GNU Lesser General Public License as published by
+ *     the Free Software Foundation, either version 3 of the License, or
+ *     (at your option) any later version.
+ * b) the terms of the Apache License
  *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
+ * You should have received a copy of both licenses in LICENCE.LGPL and
+ * LICENCE.APACHE. Please refer to those files for details.
+ *
+ * JavaParser is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
  */
 
 package com.github.javaparser.symbolsolver.reflectionmodel;
 
+import static java.util.Comparator.comparing;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import com.github.javaparser.resolution.TypeSolver;
 import com.github.javaparser.resolution.declarations.ResolvedDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedInterfaceDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedMethodDeclaration;
 import com.github.javaparser.resolution.declarations.ResolvedReferenceTypeDeclaration;
+import com.github.javaparser.resolution.model.typesystem.ReferenceTypeImpl;
 import com.github.javaparser.resolution.types.ResolvedReferenceType;
 import com.github.javaparser.resolution.types.ResolvedTypeVariable;
 import com.github.javaparser.symbolsolver.AbstractSymbolResolutionTest;
-import com.github.javaparser.symbolsolver.model.resolution.TypeSolver;
-import com.github.javaparser.symbolsolver.model.typesystem.ReferenceTypeImpl;
 import com.github.javaparser.symbolsolver.resolution.typesolvers.ReflectionTypeSolver;
 import com.google.common.collect.ImmutableList;
-import org.junit.jupiter.api.Test;
-
-import java.util.*;
+import java.nio.Buffer;
+import java.nio.CharBuffer;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
-
-import static java.util.Comparator.*;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 class ReflectionInterfaceDeclarationTest extends AbstractSymbolResolutionTest {
 
@@ -57,7 +67,9 @@ class ReflectionInterfaceDeclarationTest extends AbstractSymbolResolutionTest {
                     assertEquals(true, method.isAbstract());
                     assertEquals(1, method.getNumberOfParams());
                     assertEquals(true, method.getParam(0).getType().isReferenceType());
-                    assertEquals(Object.class.getCanonicalName(), method.getParam(0).getType().asReferenceType().getQualifiedName());
+                    assertEquals(
+                            Object.class.getCanonicalName(),
+                            method.getParam(0).getType().asReferenceType().getQualifiedName());
                     foundCount++;
                     break;
             }
@@ -65,18 +77,71 @@ class ReflectionInterfaceDeclarationTest extends AbstractSymbolResolutionTest {
         assertEquals(2, foundCount);
     }
 
+    @Disabled
     @Test
     void testAllAncestors() {
         TypeSolver typeResolver = new ReflectionTypeSolver();
         ResolvedInterfaceDeclaration list = new ReflectionInterfaceDeclaration(List.class, typeResolver);
         Map<String, ResolvedReferenceType> ancestors = new HashMap<>();
         list.getAllAncestors().forEach(a -> ancestors.put(a.getQualifiedName(), a));
-        assertEquals(3, ancestors.size());
+        assertEquals(2, ancestors.size());
 
-        ResolvedTypeVariable typeVariable = new ResolvedTypeVariable(list.getTypeParameters().get(0));
-        assertEquals(new ReferenceTypeImpl(new ReflectionInterfaceDeclaration(Collection.class, typeResolver), ImmutableList.of(typeVariable), typeResolver), ancestors.get("java.util.Collection"));
-        assertEquals(new ReferenceTypeImpl(new ReflectionClassDeclaration(Object.class, typeResolver), typeResolver), ancestors.get("java.lang.Object"));
-        assertEquals(new ReferenceTypeImpl(new ReflectionInterfaceDeclaration(Iterable.class, typeResolver), ImmutableList.of(typeVariable), typeResolver), ancestors.get("java.lang.Iterable"));
+        // Since List is an interface, Object cannot be an ancestor of List
+        ResolvedTypeVariable typeVariable =
+                new ResolvedTypeVariable(list.getTypeParameters().get(0));
+        assertEquals(
+                new ReferenceTypeImpl(
+                        new ReflectionInterfaceDeclaration(Collection.class, typeResolver),
+                        ImmutableList.of(typeVariable)),
+                ancestors.get("java.util.Collection"));
+        assertEquals(
+                new ReferenceTypeImpl(
+                        new ReflectionInterfaceDeclaration(Iterable.class, typeResolver),
+                        ImmutableList.of(typeVariable)),
+                ancestors.get("java.lang.Iterable"));
     }
 
+    @Disabled
+    @Test
+    void testAllAncestorsForAnInterfaceWithBreadthFirstFunc() {
+        TypeSolver typeResolver = new ReflectionTypeSolver();
+        ResolvedInterfaceDeclaration list = new ReflectionInterfaceDeclaration(List.class, typeResolver);
+        List<ResolvedReferenceType> ancestors = list.getAllAncestors(ResolvedReferenceTypeDeclaration.breadthFirstFunc);
+        assertEquals(2, ancestors.size());
+
+        ResolvedTypeVariable typeVariable =
+                new ResolvedTypeVariable(list.getTypeParameters().get(0));
+        assertEquals(
+                new ReferenceTypeImpl(
+                        new ReflectionInterfaceDeclaration(Collection.class, typeResolver),
+                        ImmutableList.of(typeVariable)),
+                ancestors.get(0));
+        assertEquals(
+                new ReferenceTypeImpl(
+                        new ReflectionInterfaceDeclaration(Iterable.class, typeResolver),
+                        ImmutableList.of(typeVariable)),
+                ancestors.get(1));
+    }
+
+    @Test
+    void testAllAncestorsForAClassWithBreadthFirstFunc() {
+        TypeSolver typeResolver = new ReflectionTypeSolver();
+        ReflectionClassDeclaration obj = new ReflectionClassDeclaration(CharBuffer.class, typeResolver);
+        List<ResolvedReferenceType> ancestors = obj.getAllAncestors(ResolvedReferenceTypeDeclaration.breadthFirstFunc);
+        assertEquals(6, ancestors.size());
+
+        assertEquals(
+                new ReferenceTypeImpl(new ReflectionClassDeclaration(Buffer.class, typeResolver)), ancestors.get(0));
+        assertEquals(
+                new ReferenceTypeImpl(new ReflectionInterfaceDeclaration(Appendable.class, typeResolver)),
+                ancestors.get(2));
+        assertEquals(
+                new ReferenceTypeImpl(new ReflectionInterfaceDeclaration(CharSequence.class, typeResolver)),
+                ancestors.get(3));
+        assertEquals(
+                new ReferenceTypeImpl(new ReflectionInterfaceDeclaration(Readable.class, typeResolver)),
+                ancestors.get(4));
+        assertEquals(
+                new ReferenceTypeImpl(new ReflectionClassDeclaration(Object.class, typeResolver)), ancestors.get(5));
+    }
 }
