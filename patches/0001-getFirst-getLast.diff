@@ -1,0 +1,216 @@
+diff --git a/javaparser-core-generators/src/main/java/com/github/javaparser/generator/core/quality/NotNullGenerator.java b/javaparser-core-generators/src/main/java/com/github/javaparser/generator/core/quality/NotNullGenerator.java
+index 4b59215d1..389d6af7d 100644
+--- a/javaparser-core-generators/src/main/java/com/github/javaparser/generator/core/quality/NotNullGenerator.java
++++ b/javaparser-core-generators/src/main/java/com/github/javaparser/generator/core/quality/NotNullGenerator.java
+@@ -158,11 +158,9 @@ public class NotNullGenerator extends CompilationUnitGenerator {
+ 
+         // When the callable is a constructor we must check if is a ExplicitConstructorInvocationStmt.
+         if (callableDeclaration.isConstructorDeclaration()) {
+-            Optional<Statement> optionalFirstStatement = statements.getFirst();
+-            if (optionalFirstStatement.isPresent()) {
+-
++            if (statements.size() > 0) {
+                 // Check if the first item is a "super" expr. If it's then we add the assertions after it.
+-                Statement firstStatement = optionalFirstStatement.get();
++                Statement firstStatement = statements.getFirst();
+                 if (firstStatement instanceof ExplicitConstructorInvocationStmt) {
+                     position = 1;
+                 }
+diff --git a/javaparser-core-testing/src/test/java/com/github/javaparser/ast/NodeListTest.java b/javaparser-core-testing/src/test/java/com/github/javaparser/ast/NodeListTest.java
+index ec13c8635..14623f676 100644
+--- a/javaparser-core-testing/src/test/java/com/github/javaparser/ast/NodeListTest.java
++++ b/javaparser-core-testing/src/test/java/com/github/javaparser/ast/NodeListTest.java
+@@ -121,46 +121,6 @@ class NodeListTest extends AbstractLexicalPreservingTest {
+         assertEquals("[abc, bcd, cde, xxx]", list.toString());
+     }
+ 
+-    @Test
+-    public void getFirstWhenEmpty() {
+-        final NodeList<Name> list = nodeList();
+-
+-        Optional<Name> first = list.getFirst();
+-
+-        assertFalse(first.isPresent());
+-        assertEquals("Optional.empty", first.toString());
+-    }
+-
+-    @Test
+-    public void getFirstWhenNonEmpty() {
+-        final NodeList<Name> list = nodeList(new Name("abc"), new Name("bcd"), new Name("cde"));
+-
+-        Optional<Name> first = list.getFirst();
+-
+-        assertTrue(first.isPresent());
+-        assertEquals("Optional[abc]", first.toString());
+-    }
+-
+-    @Test
+-    public void getLastWhenEmpty() {
+-        final NodeList<Name> list = nodeList();
+-
+-        Optional<Name> last = list.getLast();
+-
+-        assertFalse(last.isPresent());
+-        assertEquals("Optional.empty", last.toString());
+-    }
+-
+-    @Test
+-    public void getLastWhenNonEmpty() {
+-        final NodeList<Name> list = nodeList(new Name("abc"), new Name("bcd"), new Name("cde"));
+-
+-        Optional<Name> last = list.getLast();
+-
+-        assertTrue(last.isPresent());
+-        assertEquals("Optional[cde]", last.toString());
+-    }
+-
+     @Nested
+     class IteratorTest {
+ 
+diff --git a/javaparser-core/src/main/java/com/github/javaparser/TokenTypes.java b/javaparser-core/src/main/java/com/github/javaparser/TokenTypes.java
+index 8fee6a703..4e8f1251d 100644
+--- a/javaparser-core/src/main/java/com/github/javaparser/TokenTypes.java
++++ b/javaparser-core/src/main/java/com/github/javaparser/TokenTypes.java
+@@ -247,7 +247,7 @@ public class TokenTypes {
+             case RSIGNEDSHIFT:
+             case GT:
+                 return JavaToken.Category.OPERATOR;
+-                // The following are tokens that are only used internally by the lexer
++            // The following are tokens that are only used internally by the lexer
+             case ENTER_JAVADOC_COMMENT:
+             case ENTER_MULTILINE_COMMENT:
+             case COMMENT_CONTENT:
+diff --git a/javaparser-core/src/main/java/com/github/javaparser/ast/NodeList.java b/javaparser-core/src/main/java/com/github/javaparser/ast/NodeList.java
+index 9b2c699f2..8e96330d0 100644
+--- a/javaparser-core/src/main/java/com/github/javaparser/ast/NodeList.java
++++ b/javaparser-core/src/main/java/com/github/javaparser/ast/NodeList.java
+@@ -225,29 +225,33 @@ public class NodeList<N extends Node>
+         return this;
+     }
+ 
++    @Override
++    public Optional<Node> getParentNode() {
++        return Optional.ofNullable(parentNode);
++    }
++
+     /**
+-     * @return the first node, or empty if the list is empty.
++     * @return the first node, or throw if the list is empty.
++     *
++     * @throws NoSuchElementException
+      */
+-    public Optional<N> getFirst() {
++    public N getFirst() {
+         if (isEmpty()) {
+-            return Optional.empty();
++            throw new NoSuchElementException();
+         }
+-        return Optional.of(get(0));
++        return get(0);
+     }
+ 
+     /**
+-     * @return the last node, or empty if the list is empty.
++     * @return the last node, or throw if the list is empty.
++     *
++     * @throws NoSuchElementException
+      */
+-    public Optional<N> getLast() {
++    public N getLast() {
+         if (isEmpty()) {
+-            return Optional.empty();
++            throw new NoSuchElementException();
+         }
+-        return Optional.of(get(size() - 1));
+-    }
+-
+-    @Override
+-    public Optional<Node> getParentNode() {
+-        return Optional.ofNullable(parentNode);
++        return get(size() - 1);
+     }
+ 
+     /**
+diff --git a/javaparser-core/src/main/java/com/github/javaparser/ast/body/CallableDeclaration.java b/javaparser-core/src/main/java/com/github/javaparser/ast/body/CallableDeclaration.java
+index 1b9e82ade..aab630694 100644
+--- a/javaparser-core/src/main/java/com/github/javaparser/ast/body/CallableDeclaration.java
++++ b/javaparser-core/src/main/java/com/github/javaparser/ast/body/CallableDeclaration.java
+@@ -456,7 +456,7 @@ public abstract class CallableDeclaration<T extends CallableDeclaration<?>> exte
+      * Returns true if the method has a variable number of arguments
+      */
+     public boolean isVariableArityMethod() {
+-        return getParameters().size() > 0 && getParameters().getLast().get().isVarArgs();
++        return getParameters().size() > 0 && getParameters().getLast().isVarArgs();
+     }
+ 
+     /*
+diff --git a/javaparser-symbol-solver-core/src/main/java/com/github/javaparser/symbolsolver/javaparsermodel/NormalCompletionVisitor.java b/javaparser-symbol-solver-core/src/main/java/com/github/javaparser/symbolsolver/javaparsermodel/NormalCompletionVisitor.java
+index ac2f730b3..a5e0267f5 100644
+--- a/javaparser-symbol-solver-core/src/main/java/com/github/javaparser/symbolsolver/javaparsermodel/NormalCompletionVisitor.java
++++ b/javaparser-symbol-solver-core/src/main/java/com/github/javaparser/symbolsolver/javaparsermodel/NormalCompletionVisitor.java
+@@ -124,7 +124,7 @@ public class NormalCompletionVisitor extends GenericVisitorWithDefaults<Boolean,
+     @Override
+     public Boolean visit(BlockStmt block, Void unused) {
+         return block.getStatements().isEmpty()
+-                || block.getStatements().getLast().get().accept(this, unused);
++                || block.getStatements().getLast().accept(this, unused);
+     }
+ 
+     /**
+@@ -298,12 +298,12 @@ public class NormalCompletionVisitor extends GenericVisitorWithDefaults<Boolean,
+             // In this case, the switch stmt is a classic switch, so check:
+             // - The last statement in the switch block can complete normally.
+             // - There is at least one switch label after the last switch block statement group.
+-            SwitchEntry lastEntry = entries.getLast().get();
++            SwitchEntry lastEntry = entries.getLast();
+             if (lastEntry.getStatements().isEmpty()) {
+                 return true;
+             }
+ 
+-            Statement lastStmt = lastEntry.getStatements().getLast().get();
++            Statement lastStmt = lastEntry.getStatements().getLast();
+             if (lastStmt.accept(this, unused)) {
+                 return true;
+             }
+@@ -334,8 +334,8 @@ public class NormalCompletionVisitor extends GenericVisitorWithDefaults<Boolean,
+             return true;
+         }
+ 
+-        if (switchEntry.getStatements().getLast().isPresent()
+-                && switchEntry.getStatements().getLast().get().accept(this, unused)) {
++        if (switchEntry.getStatements().size() > 0
++                && switchEntry.getStatements().getLast().accept(this, unused)) {
+             return true;
+         }
+ 
+diff --git a/javaparser-symbol-solver-core/src/main/java/com/github/javaparser/symbolsolver/javaparsermodel/contexts/BlockStmtContext.java b/javaparser-symbol-solver-core/src/main/java/com/github/javaparser/symbolsolver/javaparsermodel/contexts/BlockStmtContext.java
+index 61246669b..e9ed44b2b 100644
+--- a/javaparser-symbol-solver-core/src/main/java/com/github/javaparser/symbolsolver/javaparsermodel/contexts/BlockStmtContext.java
++++ b/javaparser-symbol-solver-core/src/main/java/com/github/javaparser/symbolsolver/javaparsermodel/contexts/BlockStmtContext.java
+@@ -119,10 +119,8 @@ public class BlockStmtContext extends StatementContext<BlockStmt> {
+             // defined in the context of the wrapped node whether it is located before or after the statement that
+             // interests us
+             // because a variable cannot be (re)defined after having been used
+-            wrappedNode
+-                    .getStatements()
+-                    .getLast()
+-                    .ifPresent(stmt -> variableDeclarators.addAll(localVariablesExposedToChild(stmt)));
++            variableDeclarators.addAll(
++                    localVariablesExposedToChild(wrappedNode.getStatements().getLast()));
+             if (!variableDeclarators.isEmpty()) {
+                 // FIXME: Work backwards from the current statement, to only consider declarations prior to this
+                 // statement.
+diff --git a/javaparser-symbol-solver-core/src/main/java/com/github/javaparser/symbolsolver/javaparsermodel/declarations/JavaParserClassDeclaration.java b/javaparser-symbol-solver-core/src/main/java/com/github/javaparser/symbolsolver/javaparsermodel/declarations/JavaParserClassDeclaration.java
+index bc4de6122..5374a3abb 100644
+--- a/javaparser-symbol-solver-core/src/main/java/com/github/javaparser/symbolsolver/javaparsermodel/declarations/JavaParserClassDeclaration.java
++++ b/javaparser-symbol-solver-core/src/main/java/com/github/javaparser/symbolsolver/javaparsermodel/declarations/JavaParserClassDeclaration.java
+@@ -199,8 +199,7 @@ public class JavaParserClassDeclaration extends AbstractClassDeclaration
+             // All objects implicitly extend java.lang.Object -- inject it here (only when this isn't java.lang.Object)
+             return Optional.of(object());
+         }
+-        return Optional.of(
+-                toReferenceType(wrappedNode.getExtendedTypes().getFirst().get()));
++        return Optional.of(toReferenceType(wrappedNode.getExtendedTypes().getFirst()));
+     }
+ 
+     @Override
